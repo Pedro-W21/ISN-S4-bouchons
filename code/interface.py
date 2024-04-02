@@ -2,6 +2,10 @@ import customtkinter as ctk
 from customtkinter import *
 import json
 from PIL import Image
+import os
+from os.path import abspath, dirname
+
+
 
 
 class App(ctk.CTk):
@@ -259,7 +263,7 @@ class App(ctk.CTk):
 
 
 if __name__ == "__main__":
-
+    os.chdir(dirname(abspath(__file__)))
 
     app = App()
     app.mainloop()

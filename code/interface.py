@@ -101,6 +101,9 @@ class App(ctk.CTk):
         x, y = event.x, event.y
         print('{}, {}'.format(x, y))
 
+    def affiche_dims(self, event):
+        print(f"{self.carte.winfo_height()} {self.carte.winfo_width()}")
+
     ########## TABVIEW MODELE ##########
     def tabview_modele(self):
         """
@@ -118,6 +121,10 @@ class App(ctk.CTk):
         self.visualisation_route = CTkButton(master=self.modele, text="Visualiser la route")
         self.visualisation_route.place(x=125, y=125, anchor="center")
         self.visualisation_route.bind('<Button-1>', self.previsualisation_route)
+
+        self.bouton_dims = CTkButton(master=self.modele, text="afficher les dimensions du canvas")
+        self.bouton_dims.place(x=125, y=175, anchor="center")
+        self.bouton_dims.bind("<Button-1>", self.affiche_dims)
 
         self.creer_route = CTkButton(master=self.modele, text="créer une route", fg_color="purple")
         self.creer_route.place(x=125, y=250, anchor="center")

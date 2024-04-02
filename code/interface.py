@@ -25,11 +25,11 @@ class AffichageRoute(ctk.CTkToplevel):
 
     def affichage_route(self, liste_route):
         route_types = {
-            "route_vertical": "route_vertical.png",
-            "route_horizontal": "route_horizontal.png",
-            "route_haut_gauche": "route_gauche.png",
-            "route_bas_droite": "route_bas_droite.png",
-            "croix": "route_croix.png"
+            "route_vertical": "../photos/route_vertical.png",
+            "route_horizontal": "../photos/route_horizontal.png",
+            "route_haut_gauche": "../photos/route_gauche.png",
+            "route_bas_droite": "../photos/route_bas_droite.png",
+            "croix": "../photos/route_croix.png"
         }
 
         for name, positions in liste_route.items():

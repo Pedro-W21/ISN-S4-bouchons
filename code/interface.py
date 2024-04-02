@@ -247,7 +247,7 @@ class App(ctk.CTk):
             self.france_topLevel.geometry('500x500')
             self.france_topLevel.title("carte de France de l'agressivité")
 
-            carte_France = CTkImage(light_image=Image.open('carte France.jpg'), size=(500, 500))
+            carte_France = CTkImage(light_image=Image.open('../photos/carte France.jpg'), size=(500, 500))
             carte_France_Label = CTkLabel(master=self.france_topLevel, image= carte_France, text="")
             carte_France_Label.pack(fill=BOTH, expand=True)
 

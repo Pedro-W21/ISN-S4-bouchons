@@ -8,8 +8,9 @@ class Noeud:
         self.aretes = [] #Les arêtes partant de ce point
         self.usagers = [] #Les usagers de ce point #{voiture:usage}
         
-    def retrait(self, voiture):
-        del self.usagers[voiture]
+    def retirer_usager(self, voiture):
+        self.usagers = [element for element in self.usagers if element[0].id != voiture.id]
+        #Ou alors directement utiliser voiture, mais donc implémenter fonction __eq__ pour vérifier que c'est la même voiture
 
 
 
@@ -74,7 +75,4 @@ class Intersection_T(Noeud):
         pass
     
     #if un usager fait la même chose devant toi
-
-    def supprimer_tuple_par_id(self, voiture):
-        self.usagers = [element for element in self.usagers if element[0].id != voiture.id]
     

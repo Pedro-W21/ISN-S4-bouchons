@@ -4,6 +4,7 @@ import json
 from PIL import Image
 import os
 from os.path import abspath, dirname
+from recup_donnees import Model
 
 
 
@@ -48,25 +49,6 @@ class App(ctk.CTk):
         self.tabview_parametres_voitures()
 
 
-        self.test()
-
-
-    def test(self):
-        _, _, width, height = (self.grid_bbox(1,0))
-        test_frame= CTkFrame(master=self.carte, fg_color='blue')
-        test_frame.pack(fill='both', expand=True)
-
-
-        print(width/2, height/2)
-        test_frame.update()
-        width_frame, height_frame= test_frame.winfo_width(), test_frame.winfo_height()
-        print(width_frame, height_frame)
-
-        test_label= CTkLabel(master=test_frame, fg_color='red', width=width_frame, text="")
-        test_label.place(x=0,y=0, anchor='center')
-
-        test2_label= CTkLabel(master=test_frame, fg_color='red', width=width_frame/2, text="")
-        test2_label.place(x=width_frame/2, y=height_frame/2, anchor='center')
     def ajout_routes(self):
         """
         Ajout des routes dans le dictionnaire routes
@@ -144,16 +126,13 @@ class App(ctk.CTk):
         paramètres : aucun
         :return: aucun, affiche la route choisie
         """
-        if not self.bool_previsualisation :
+        for i in range(10):
+            for j in range(10):
+                label = CTkLabel(master=self.carte, text="", fg_color="blue")
+                label.grid(row=i, column=j)
 
 
-            self.bool_previsualisation = True
 
-            route_choisie = self.nom_route_combox.get()
-            self.tabview_carte.rename('Carte', f"Carte de la route {route_choisie}")
-            self.affichage_route(self.routes[route_choisie])
-
-            self.bool_previsualisation = False
 
     def affichage_route(self, liste_route):
         """
@@ -216,6 +195,10 @@ class App(ctk.CTk):
         self.carte_france_button.place(x=125, y=250, anchor="center")
         self.carte_france_button.bind('<Button-1>', self.affichage_france)
 
+        self.validation_para_button = CTkButton(master=self.parametres, text = "Coquin, valide !", text_color='black', fg_color ='pink')
+        self.validation_para_button.place(x=105, y=320, anchor="center")
+        self.validation_para_button.bind('<Button-1>', self.validew)
+
         self.bool_carte_affichee = False
     def afficher_scale(self, event):
         """
@@ -243,6 +226,14 @@ class App(ctk.CTk):
 
         if niveau_agressivite >= 10 and niveau_agressivite < 100:
             self.niveau_agressivite_Label_affichees.configure(text=f" {str(niveau_agressivite)[:2]}")
+
+    def validew(self, event):
+        model = Model()
+        scale_1 = self.nombre_voiture_scale.get()
+        scale_2 = self.niveau_agressivite.get()
+        model.get_data(scale_1)
+        model.get_data(scale_2)
+        print(123,model.data)
     def affichage_france(self, event):
         """
         Affichage de la carte de France de l'agressivité

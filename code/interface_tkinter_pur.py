@@ -25,11 +25,32 @@ class Fenetre(tk.Tk):
 
         self.ajout_routes()
 
-        
-
         self.bouton_afficher_carte = tk.Button(self.frame_param_carte, text="Affiche la ville", command=self.essaie_affiche)
         self.bouton_afficher_carte.pack(side=tk.TOP, fill="x")
-        
+
+        self.frame_generation_carte = tk.Frame(self.frame_param_carte, highlightbackground="black", highlightthickness=3)
+        self.label_gen_carte = tk.Label(self.frame_generation_carte, text="Génération de carte")
+        self.label_gen_carte.pack(side=tk.TOP, fill="x")
+        self.slider_largeur_carte = tk.Scale(self.frame_generation_carte, from_=10, to=50, orient="horizontal", label="Largeur")
+        self.slider_largeur_carte.pack(side=tk.TOP, fill="x")
+        self.slider_hauteur_carte = tk.Scale(self.frame_generation_carte, from_=10, to=50, orient="horizontal", label="Hauteur")
+        self.slider_hauteur_carte.pack(side=tk.TOP, fill="x")
+        self.bouton_genere_carte = tk.Button(self.frame_generation_carte, text="génère la carte")
+        self.bouton_genere_carte.pack(side=tk.TOP, fill="x")
+
+        self.frame_generation_carte.pack(side=tk.TOP, fill="x")
+
+        self.frame_sauvegarde = tk.Frame(self.frame_param_carte, highlightbackground="black", highlightthickness=3)
+
+        self.label_sauvegarde = tk.Label(self.frame_sauvegarde, text="sauvegarde de carte")
+        self.label_sauvegarde.pack(side=tk.TOP, fill="x")
+        self.sauvegarde_entry = tk.Entry(self.frame_sauvegarde)
+        self.sauvegarde_entry.pack(side=tk.TOP, fill="x")
+        self.bouton_sauvegarde = tk.Button(self.frame_sauvegarde, text="Sauvegarder avec ce nom")
+        self.bouton_sauvegarde.pack(side=tk.TOP, fill="x")
+
+        self.frame_sauvegarde.pack(side=tk.TOP, fill="x")
+
         self.frame_param_simu = tk.Frame(self, highlightbackground="black", highlightthickness=3)
 
         self.label_param_simu = tk.Label(self.frame_param_simu, text="Paramètres de\nla simulation", font="Calibri 16 bold")

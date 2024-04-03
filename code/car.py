@@ -12,12 +12,14 @@ voiture = Voiture(...1)
 voiture.reassign(...2)
 
 """
+
+
 class Voiture:
     def __init__(self, id, position, vitesse, kp, dist_securite):
         #Implémentation données pour affichage
         self.id = id
         self.position = Vecteur2D(position[0], position[1]) #[x,y]
-        self.orientation = self.position.vecteur_unitaire()
+        
 
         #Implémentation PID
         self.vitesse = vitesse
@@ -27,7 +29,11 @@ class Voiture:
         self.generate_color
         self.calculer_vitesse_max
         self.distance_securite = dist_securite
-        self.parcours: list[Noeud] = []
+        self.arrete_actuelle = None
+        self.prochaine_arrete = None
+
+    def update(self):
+        pass
         
     def reassign(self, position, vitesse, kp, direction, dist_securite):
         #Implémentation données pour affichage
@@ -42,6 +48,9 @@ class Voiture:
         self.generate_color
         self.calculer_vitesse_max
         self.distance_securite = dist_securite
+
+    def orientation(self):
+        pass
 
     def generate_color(self):
         colors = ['red', 'blue', 'green', 'yellow', 'orange', 'purple', 'pink', 'brown', 'cyan', 'magenta']

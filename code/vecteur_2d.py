@@ -17,6 +17,12 @@ class Vecteur2D:
     
     def scalaire(self, rhs):
         return Vecteur2D(self.x * rhs.x, self.y * rhs.y)
+    
+    def norme(self):
+        return (self.x**2 + self.y**2)**0.5
+
+    def norme_manathan(self):
+        return abs(self.x) + abs(self.y)
 
     def __mul__(self, rhs):
         if type(rhs) == Vecteur2D:
@@ -24,13 +30,14 @@ class Vecteur2D:
         elif type(rhs) == float or type(rhs) == int:
             return Vecteur2D(self.x * rhs, self.y * rhs)
         else:
-            print("GROSSE ERREUR DE TYPE ICI AUSSI")
+            raise TypeError("GROSSE ERREUR DE TYPE ICI AUSSI")
         
     def __div__(self, rhs):
         if type(rhs) == float or type(rhs) == int:
             return Vecteur2D(self.x / rhs, self.y / rhs)
         else:
-            print("GROSSE ERREUR DE TYPE ICI")
+            raise TypeError("GROSSE ERREUR DE TYPE ICI AUSSI")
+
 
     def __str__(self):
         return f"x : {self.x}, y : {self.y}"

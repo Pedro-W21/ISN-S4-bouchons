@@ -1,17 +1,36 @@
+from car import Voiture
 from vecteur_2d import Vecteur2D
 
 class Noeud:
-    def __init__(self, position, aretes):
+    def __init__(self, position, aretes, rayon):
         #Implémentation données pour affichage
         self.position = Vecteur2D(position[0], position[1])
 
         self.aretes = [] #Les arêtes partant de ce point
-        self.usagers = [] #Les usagers de ce point #{voiture:usage}
-        
+        self.usagers: list[list[Voiture, Vecteur2D, Vecteur2D]] = []
+        #                    [[voiture, orientation, intention]]
+        self.rayon = rayon
+        self.vitesse_max = 40
+        self.distance_securite = 8*rayon
+
+
     def retirer_usager(self, voiture):
         self.usagers = [element for element in self.usagers if element[0].id != voiture.id]
         #Ou alors directement utiliser voiture, mais donc implémenter fonction __eq__ pour vérifier que c'est la même voiture
 
+    def get_poids(self):
+        return self.rayon / self.get_vitesse_moyenne()
+    
+    def est_proche(self, voiture):
+        vecteur: Vecteur2D = self.position - voiture.position
+        return vecteur.norme_manathan() < self.distance_securite
+
+    def get_vitesse_moyenne(self):
+        if len(self.usagers) != 0:
+            moyenne = sum([usager[0].vitesse for usager in self.usagers]) / len(self.usagers)
+        else:
+            moyenne = self.vitesse_max
+        return max(moyenne, 1)
 
 
 class Virage(Noeud):

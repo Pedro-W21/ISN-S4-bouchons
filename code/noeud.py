@@ -2,7 +2,7 @@ from car import Voiture
 from vecteur_2d import Vecteur2D
 
 class Noeud:
-    def __init__(self, position, aretes, rayon):
+    def __init__(self, position: Vecteur2D, arretes, rayon=40):
         #Implémentation données pour affichage
         self.position = Vecteur2D(position[0], position[1])
 
@@ -12,7 +12,10 @@ class Noeud:
         self.rayon = rayon
         self.vitesse_max = 40
         self.distance_securite = 8*rayon
+        self.arrete = arretes
 
+    def definir_aretes(self, aretes):
+        self.aretes = aretes
 
     def retirer_usager(self, voiture):
         self.usagers = [element for element in self.usagers if element[0].id != voiture.id]
@@ -34,14 +37,14 @@ class Noeud:
 
 
 class Virage(Noeud):
-    def __init__(self, position, aretes):
+    def __init__(self, position, aretes=None):
         super().__init__(position, aretes)
     
     def voie_est_libre(self, voiture):
         return False
     
 class Intersection_T(Noeud):
-    def __init__(self, position, aretes):
+    def __init__(self, position, aretes=None):
         super().__init__(position, aretes)
     
     def voie_est_libre(self, voiture):
@@ -94,4 +97,9 @@ class Intersection_T(Noeud):
         pass
     
     #if un usager fait la même chose devant toi
-    
+
+
+class RondPoint(Noeud):
+
+    def __init__(self, position, aretes=None) -> None:
+        super().__init__(position, aretes)

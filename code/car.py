@@ -1,7 +1,6 @@
 import random
 import math
 from vecteur_2d import Vecteur2D
-from noeud import Noeud
 
 """
 On fait 

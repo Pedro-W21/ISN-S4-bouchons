@@ -1,0 +1,10 @@
+{
+    "nom_carte" : {
+        "rond_point" : [[0, 0], ["..."], ["..."], ["..."]],
+        "intersection_t" : [[2, 5], ["..."], ["..."], ["..."]],
+        "virage" : [[3, 5], ["..."], ["..."], ["..."]],
+        "arrete" : [[[0, 0] , [0, 10]], ["..."], ["..."], ["..."]]
+        // aller retour sur les arretes ou seulement aller à definir
+    }
+}
+

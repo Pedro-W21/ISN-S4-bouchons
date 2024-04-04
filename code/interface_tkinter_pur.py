@@ -3,6 +3,18 @@ import json
 from PIL import Image, ImageTk
 import os
 from os.path import abspath, dirname
+import math
+
+def from_rgb(rgb):
+    """prend un tuple rgb et le transforme en string héxadécimal de couleur tkinter
+    -----------------------------------
+    Entrées : tuple rgb de 0 à 255 (R,G,B)
+
+    Sortie : string d'héxadécimal
+
+    note : fonction prise d'internet.
+    """
+    return "#%02x%02x%02x" % rgb
 
 class Fenetre(tk.Tk):
     def __init__(self):
@@ -12,6 +24,9 @@ class Fenetre(tk.Tk):
         self.resizable(True, True)
         self.title('Interface de test tkinter')
 
+        self.largeur_carte = 10
+        self.hauteur_carte = 10
+        self.echelle = 16 # Nombre de pixels de coté d'une case sur la grille
 
         self.columnconfigure(0, weight=1, uniform='a')
         self.columnconfigure(1, weight=4, uniform='a')
@@ -76,12 +91,33 @@ class Fenetre(tk.Tk):
         self.label_affichage = tk.Label(self.frame_canvas_affichage, text="Affichage de la carte et de la simulation", font="Calibri 16 bold")
         self.label_affichage.pack(side=tk.TOP, fill="x")
         self.canvas_affichage = tk.Canvas(self.frame_canvas_affichage, background="green")
+        self.canvas_affichage.bind("<Configure>", self.setup_canvas)
         self.canvas_affichage.pack(fill="both", expand=True)
         self.frame_canvas_affichage.grid(column=1, row=0, sticky='nsew')
 
         self.previsualisation = False
 
-        
+        self.after(1000, self.setup_canvas)
+
+    def setup_canvas(self, event=None):
+        self.calcul_echelle()
+        self.canvas_affichage.delete('all')
+        xo, yo = 0, 0
+        if self.canvas_affichage.winfo_height() < self.canvas_affichage.winfo_width():
+            xo = self.canvas_affichage.winfo_width()/2 - self.canvas_affichage.winfo_height()/2
+        else:
+            yo = self.canvas_affichage.winfo_height()/2 - self.canvas_affichage.winfo_width()/2
+        for x in range(self.largeur_carte):
+            for y in range(self.hauteur_carte):
+                self.canvas_affichage.create_rectangle(xo + x*self.echelle, yo + y*self.echelle, xo + (x+1)*self.echelle, yo + (y+1)*self.echelle, fill=from_rgb((255,255,255)), outline=from_rgb((0,0,0)))
+
+    def calcul_echelle(self):
+        largeur_canvas = self.canvas_affichage.winfo_width()
+        longueur_canvas = self.canvas_affichage.winfo_height()
+        dimension_minimum_canvas = min(largeur_canvas, longueur_canvas)
+        dimension_maximum_carte = max(self.largeur_carte, self.hauteur_carte)
+        self.echelle = int(math.floor(dimension_minimum_canvas/dimension_maximum_carte))
+
 
     def ajout_routes(self):
         """

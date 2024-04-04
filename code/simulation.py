@@ -3,7 +3,7 @@
 import json
 
 from arrete import Arrete
-from noeud import Intersection_T, RondPoint, Virage
+from noeud import Intersection_T, RondPoint, Virage, Noeud
 from vecteur_2d import Vecteur2D
 
 class Simulation:
@@ -14,9 +14,6 @@ class Simulation:
     ARRETE = 'arrete'
 
     def __init__(self) -> None:
-        
-        from arrete import Arrete
-        from noeud import Noeud
         self.arretes: list[Arrete] = []
         self.noeuds: list[Noeud] = []
 

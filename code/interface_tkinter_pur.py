@@ -86,7 +86,10 @@ class Fenetre(tk.Tk):
 
         self.largeur_canvas = 100
         self.hauteur_canvas = 100
-        self.grille = []
+        self.xo = 0
+        self.yo = 0
+        self.last_mouse_coords = None
+        self.grille_canvas = []
 
         self.frame_sliders.pack(side=tk.LEFT, fill="y")
         self.frame_param_simu.grid(column=0, row=1, columnspan=2, sticky='nsew')
@@ -103,29 +106,56 @@ class Fenetre(tk.Tk):
         self.previsualisation = False
 
         self.after(1000, self.setup_canvas)
+        self.after(50, self.surligne_case_selectionnee)
+
+    def surligne_case_selectionnee(self):
+        coords = self.calcul_coordonnees_souris_carte()
+        if coords != None:
+            xc, yc = coords
+            if self.last_mouse_coords == None:
+                self.canvas_affichage.itemconfigure(self.grille_canvas[yc * self.hauteur_carte + xc], fill=from_rgb((255,0,0)))
+            else:
+                lxc, lyc = self.last_mouse_coords
+                self.canvas_affichage.itemconfigure(self.grille_canvas[lyc * self.hauteur_carte + lxc], fill=from_rgb((255,255,255)))
+                self.canvas_affichage.itemconfigure(self.grille_canvas[yc * self.hauteur_carte + xc], fill=from_rgb((255,0,0)))
+        elif self.last_mouse_coords != None:
+            lxc, lyc = self.last_mouse_coords
+            self.canvas_affichage.itemconfigure(self.grille_canvas[lyc * self.hauteur_carte + lxc], fill=from_rgb((255,255,255)))
+        self.last_mouse_coords = coords
+        self.after(50, self.surligne_case_selectionnee)
+
+    def calcul_coordonnees_souris_carte(self):
+        xs, ys = self.winfo_pointerxy()
+        xs -= self.canvas_affichage.winfo_rootx() + self.xo
+        ys -= self.canvas_affichage.winfo_rooty() + self.yo
+        xc, yc = xs // self.echelle, ys // self.echelle
+        ret = None
+        if 0 <= xc < self.largeur_carte and 0 <= yc < self.hauteur_carte:
+            ret = (xc, yc)
+        return ret
 
     def setup_canvas(self, event=None):
         if self.largeur_canvas != self.canvas_affichage.winfo_width() or self.hauteur_canvas != self.canvas_affichage.winfo_height():
             self.calcul_echelle()
-            xo, yo = 0, 0
+            self.xo, self.yo = 0, 0
             if self.canvas_affichage.winfo_height() < self.canvas_affichage.winfo_width():
-                xo = self.canvas_affichage.winfo_width()/2 - self.canvas_affichage.winfo_height()/2
+                self.xo = self.canvas_affichage.winfo_width()//2 - self.canvas_affichage.winfo_height()//2
             else:
-                yo = self.canvas_affichage.winfo_height()/2 - self.canvas_affichage.winfo_width()/2
+                self.yo = self.canvas_affichage.winfo_height()//2 - self.canvas_affichage.winfo_width()//2
             
-            if len(self.grille) == 0:
+            if len(self.grille_canvas) == 0:
                 self.canvas_affichage.delete('all')
                 for y in range(self.hauteur_carte):
                     for x in range(self.largeur_carte):
-                        self.grille.append(self.canvas_affichage.create_rectangle(xo + x*self.echelle, yo + y*self.echelle, xo + (x+1)*self.echelle, yo + (y+1)*self.echelle, fill=from_rgb((255,255,255)), outline=from_rgb((0,0,0))))
-            elif 0 < len(self.grille) < self.largeur_carte * self.hauteur_carte:
+                        self.grille_canvas.append(self.canvas_affichage.create_rectangle(self.xo + x*self.echelle, self.yo + y*self.echelle, self.xo + (x+1)*self.echelle, self.yo + (y+1)*self.echelle, fill=from_rgb((255,255,255)), outline=from_rgb((0,0,0))))
+            elif 0 < len(self.grille_canvas) < self.largeur_carte * self.hauteur_carte:
                 pass
             else:
                 for y in range(self.hauteur_carte):
                     for x in range(self.largeur_carte):
-                        rect = self.grille[y * self.largeur_carte + x]
-                        self.canvas_affichage.coords(rect, xo + x*self.echelle, yo + y*self.echelle, xo + (x+1)*self.echelle, yo + (y+1)*self.echelle)
-                        #self.canvas_affichage.itemconfigure()
+                        rect = self.grille_canvas[y * self.largeur_carte + x]
+                        self.canvas_affichage.coords(rect, self.xo + x*self.echelle, self.yo + y*self.echelle, self.xo + (x+1)*self.echelle, self.yo + (y+1)*self.echelle)
+                        #self.canvas_affichage.itemconfigure() 
 
 
 

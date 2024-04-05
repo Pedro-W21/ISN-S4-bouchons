@@ -4,6 +4,7 @@ from PIL import Image, ImageTk
 import os
 from os.path import abspath, dirname
 import math
+#import numpy as np
 
 def from_rgb(rgb):
     """prend un tuple rgb et le transforme en string héxadécimal de couleur tkinter
@@ -24,8 +25,8 @@ class Fenetre(tk.Tk):
         self.resizable(True, True)
         self.title('Interface de test tkinter')
 
-        self.largeur_carte = 10
-        self.hauteur_carte = 10
+        self.largeur_carte = 20
+        self.hauteur_carte = 20
         self.echelle = 16 # Nombre de pixels de coté d'une case sur la grille
 
         self.columnconfigure(0, weight=1, uniform='a')
@@ -83,6 +84,10 @@ class Fenetre(tk.Tk):
         self.slider_agressivite = tk.Scale(self.frame_sliders, from_=1, to=100, orient="horizontal")
         self.slider_agressivite.grid(row=1, column=1, sticky='nsew')
 
+        self.largeur_canvas = 100
+        self.hauteur_canvas = 100
+        self.grille = []
+
         self.frame_sliders.pack(side=tk.LEFT, fill="y")
         self.frame_param_simu.grid(column=0, row=1, columnspan=2, sticky='nsew')
         self.frame_param_carte.grid(column=0, row=0, sticky='nsew')
@@ -100,21 +105,34 @@ class Fenetre(tk.Tk):
         self.after(1000, self.setup_canvas)
 
     def setup_canvas(self, event=None):
-        self.calcul_echelle()
-        self.canvas_affichage.delete('all')
-        xo, yo = 0, 0
-        if self.canvas_affichage.winfo_height() < self.canvas_affichage.winfo_width():
-            xo = self.canvas_affichage.winfo_width()/2 - self.canvas_affichage.winfo_height()/2
-        else:
-            yo = self.canvas_affichage.winfo_height()/2 - self.canvas_affichage.winfo_width()/2
-        for x in range(self.largeur_carte):
-            for y in range(self.hauteur_carte):
-                self.canvas_affichage.create_rectangle(xo + x*self.echelle, yo + y*self.echelle, xo + (x+1)*self.echelle, yo + (y+1)*self.echelle, fill=from_rgb((255,255,255)), outline=from_rgb((0,0,0)))
+        if self.largeur_canvas != self.canvas_affichage.winfo_width() or self.hauteur_canvas != self.canvas_affichage.winfo_height():
+            self.calcul_echelle()
+            xo, yo = 0, 0
+            if self.canvas_affichage.winfo_height() < self.canvas_affichage.winfo_width():
+                xo = self.canvas_affichage.winfo_width()/2 - self.canvas_affichage.winfo_height()/2
+            else:
+                yo = self.canvas_affichage.winfo_height()/2 - self.canvas_affichage.winfo_width()/2
+            
+            if len(self.grille) == 0:
+                self.canvas_affichage.delete('all')
+                for y in range(self.hauteur_carte):
+                    for x in range(self.largeur_carte):
+                        self.grille.append(self.canvas_affichage.create_rectangle(xo + x*self.echelle, yo + y*self.echelle, xo + (x+1)*self.echelle, yo + (y+1)*self.echelle, fill=from_rgb((255,255,255)), outline=from_rgb((0,0,0))))
+            elif 0 < len(self.grille) < self.largeur_carte * self.hauteur_carte:
+                pass
+            else:
+                for y in range(self.hauteur_carte):
+                    for x in range(self.largeur_carte):
+                        rect = self.grille[y * self.largeur_carte + x]
+                        self.canvas_affichage.coords(rect, xo + x*self.echelle, yo + y*self.echelle, xo + (x+1)*self.echelle, yo + (y+1)*self.echelle)
+                        #self.canvas_affichage.itemconfigure()
+
+
 
     def calcul_echelle(self):
-        largeur_canvas = self.canvas_affichage.winfo_width()
-        longueur_canvas = self.canvas_affichage.winfo_height()
-        dimension_minimum_canvas = min(largeur_canvas, longueur_canvas)
+        self.largeur_canvas = self.canvas_affichage.winfo_width()
+        self.hauteur_canvas = self.canvas_affichage.winfo_height()
+        dimension_minimum_canvas = min(self.largeur_canvas, self.hauteur_canvas)
         dimension_maximum_carte = max(self.largeur_carte, self.hauteur_carte)
         self.echelle = int(math.floor(dimension_minimum_canvas/dimension_maximum_carte))
 

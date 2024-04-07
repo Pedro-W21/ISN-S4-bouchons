@@ -46,6 +46,7 @@ class Noeud:
 class Virage(Noeud):
     def __init__(self, position, aretes=None):
         super().__init__(position, aretes)
+        self.type="Virage"
     
     def voie_est_libre(self, voiture):
         return True
@@ -53,6 +54,7 @@ class Virage(Noeud):
 class Intersection_T(Noeud):
     def __init__(self, position, aretes=None):
         super().__init__(position, aretes)
+        self.type="Intersection"
     
     def voie_est_libre(self, voiture):
         orientation, intention = voiture.intention()
@@ -108,9 +110,4 @@ class Intersection_X(Noeud):
 
     def __init__(self, position, aretes=None) -> None:
         super().__init__(position, aretes)
-    
-    def voie_est_libre(self, voiture):
-        return True
-    
-    def passe(self, voiture):
-        return True
+        self.type="Rond Point"

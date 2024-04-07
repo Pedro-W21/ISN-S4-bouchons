@@ -1,5 +1,6 @@
 import random
 import math
+from arrete import Arrete
 from vecteur_2d import Vecteur2D
 
 """
@@ -14,6 +15,13 @@ voiture.reassign(...2)
 
 
 class Voiture:
+
+    ROULE = "ROULE"
+    RALENTI = "RALENTI"
+    ARRETEE = "ARRETEE"
+    FREINE = "FREINE"
+
+
     def __init__(self, id, position, vitesse, kp, dist_securite):
         #Implémentation données pour affichage
         self.id = id
@@ -28,8 +36,8 @@ class Voiture:
         self.generate_color
         self.calculer_vitesse_max
         self.distance_securite = dist_securite
-        self.arrete_actuelle = None
-        self.prochaine_arrete = None
+        self.arrete_actuelle: Arrete = None
+        self.prochaine_arrete: Arrete = None
 
     def update(self):
         pass

@@ -23,7 +23,6 @@ class Voiture:
     FREINE = "FREINE"
 
 
-    def __init__(self, id, position, vitesse, kp, dist_securite):
     def __init__(self, id, position, objectif, vitesse, agressivite,size, road_size):
         #Implémentation données pour affichage
         self.id = id
@@ -52,7 +51,7 @@ class Voiture:
     def update(self):
         pass
         
-    def reassign(self, position, objectif, vitesse, kp):
+    def reassign(self, dist_securite, position, objectif, vitesse, kp):
         self.position = Vecteur2D(position[0], position[1]) #[x,y]
         self.objectif = Vecteur2D(objectif[0], objectif[1])
         #Implémentation PID
@@ -88,9 +87,6 @@ class Voiture:
         dir_x = self.arrete_actuelle.position_depart.x - self.arrete_actuelle.position_arrivee.x / abs(self.arrete_actuelle.position_depart.x - self.arrete_actuelle.position_arrivee.x)
         dir_y = self.arrete_actuelle.position_depart.y - self.arrete_actuelle.position_arrivee.y / abs(self.arrete_actuelle.position_depart.y - self.arrete_actuelle.position_arrivee.y)
         return dir_x, dir_y
-        liste_noeuds = list(self.noeuds.keys())
-        vect = (liste_noeuds[1].position - liste_noeuds[0].position)
-        return vect.vecteur_unitaire()
 
     def generate_color(self):
         colors = ['red', 'blue', 'green', 'yellow', 'orange', 'purple', 'pink', 'brown', 'cyan', 'magenta']

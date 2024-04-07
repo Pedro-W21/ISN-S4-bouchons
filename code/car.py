@@ -33,8 +33,8 @@ class Voiture:
         self.agressivite = agressivite
         self.size = size #longueur/largeur
         #Variables primaires (ne changeront plus)
-        self.generate_color
-        self.calculer_vitesse_max
+        self.generate_color()
+        self.calculer_vitesse_max()
         self.distance_securite = dist_securite
         self.arrete_actuelle: Arrete = None
         self.prochaine_arrete: Arrete = None

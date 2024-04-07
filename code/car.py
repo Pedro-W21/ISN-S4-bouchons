@@ -44,12 +44,16 @@ class Voiture:
         self.kp = kp
         
         #Variables primaires (ne changeront plus)
-        self.generate_color
-        self.calculer_vitesse_max
+        self.generate_color()
+        self.calculer_vitesse_max()
         self.distance_securite = dist_securite
 
+        self.status = self.ROULE
+
     def orientation(self):
-        pass
+        dir_x = self.arrete_actuelle.position_depart.x - self.arrete_actuelle.position_arrivee.x / abs(self.arrete_actuelle.position_depart.x - self.arrete_actuelle.position_arrivee.x)
+        dir_y = self.arrete_actuelle.position_depart.y - self.arrete_actuelle.position_arrivee.y / abs(self.arrete_actuelle.position_depart.y - self.arrete_actuelle.position_arrivee.y)
+        return dir_x, dir_y
 
     def generate_color(self):
         colors = ['red', 'blue', 'green', 'yellow', 'orange', 'purple', 'pink', 'brown', 'cyan', 'magenta']
@@ -92,13 +96,13 @@ class Voiture:
         self.vitesse = self.PID(distance_obstacle, time_elapsed)
         
         # Mettre à jour la position en fonction de la nouvelle vitesse
-        self.position[0] += self.vitesse * math.cos(self.orientation) * time_elapsed
-        self.position[1] += self.vitesse * math.sin(self.orientation) * time_elapsed
+        self.position.x += self.vitesse * math.cos(self.orientation()) * time_elapsed
+        self.position.y += self.vitesse * math.sin(self.orientation()) * time_elapsed
 
     def intention(self):
-        return self.orientation, self.direction_prochain_chemin()
+        return self.orientation(), self.direction_prochain_chemin()
 
     def direction_prochain_chemin(self):
-        vect = (self.parcours[1].position - self.parcours[0].position) - (self.parcours[2] - self.parcours[1])
-        vect.vecteur_unitaire()
-        return vect
+        dir_x = self.prochaine_arrete.position_depart.x - self.prochaine_arrete.position_arrivee.x / abs(self.prochaine_arrete.position_depart.x - self.prochaine_arrete.position_arrivee.x)
+        dir_y = self.prochaine_arrete.position_depart.y - self.prochaine_arrete.position_arrivee.y / abs(self.prochaine_arrete.position_depart.y - self.prochaine_arrete.position_arrivee.y)
+        return dir_x, dir_y

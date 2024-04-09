@@ -34,7 +34,6 @@ class App(ctk.CTk):
         super().__init__()
 
         self.geometry('1200x800')
-        self.resizable(True, True)
         self.title('Interface du début')
         #self.bind('<Motion>', self.motion)
 
@@ -61,8 +60,9 @@ class App(ctk.CTk):
         #crée les tabviews
         self.tabview()
 
-        #crée la tabview modele
+        #crée la tabview modele et création
         self.tabview_modele()
+        self.tabview_creation()
 
         #cree la tabview parametres
         self.tabview_parametres_voitures()
@@ -104,7 +104,8 @@ class App(ctk.CTk):
         self.tabview_parametres.pack(fill=BOTH, expand=True, padx=5)
 
 
-        self.modele = self.tabview_model.add('Modèle de route')
+        self.modele = self.tabview_model.add('Modèle existant')
+        self.creation = self.tabview_model.add('Création')
 
         self.parametres = self.tabview_parametres.add('Paramètres véhicules')
 
@@ -117,9 +118,6 @@ class App(ctk.CTk):
     def motion(self, event):
         x, y = event.x, event.y
         print('{}, {}'.format(x, y))
-
-    def affiche_dims(self, event):
-        print(f"{self.frame_carte.winfo_height()} {self.frame_carte.winfo_width()}")
 
     ########## TABVIEW MODELE ##########
     def tabview_modele(self):
@@ -141,18 +139,33 @@ class App(ctk.CTk):
         #self.visualisation_route = CTkButton(master=self.modele, text="Visualiser la route")
         #self.visualisation_route.pack(side=TOP, expand=True)
 
-        self.bouton_dims = CTkButton(master=self.modele, text="afficher les dimensions du canvas")
-        self.bouton_dims.pack(side=TOP, expand=True)
-        self.bouton_dims.bind("<Button-1>", self.affiche_dims)
 
-        self.creer_route = CTkButton(master=self.modele, text="créer une route", fg_color="purple")
-        self.creer_route.pack(side=TOP, expand=True)
-        self.creer_route.bind('<Button-1>', self.creer_nouvelle_route)
 
 
         self.bouton_resize = CTkButton(master=self.modele, text="redimensionner le canvas")
         self.bouton_resize.pack(side=TOP, expand=True)
         self.bouton_resize.bind('<Button-1>', self.resize_func)
+
+    def tabview_creation(self):
+
+        self.x_grille_Label = CTkLabel(master=self.creation, text="longueur (x)")
+        self.x_grille_Label.pack(side=TOP, expand=True)
+        self.x_grille_Label_affichees = CTkLabel(master=self.creation, text="", text_color="purple")
+        self.x_grille_Label_affichees.pack(side=TOP, expand=True)
+        self.x_grille_scale = CTkSlider(master=self.creation, progress_color="purple", from_=1, to=100, command=self.afficher_scale)
+        self.x_grille_scale.pack(side=TOP, expand=True)
+
+
+        self.y_grille_Label = CTkLabel(master=self.creation, text="largeur (y)")
+        self.y_grille_Label.pack(side=TOP, expand=True)
+        self.y_grille_Label_affichees = CTkLabel(master=self.creation, text="", text_color="red")
+        self.y_grille_Label_affichees.pack(side=TOP, expand=True)
+        self.y_grille = CTkSlider(master=self.creation, progress_color="red", from_=1, to=100, command=self.afficher_scale)
+        self.y_grille.pack(side=TOP, expand=True)
+
+        self.creer_route = CTkButton(master=self.creation, text="créer une route", fg_color="purple")
+        self.creer_route.pack(side=TOP, expand=True)
+        self.creer_route.bind('<Button-1>', self.creer_nouvelle_route)
 
 
     def resize_func(self, event):

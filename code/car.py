@@ -64,14 +64,14 @@ class Voiture:
 
         self.status = self.ROULE
 
-        self.generate_color
-        self.calculer_vitesse_max
+        self.generate_color()
+        self.calculer_vitesse_max()
 
         self.noeuds = {} # {Noeud:"stop",Noeud:"pass",Noeud:"slow",Noeud:"regulate"]
 
     
     def intention(self):
-        return self.orientation, self.direction_prochain_chemin()
+        return self.orientation(), self.direction_prochain_chemin()
 
     def direction_prochain_chemin(self):
         vect = (self.noeuds[2].position - self.noeuds[1].position) - (self.noeuds[2] - self.noeuds[1])
@@ -141,9 +141,6 @@ class Voiture:
         # Mettre à jour la position en fonction de la nouvelle vitesse
         self.position.x += self.vitesse * math.cos(self.orientation()) * time_elapsed
         self.position.y += self.vitesse * math.sin(self.orientation()) * time_elapsed
-
-    def intention(self):
-        return self.orientation(), self.direction_prochain_chemin()
 
     def direction_prochain_chemin(self):
         dir_x = self.prochaine_arrete.position_depart.x - self.prochaine_arrete.position_arrivee.x / abs(self.prochaine_arrete.position_depart.x - self.prochaine_arrete.position_arrivee.x)

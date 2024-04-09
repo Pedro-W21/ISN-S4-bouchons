@@ -3,7 +3,7 @@
 import json
 
 from arrete import Arrete
-from noeud import Intersection_T, RondPoint, Virage
+from noeud import Intersection_T, Intersection_X, Virage, Noeud
 from vecteur_2d import Vecteur2D
 
 class Simulation:
@@ -14,13 +14,11 @@ class Simulation:
     ARRETE = 'arrete'
 
     def __init__(self) -> None:
-        
-        from arrete import Arrete
-        from noeud import Noeud
         self.arretes: list[Arrete] = []
         self.noeuds: list[Noeud] = []
 
-        self.graphe = {}
+        self.graphe: dict[list[int, int]: list[list[int, int]]] = {}
+        #            position_noeud : list[position_noeuds]
 
     def import_configuration_carte(self, file_path: str):
         with open(file_path, 'r') as file:
@@ -46,7 +44,7 @@ class Simulation:
                 for arrete in self.arretes:
                     if list(arrete.position_depart) == rond_point:
                         arretes_reliee.append(arrete)
-                self.noeuds.append(RondPoint(Vecteur2D(rond_point[0], rond_point[1]), arretes_reliee))
+                self.noeuds.append(Intersection_X(Vecteur2D(rond_point[0], rond_point[1]), arretes_reliee))
             
             for virage in virages:
                 arretes_reliee = []
@@ -64,11 +62,16 @@ class Simulation:
                 
 
     def create_graphe(self):
-        for noeud in self.noeuds:
-            pass
-            #TODO: self.graphe
-    
+        for noeud_courant in self.noeuds:
+            self.graphe[noeud_courant.position] = []
+            for noeud_arrivee in self.noeuds:
+                if noeud_arrivee.position != noeud_courant.position:
+                    # verifie que les noeuds sont bien reliés
+                    if any(arrete in noeud_courant.arretes for arrete in noeud_arrivee.arretes):
+                        self.graphe[noeud_courant.position].append(noeud_arrivee.position)
+                
     def update(self):
+        # TODO: update la simulation
         for arrete in self.arretes:
             for voiture in arrete.voitures:
                 voiture.update()

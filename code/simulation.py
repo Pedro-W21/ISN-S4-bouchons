@@ -71,6 +71,7 @@ class Simulation:
                         self.graphe[noeud_courant.position].append(noeud_arrivee.position)
                 
     def update(self):
+        # TODO: update la simulation
         for arrete in self.arretes:
             for voiture in arrete.voitures:
                 voiture.update()

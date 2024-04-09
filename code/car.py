@@ -23,11 +23,14 @@ class Voiture:
     FREINE = "FREINE"
 
 
-    def __init__(self, id, position, objectif, vitesse, agressivite,size, road_size):
-        #Implémentation données pour affichage
+    def __init__(self, id, position, objectif, vitesse, agressivite, size, road_size, noeud_depart, noeud_arrivee):
         self.id = id
         self.position = Vecteur2D(position[0], position[1]) #[x,y]
         self.objectif = Vecteur2D(objectif[0], objectif[1])
+
+        self.noeud_depart = noeud_depart
+        self.noeud_arrivee = noeud_arrivee
+        
         #Implémentation PID
         self.vitesse = vitesse
         self.agressivite = agressivite
@@ -35,9 +38,13 @@ class Voiture:
         #Variables primaires (ne changeront plus)
         self.generate_color()
         self.calculer_vitesse_max()
-        self.distance_securite = self.dist_securite()
+        self.distance_securite()
+
+
         self.arrete_actuelle: Arrete = None
         self.prochaine_arrete: Arrete = None
+
+
         self.road_size = road_size
         marge = 0.75*size[0]*(1-self.agressivite)
         self.distance_modulation_voiture = 0.5*size[0]+0.25*size[1]+marge
@@ -48,19 +55,49 @@ class Voiture:
         self.acceleration = 0
         self.noeuds = {} # {Noeud:"stop",Noeud:"pass",Noeud:"slow",Noeud:"regulate"]
 
+        self.ancienne_orientation = self.orientation()
+
     def update(self):
-        pass
+        distance_voiture = None
+        if self.arrete_actuelle.get_first_voiture().id != self.id:
+            position_in_list = self.arrete_actuelle.voitures.index(self)
+            
+            # recupere la distance entre la voiture et la voiture qui la precede
+            distance_voiture = (self.arrete_actuelle.voitures[position_in_list-1].position - self.position).norme_manathan()
+        #recupere la distance entre la voiture et le prochain noeud
+        distance_noeud = (self.arrete_actuelle.position_arrivee - self.position).norme_manathan()
+
+        # TODO: Implementer la fonction de controle de la voiture en vitesse
+        if distance_voiture < distance_noeud:
+            pass
+            # faire la courbe selon la distance entre la voiture et la voiture qui la precede
+        else:
+            # faire la courbe selon la distance entre la voiture et le prochain noeud
+            pass
         
-    def reassign(self, dist_securite, position, objectif, vitesse, kp):
+        if self.ancienne_orientation != self.orientation():
+
+
+            self.ancienne_orientation = self.orientation()
+
+    def distance_securite(self):
+        #TODO
+        pass
+
+        
+    def reassign(self, position, objectif, vitesse, agressivite, kp, noeud_depart, noeud_arrivee):
         self.position = Vecteur2D(position[0], position[1]) #[x,y]
         self.objectif = Vecteur2D(objectif[0], objectif[1])
+
+        self.noeud_depart = noeud_depart
+        self.noeud_arrivee = noeud_arrivee
         #Implémentation PID
         self.vitesse = vitesse
         self.kp = kp
+        self.agressivite = agressivite
         #Variables primaires (ne changeront plus)
         self.generate_color()
         self.calculer_vitesse_max()
-        self.distance_securite = dist_securite
 
         self.status = self.ROULE
 
@@ -69,7 +106,6 @@ class Voiture:
 
         self.noeuds = {} # {Noeud:"stop",Noeud:"pass",Noeud:"slow",Noeud:"regulate"]
 
-    
     def intention(self):
         return self.orientation(), self.direction_prochain_chemin()
 
@@ -151,6 +187,8 @@ class Voiture:
         self.reguler_vitesse()
 
     def contrainte_plus_proche(self):
+
+
         # On obtient tous les points pouvant constituer des arêtes contenant des voitures sous la distance de sécurité
         distance_totale = 0
         noeuds_a_traiter = [(self,0)]
@@ -181,6 +219,11 @@ class Voiture:
             if len(voitures_a_traiter)>1:
                 break
         voitures_a_traiter.pop(0)
+
+
+
+
+
 
         for noeud in noeuds_a_traiter:
             # {Noeud:"stop",Noeud:"pass",Noeud:"slow"}

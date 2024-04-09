@@ -1,4 +1,5 @@
 
+from car import Voiture
 from vecteur_2d import Vecteur2D
 
 
@@ -18,10 +19,10 @@ class Arrete:
             return True
         return False
     
-    def get_first_voiture(self):
+    def get_first_voiture(self) -> Voiture:
         return self.voitures[0]
     
-    def get_last_voiture(self):
+    def get_last_voiture(self) -> Voiture:
         return self.voitures[-1]
     
     def pop_voiture(self):

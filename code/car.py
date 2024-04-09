@@ -35,7 +35,7 @@ class Voiture:
         #Variables primaires (ne changeront plus)
         self.generate_color()
         self.calculer_vitesse_max()
-        self.distance_securite = dist_securite
+        self.distance_securite = self.dist_securite()
         self.arrete_actuelle: Arrete = None
         self.prochaine_arrete: Arrete = None
         self.road_size = road_size

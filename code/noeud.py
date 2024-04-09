@@ -20,7 +20,7 @@ class Noeud:
         self.rayon = rayon
         self.vitesse_max = 40
         self.distance_securite = 8*rayon
-        self.arrete = arretes
+        self.arretes = arretes
 
     def retirer_usager(self, voiture):
         del self.usagers[voiture]

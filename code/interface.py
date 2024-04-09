@@ -149,6 +149,22 @@ class App(ctk.CTk):
         self.creer_route.pack(side=TOP, expand=True)
         self.creer_route.bind('<Button-1>', self.creer_nouvelle_route)
 
+
+        self.bouton_resize = CTkButton(master=self.modele, text="redimensionner le canvas")
+        self.bouton_resize.pack(side=TOP, expand=True)
+        self.bouton_resize.bind('<Button-1>', self.resize_func)
+
+
+    def resize_func(self, event):
+        """
+        bloque le resize
+        :param event:
+        :return:
+        """
+        self.resizable(False, False)
+
+
+
         self.bool_previsualisation = False
     def creer_nouvelle_route(self, event):
         """

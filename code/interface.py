@@ -452,7 +452,7 @@ class App(ctk.CTk):
 
             self.previsualisation = False
 
-    def affichage_route(self, liste_route):
+    def affichage_route3(self, liste_route):
         route_types = {
             "route_vertical": "../photos/route_vertical.png",
             "route_horizontal": "../photos/route_horizontal.png",

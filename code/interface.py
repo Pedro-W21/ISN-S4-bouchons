@@ -109,15 +109,8 @@ class App(ctk.CTk):
 
         self.parametres = self.tabview_parametres.add('Paramètres véhicules')
 
-
-
-
-
         self.update()
 
-    def motion(self, event):
-        x, y = event.x, event.y
-        print('{}, {}'.format(x, y))
 
     ########## TABVIEW MODELE ##########
     def tabview_modele(self):
@@ -148,24 +141,52 @@ class App(ctk.CTk):
 
     def tabview_creation(self):
 
-        self.x_grille_Label = CTkLabel(master=self.creation, text="longueur (x)")
-        self.x_grille_Label.pack(side=TOP, expand=True)
-        self.x_grille_Label_affichees = CTkLabel(master=self.creation, text="", text_color="purple")
-        self.x_grille_Label_affichees.pack(side=TOP, expand=True)
-        self.x_grille_scale = CTkSlider(master=self.creation, progress_color="purple", from_=1, to=100, command=self.afficher_scale)
-        self.x_grille_scale.pack(side=TOP, expand=True)
+        self.longueur_x_Label = CTkLabel(master=self.creation, text="longueur (x)")
+        self.longueur_x_Label.pack(side=TOP, expand=True)
+        self.longueur_x_Label_affichees = CTkLabel(master=self.creation, text="", text_color="dark blue")
+        self.longueur_x_Label_affichees.pack(side=TOP, expand=True)
+        self.longueur_x_scale = CTkSlider(master=self.creation, progress_color="dark blue", from_=1, to=100, command=self.afficher_scale_creation)
+        self.longueur_x_scale.pack(side=TOP, expand=True)
 
 
-        self.y_grille_Label = CTkLabel(master=self.creation, text="largeur (y)")
-        self.y_grille_Label.pack(side=TOP, expand=True)
-        self.y_grille_Label_affichees = CTkLabel(master=self.creation, text="", text_color="red")
-        self.y_grille_Label_affichees.pack(side=TOP, expand=True)
-        self.y_grille = CTkSlider(master=self.creation, progress_color="red", from_=1, to=100, command=self.afficher_scale)
-        self.y_grille.pack(side=TOP, expand=True)
+        self.largeur_y_Label = CTkLabel(master=self.creation, text="largeur (y)")
+        self.largeur_y_Label.pack(side=TOP, expand=True)
+        self.largeur_y_Label_affichees = CTkLabel(master=self.creation, text="", text_color="gold")
+        self.largeur_y_Label_affichees.pack(side=TOP, expand=True)
+        self.largeur_y_scale = CTkSlider(master=self.creation, progress_color="gold", from_=1, to=100, command=self.afficher_scale_creation)
+        self.largeur_y_scale.pack(side=TOP, expand=True)
 
         self.creer_route = CTkButton(master=self.creation, text="créer une route", fg_color="purple")
         self.creer_route.pack(side=TOP, expand=True)
-        self.creer_route.bind('<Button-1>', self.creer_nouvelle_route)
+        self.creer_route.bind('<Button-1>', self.creer_nouvelle_carte)
+        
+        
+    def afficher_scale_creation(self, event):
+        """
+        Récupère la valeur des sliders relatifs à la taille de l'écran
+        :param event:
+        :return: aucun (affiche la valeur des sliders)
+        """
+        longueur_x = self.longueur_x_scale.get()
+        largeur_y = self.largeur_y_scale.get()
+    
+        if longueur_x < 10:
+            self.longueur_x_Label_affichees.configure(text=f"{str(longueur_x)[0]}")
+    
+        if longueur_x == 100:
+            self.longueur_x_Label_affichees.configure(text=f"{str(longueur_x)}")
+    
+        if longueur_x >= 10 and longueur_x < 100:
+            self.longueur_x_Label_affichees.configure(text=f" {str(longueur_x)[:2]}")
+    
+        if largeur_y < 10:
+            self.largeur_y_Label_affichees.configure(text=f"{str(largeur_y)[0]}")
+    
+        if largeur_y == 100:
+            self.largeur_y_Label_affichees.configure(text=f"{str(largeur_y)}")
+    
+        if largeur_y >= 10 and largeur_y < 100:
+            self.largeur_y_Label_affichees.configure(text=f" {str(largeur_y)[:2]}")
 
 
     def resize_func(self, event):
@@ -179,13 +200,13 @@ class App(ctk.CTk):
 
 
         self.bool_previsualisation = False
-    def creer_nouvelle_route(self, event):
+    def creer_nouvelle_carte(self, event):
         """
-        Création d'une nouvelle route
+        Création d'une nouvelle carte
         paramètres : aucun
-        :return: aucun, ajoute une nouvelle route (nouveau dictionnaire) à self.routes
+        :return: aucun
         """
-        print('créer une nouvelle route')
+        print('créer une nouvelle carte')
 
 
     def affichage_route(self, liste_route):
@@ -233,7 +254,7 @@ class App(ctk.CTk):
         self.nombre_voitures_Label.pack(side=TOP, expand=True)
         self.nombre_voitures_Label_affichees = CTkLabel(master=self.parametres, text="", text_color="purple")
         self.nombre_voitures_Label_affichees.pack(side=TOP, expand=True)
-        self.nombre_voiture_scale = CTkSlider(master=self.parametres, progress_color="purple", from_=1, to=100, command=self.afficher_scale)
+        self.nombre_voiture_scale = CTkSlider(master=self.parametres, progress_color="purple", from_=1, to=100, command=self.afficher_scale_voitures)
         self.nombre_voiture_scale.pack(side=TOP, expand=True)
 
 
@@ -243,7 +264,7 @@ class App(ctk.CTk):
         self.niveau_agressivite_Label_affichees = CTkLabel(master=self.parametres, text="", text_color="red")
         self.niveau_agressivite_Label_affichees.pack(side=TOP, expand=True)
 
-        self.niveau_agressivite = CTkSlider(master=self.parametres, progress_color="red", from_=1, to=100, command=self.afficher_scale)
+        self.niveau_agressivite = CTkSlider(master=self.parametres, progress_color="red", from_=1, to=100, command=self.afficher_scale_voitures)
         self.niveau_agressivite.pack(side=TOP, expand=True)
 
         self.carte_france_button = CTkButton(master=self.parametres, text="carte de France de l'agressivité")
@@ -255,9 +276,9 @@ class App(ctk.CTk):
         self.validation_para_button.bind('<Button-1>', self.validew)
 
         self.bool_carte_affichee = False
-    def afficher_scale(self, event):
+    def afficher_scale_voitures(self, event):
         """
-        Récupère la valeur des sliders
+        Récupère la valeur des sliders relatifs aux voitures
         :param event:
         :return: aucun (affiche la valeur des sliders)
         """

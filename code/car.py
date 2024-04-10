@@ -28,8 +28,8 @@ class Voiture:
         self.position = Vecteur2D(position[0], position[1]) #[x,y]
         self.objectif = Vecteur2D(objectif[0], objectif[1])
 
-        self.noeud_depart = noeud_depart
-        self.noeud_arrivee = noeud_arrivee
+        self.noeud_depart: Noeud = noeud_depart
+        self.noeud_arrivee: Noeud = noeud_arrivee
         
         #Implémentation PID
         self.vitesse = vitesse
@@ -57,6 +57,8 @@ class Voiture:
 
         self.ancienne_orientation = self.orientation()
 
+        self.chemin = []
+
     def update(self):
         distance_voiture = None
         if self.arrete_actuelle.get_first_voiture().id != self.id and self.arrete_actuelle.voitures >1:
@@ -83,7 +85,6 @@ class Voiture:
     def distance_securite(self):
         #TODO
         pass
-
         
     def reassign(self, position, objectif, vitesse, agressivite, kp, noeud_depart, noeud_arrivee):
         self.position = Vecteur2D(position[0], position[1]) #[x,y]
@@ -207,7 +208,7 @@ class Voiture:
         voitures_a_traiter = [(self,0)]
         #TODO
         #trouver la voiture la plus proche (pas avant nous), qui peut être sur notre arête ou une suivante
-        for i in range(len(noeuds_a_traiter)-2):
+        for i in range(len(noeuds_a_traiter)-1):
             arrete = self.trouver_arrete(noeuds_a_traiter[i][0], noeuds_a_traiter[i+1][0])
             for voiture in arrete.voitures:
                 distance_to_voiture = voiture.position-voitures_a_traiter[-1][1]
@@ -243,3 +244,14 @@ class Voiture:
             #regulate pour obtenir v voiture à distance_modulation_voiture
         #si un point a dit slow, alors on ralentit à distance_arret_point
         ##NON REPRENDRE DEFINITION
+
+    def trouver_arrete_entre_noeuds(self, noeud_depart: Noeud, noeud_arrivee: Noeud):
+        for arrete in noeud_depart.arretes:
+            if arrete in noeud_arrivee.arretes:
+                return arrete
+
+    def trouver_voiture_sur_mon_chemin(self):
+        for i in range(len(self.chemin)-1):
+            arrete = self.trouver_arrete_entre_noeuds(self.chemin[i], self.chemin[i+1])
+            if arrete.voitures:
+                return arrete.voitures[-1]

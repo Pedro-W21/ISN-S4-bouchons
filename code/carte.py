@@ -8,7 +8,7 @@ class Carte:
         self.largeur = largeur
         self.hauteur = hauteur
 
-    def into_aretes_noeuds(self) -> (List[Arrete], List[Noeud]):
+    def into_aretes_noeuds(self) -> List[Noeud]:
         noeuds_dict = {}
         for xc in range(self.largeur):
             for yc in range(self.hauteur):

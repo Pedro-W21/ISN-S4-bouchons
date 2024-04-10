@@ -1,5 +1,3 @@
-
-
 import json
 
 from arrete import Arrete
@@ -60,7 +58,6 @@ class Simulation:
                         arretes_reliee.append(arrete)
                 self.noeuds.append(Intersection_T(Vecteur2D(intersection[0], intersection[1]), arretes_reliee))
                 
-
     def create_graphe(self):
         for noeud_courant in self.noeuds:
             self.graphe[noeud_courant.position] = []
@@ -75,10 +72,7 @@ class Simulation:
         for arrete in self.arretes:
             for voiture in arrete.voitures:
                 voiture.update()
-            last_voiture = arrete.get_last_voiture()
-            if arrete.noeud_arrivee.est_proche(last_voiture):
-                arrete.noeud_arrivee.voie_est_libre(last_voiture)
-                pass
-                
+                 
+    
 
 Simulation().import_configuration_carte('routes.json')

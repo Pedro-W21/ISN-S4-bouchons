@@ -19,6 +19,9 @@ class Arrete:
             return True
         return False
     
+    def has_voiture(self):
+        return len(self.voitures) > 0
+    
     def get_first_voiture(self) -> Voiture:
         return self.voitures[0]
     

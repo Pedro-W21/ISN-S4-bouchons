@@ -53,13 +53,13 @@ class Voiture:
         self.distance_arret_point = 0.5*self.road_size+0.5*size[0]+marge
         self.distance_securite_point = 4*self.road_size+0.5*size[0]+marge*(2-self.agressivite)
         self.acceleration = 0
-        self.noeuds = {} # {Noeud:"stop",Noeud:"pass",Noeud:"slow",Noeud:"regulate"]
+        self.noeuds = {} # {Noeud:"stop",Noeud:"pass",Noeud:"slow",Noeud:"regulate"}
 
         self.ancienne_orientation = self.orientation()
 
     def update(self):
         distance_voiture = None
-        if self.arrete_actuelle.get_first_voiture().id != self.id:
+        if self.arrete_actuelle.get_first_voiture().id != self.id and self.arrete_actuelle.voitures >1:
             position_in_list = self.arrete_actuelle.voitures.index(self)
             
             # recupere la distance entre la voiture et la voiture qui la precede
@@ -104,7 +104,7 @@ class Voiture:
         self.generate_color()
         self.calculer_vitesse_max()
 
-        self.noeuds = {} # {Noeud:"stop",Noeud:"pass",Noeud:"slow",Noeud:"regulate"]
+        self.chemin = {} # {Noeud:"stop",Noeud:"pass",Noeud:"slow",Noeud:"regulate"]
 
     def intention(self):
         return self.orientation(), self.direction_prochain_chemin()
@@ -114,8 +114,8 @@ class Voiture:
         vect.vecteur_unitaire()
         return vect
     
-    def trouver_arete(self, noeud_depart, noeud_arrivee):
-        for arete in noeud_depart.aretes:
+    def trouver_arrete(self, noeud_depart: Noeud, noeud_arrivee: Noeud):
+        for arete in noeud_depart.arrete:
             if arete == [noeud_depart, noeud_arrivee]:
                 return arete
             
@@ -192,7 +192,7 @@ class Voiture:
         # On obtient tous les points pouvant constituer des arêtes contenant des voitures sous la distance de sécurité
         distance_totale = 0
         noeuds_a_traiter = [(self,0)]
-        prochain_noeuds = iter(self.noeuds.items())
+        prochain_noeuds = iter(self.chemin.items())
         premier_noeud = next(prochain_noeuds)
         for noeud in prochain_noeuds.key():
             distance_to_point = noeud.position - noeuds_a_traiter[-1][0].position
@@ -207,9 +207,9 @@ class Voiture:
         voitures_a_traiter = [(self,0)]
         #TODO
         #trouver la voiture la plus proche (pas avant nous), qui peut être sur notre arête ou une suivante
-        for i in range(len(noeuds_a_traiter)-1):
-            arete = self.trouver_arete(noeuds_a_traiter[i][0], noeuds_a_traiter[i+1][0])
-            for voiture in arete.voitures:
+        for i in range(len(noeuds_a_traiter)-2):
+            arrete = self.trouver_arrete(noeuds_a_traiter[i][0], noeuds_a_traiter[i+1][0])
+            for voiture in arrete.voitures:
                 distance_to_voiture = voiture.position-voitures_a_traiter[-1][1]
                 distance_totale+=distance_to_voiture
                 if distance_totale < self.distance_securite_voiture:

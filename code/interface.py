@@ -68,18 +68,7 @@ class App(ctk.CTk):
         self.tabview_parametres_voitures()
 
 
-        #ajout fonction pierre
-
-        self.largeur_carte = 25
-        self.hauteur_carte = 25
-        self.echelle = 16 # Nombre de pixels de coté d'une case sur la grille
-        self.setup_frame_canvas()
-
-
-        self.previsualisation = False
-
-        self.after(1000, self.affiche_carte_dans_canvas)
-        self.after(50, self.surligne_case_selectionnee)
+        self.grille_affichee = False #initialisation de l'affichage grille
 
 
     def ajout_routes(self):
@@ -143,18 +132,18 @@ class App(ctk.CTk):
 
         self.longueur_x_Label = CTkLabel(master=self.creation, text="longueur (x)")
         self.longueur_x_Label.pack(side=TOP, expand=True)
-        self.longueur_x_Label_affichees = CTkLabel(master=self.creation, text="", text_color="dark blue")
+        self.longueur_x_Label_affichees = CTkLabel(master=self.creation, text="", text_color="white")
         self.longueur_x_Label_affichees.pack(side=TOP, expand=True)
-        self.longueur_x_scale = CTkSlider(master=self.creation, progress_color="dark blue", from_=1, to=100, command=self.afficher_scale_creation)
+        self.longueur_x_scale = CTkSlider(master=self.creation, progress_color="white", from_=10, to=50, command=self.afficher_scale_creation)
         self.longueur_x_scale.pack(side=TOP, expand=True)
 
 
-        self.largeur_y_Label = CTkLabel(master=self.creation, text="largeur (y)")
-        self.largeur_y_Label.pack(side=TOP, expand=True)
-        self.largeur_y_Label_affichees = CTkLabel(master=self.creation, text="", text_color="gold")
-        self.largeur_y_Label_affichees.pack(side=TOP, expand=True)
-        self.largeur_y_scale = CTkSlider(master=self.creation, progress_color="gold", from_=1, to=100, command=self.afficher_scale_creation)
-        self.largeur_y_scale.pack(side=TOP, expand=True)
+        self.hauteur_y_Label = CTkLabel(master=self.creation, text="hauteur (y)")
+        self.hauteur_y_Label.pack(side=TOP, expand=True)
+        self.hauteur_y_Label_affichees = CTkLabel(master=self.creation, text="", text_color="gold")
+        self.hauteur_y_Label_affichees.pack(side=TOP, expand=True)
+        self.hauteur_y_scale = CTkSlider(master=self.creation, progress_color="gold", from_=10, to=50, command=self.afficher_scale_creation)
+        self.hauteur_y_scale.pack(side=TOP, expand=True)
 
         self.creer_route = CTkButton(master=self.creation, text="créer une route", fg_color="purple")
         self.creer_route.pack(side=TOP, expand=True)
@@ -168,7 +157,7 @@ class App(ctk.CTk):
         :return: aucun (affiche la valeur des sliders)
         """
         longueur_x = self.longueur_x_scale.get()
-        largeur_y = self.largeur_y_scale.get()
+        hauteur_y = self.hauteur_y_scale.get()
     
         if longueur_x < 10:
             self.longueur_x_Label_affichees.configure(text=f"{str(longueur_x)[0]}")
@@ -179,14 +168,14 @@ class App(ctk.CTk):
         if longueur_x >= 10 and longueur_x < 100:
             self.longueur_x_Label_affichees.configure(text=f" {str(longueur_x)[:2]}")
     
-        if largeur_y < 10:
-            self.largeur_y_Label_affichees.configure(text=f"{str(largeur_y)[0]}")
+        if hauteur_y < 10:
+            self.hauteur_y_Label_affichees.configure(text=f"{str(hauteur_y)[0]}")
     
-        if largeur_y == 100:
-            self.largeur_y_Label_affichees.configure(text=f"{str(largeur_y)}")
+        if hauteur_y == 100:
+            self.hauteur_y_Label_affichees.configure(text=f"{str(hauteur_y)}")
     
-        if largeur_y >= 10 and largeur_y < 100:
-            self.largeur_y_Label_affichees.configure(text=f" {str(largeur_y)[:2]}")
+        if hauteur_y >= 10 and hauteur_y < 100:
+            self.hauteur_y_Label_affichees.configure(text=f" {str(hauteur_y)[:2]}")
 
 
     def resize_func(self, event):
@@ -206,7 +195,31 @@ class App(ctk.CTk):
         paramètres : aucun
         :return: aucun
         """
-        print('créer une nouvelle carte')
+        print(f"longueur {int(self.longueur_x_scale.get())}, largeur : {int(self.hauteur_y_scale.get())}")
+
+        if not self.grille_affichee :
+
+            self.grille_affichee = True #pour savoir si on a affiché la grille
+            self.largeur_carte = int(self.longueur_x_scale.get())
+            self.hauteur_carte = int(self.hauteur_y_scale.get())
+
+
+
+
+            self.echelle = 16*max(self.largeur_carte, self.hauteur_carte)/25 # Nombre de pixels de coté d'une case sur la grille et ici on considère carré
+            self.setup_frame_canvas()
+
+
+            self.previsualisation = False
+
+            self.after(1000, self.affiche_carte_dans_canvas)
+            self.after(50, self.surligne_case_selectionnee)
+
+        else :
+            self.grille_affichee = False
+            self.frame_carte = CTkFrame(self, fg_color='#4C6085')
+            self.frame_carte.grid(row=0, column=1, rowspan=2, pady=5, padx=5, sticky='nsew')
+
 
 
     def affichage_route(self, liste_route):
@@ -337,6 +350,7 @@ class App(ctk.CTk):
 
 
 
+######### canvas du milieu ###############
 
     def setup_frame_canvas(self):
 
@@ -398,6 +412,7 @@ class App(ctk.CTk):
 
     def calcul_coordonnees_souris_carte(self):
         xs, ys = self.winfo_pointerxy()
+        print(xs, ys)
         xs -= self.canvas_affichage.winfo_rootx() + self.xo
         ys -= self.canvas_affichage.winfo_rooty() + self.yo
         xc, yc = xs // self.echelle, ys // self.echelle

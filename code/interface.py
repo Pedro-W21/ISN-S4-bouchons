@@ -384,7 +384,7 @@ class App(ctk.CTk):
                 if self.grille_route[xc,yc] == 0:
                     self.routes_placees += 1
                 self.grille_route[xc,yc] = 1
-                self.canvas_affichage.itemconfigure(self.grille_canvas[yc * self.hauteur_carte + xc], fill=self.couleur_de_case(xc, yc))
+                self.canvas_affichage.itemconfigure(self.grille_canvas[yc * self.largeur_carte + xc], fill=self.couleur_de_case(xc, yc))
     def enleve_route_click(self, event=None):
         coords = self.calcul_coordonnees_souris_carte()
         if coords != None:
@@ -392,21 +392,21 @@ class App(ctk.CTk):
             if self.grille_route[xc,yc] == 1:
                 self.routes_placees -= 1
             self.grille_route[xc,yc] = 0
-            self.canvas_affichage.itemconfigure(self.grille_canvas[yc * self.hauteur_carte + xc], fill=self.couleur_de_case(xc, yc))
+            self.canvas_affichage.itemconfigure(self.grille_canvas[yc * self.largeur_carte + xc], fill=self.couleur_de_case(xc, yc))
 
     def surligne_case_selectionnee(self):
         coords = self.calcul_coordonnees_souris_carte()
         if coords != None:
             xc, yc = coords
             if self.last_mouse_coords == None:
-                self.canvas_affichage.itemconfigure(self.grille_canvas[yc * self.hauteur_carte + xc], fill=self.couleur_de_curseur(xc, yc))
+                self.canvas_affichage.itemconfigure(self.grille_canvas[yc * self.largeur_carte + xc], fill=self.couleur_de_curseur(xc, yc))
             else:
                 lxc, lyc = self.last_mouse_coords
-                self.canvas_affichage.itemconfigure(self.grille_canvas[lyc * self.hauteur_carte + lxc], fill=self.couleur_de_case(lxc, lyc))
-                self.canvas_affichage.itemconfigure(self.grille_canvas[yc * self.hauteur_carte + xc], fill=self.couleur_de_curseur(xc, yc))
+                self.canvas_affichage.itemconfigure(self.grille_canvas[lyc * self.largeur_carte + lxc], fill=self.couleur_de_case(lxc, lyc))
+                self.canvas_affichage.itemconfigure(self.grille_canvas[yc * self.largeur_carte + xc], fill=self.couleur_de_curseur(xc, yc))
         elif self.last_mouse_coords != None:
             lxc, lyc = self.last_mouse_coords
-            self.canvas_affichage.itemconfigure(self.grille_canvas[lyc * self.hauteur_carte + lxc], fill=self.couleur_de_case(lxc, lyc))
+            self.canvas_affichage.itemconfigure(self.grille_canvas[lyc * self.largeur_carte + lxc], fill=self.couleur_de_case(lxc, lyc))
         self.last_mouse_coords = coords
         self.after(50, self.surligne_case_selectionnee)
 

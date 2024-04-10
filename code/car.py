@@ -3,6 +3,7 @@ import math
 from arrete import Arrete
 from vecteur_2d import Vecteur2D
 from noeud import Noeud
+from courbe import Courbe
 
 """
 On fait 
@@ -17,12 +18,6 @@ voiture.reassign(...2)
 
 class Voiture:
 
-    ROULE = "ROULE"
-    RALENTI = "RALENTI"
-    ARRETEE = "ARRETEE"
-    FREINE = "FREINE"
-
-
     def __init__(self, id, position, objectif, vitesse, agressivite, size, road_size, noeud_depart, noeud_arrivee):
         self.id = id
         self.position = Vecteur2D(position[0], position[1]) #[x,y]
@@ -33,7 +28,7 @@ class Voiture:
         
         #Implémentation PID
         self.vitesse = vitesse
-        self.agressivite = agressivite
+        self.agressivite = agressivite # compris entre 0 et 1
         self.size = size #longueur/largeur
         #Variables primaires (ne changeront plus)
         self.generate_color()
@@ -57,7 +52,7 @@ class Voiture:
 
         self.ancienne_orientation = self.orientation()
 
-        self.chemin = []
+        self.chemin: list[Noeud] = []
 
     def update(self):
         distance_voiture = None
@@ -82,7 +77,7 @@ class Voiture:
 
             self.ancienne_orientation = self.orientation()
 
-    def distance_securite(self):
+    def distance_securite(self) -> int:
         #TODO
         pass
         
@@ -95,7 +90,10 @@ class Voiture:
         #Implémentation PID
         self.vitesse = vitesse
         self.kp = kp
-        self.agressivite = agressivite
+        self.agressivite = agressivite # compris entre 0 et 1
+        
+
+
         #Variables primaires (ne changeront plus)
         self.generate_color()
         self.calculer_vitesse_max()
@@ -105,7 +103,11 @@ class Voiture:
         self.generate_color()
         self.calculer_vitesse_max()
 
-        self.chemin = {} # {Noeud:"stop",Noeud:"pass",Noeud:"slow",Noeud:"regulate"]
+        self.chemin: list[Noeud] = []
+        self.courbe_vitesse = Courbe(self.position, self.position)
+        self.courbe_vitesse_suivant_noeud = Courbe(self.position, self.position+0.1, self.vitesse, self.vitesse)
+        self.courbe_vitesse_suivant_voiture = Courbe(self.position, self.position+0.1, self.vitesse, self.vitesse)
+        self.courbe_vitesse = C
 
     def intention(self):
         return self.orientation(), self.direction_prochain_chemin()
@@ -129,15 +131,6 @@ class Voiture:
         colors = ['red', 'blue', 'green', 'yellow', 'orange', 'purple', 'pink', 'brown', 'cyan', 'magenta']
         randomIndex = math.floor(random.random() * colors.length)
         self.couleur = colors[randomIndex]
-
-    def calculer_vitesse_max(self):
-        # Calcul de la vitesse initiale en fonction de kp
-        vitesse_ref = 90
-        # Ajuster la plage de vitesse en fonction de kp
-        plage_vitesse_min  = vitesse_ref - 10
-        plage_vitesse_max = vitesse_ref + (self.agressivite * 15)
-        # Génération d'une vitesse aléatoire dans la plage ajustée
-        self.vitesse_max = random.randint(plage_vitesse_min, plage_vitesse_max)
 
     def reguler_vitesse(self, agressivite, vitesse_max, vitesse_initiale, distance_point):
         ##Utiliser self.contrainte_plus_proche
@@ -245,13 +238,48 @@ class Voiture:
         #si un point a dit slow, alors on ralentit à distance_arret_point
         ##NON REPRENDRE DEFINITION
 
-    def trouver_arrete_entre_noeuds(self, noeud_depart: Noeud, noeud_arrivee: Noeud):
+    def trouver_arrete_entre_noeuds(self, noeud_depart: Noeud, noeud_arrivee: Noeud) -> Arrete:
         for arrete in noeud_depart.arretes:
             if arrete in noeud_arrivee.arretes:
                 return arrete
 
+    def distance_a_entite(self, position_entite: Vecteur2D):
+        return (position_entite - self.position).norme_manathan()
+
+    def est_dans_zone_securite(self, position_entite: Vecteur2D):
+        return self.distance_a_entite(position_entite) < self.distance_securite()
+
     def trouver_voiture_sur_mon_chemin(self):
+        # renvoie ou pas une voiture qui est dans ma distance de securite et sur mon chemin
         for i in range(len(self.chemin)-1):
-            arrete = self.trouver_arrete_entre_noeuds(self.chemin[i], self.chemin[i+1])
-            if arrete.voitures:
-                return arrete.voitures[-1]
+            noeud_depart = self.chemin[i]
+            noeud_arrivee = self.chemin[i+1]
+            arrete = self.trouver_arrete_entre_noeuds(noeud_depart, noeud_arrivee)
+            if i != 0:
+                if self.est_dans_zone_securite(noeud_depart.position):
+                    if arrete.a_des_voitures():
+                        voiture_obstacle = arrete.voitures[-1]
+                        if self.est_dans_zone_securite(voiture_obstacle.position):
+                            return voiture_obstacle
+                        else:
+                            return None
+                else:
+                    return None
+            else:
+                if arrete.voitures[0].id != self.id and len(arrete.voitures) > 1:
+                    voiture_obstacle = arrete.voitures[arrete.voitures.index(self)-1]
+                else:
+                    None
+        return None
+
+    def trouver_noeud_sur_mon_chemin(self):
+        # renvoie ou pas un noeud qui est dans ma distance de securite et sur mon chemin
+        for i in range(len(self.chemin)):
+            if i != 0:
+                noeud_devant = self.chemin[i]
+                if self.est_dans_zone_securite(noeud_devant.position):
+                    if noeud_devant.est_emprsuntee():
+                        return noeud_devant
+                else:
+                    return None
+        return None

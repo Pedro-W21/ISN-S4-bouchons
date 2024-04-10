@@ -1,25 +1,19 @@
-import numpy as np
-
 import matplotlib.pyplot as plt
 
+# Données du véhicule
+puissance = 90 * 1.36 * 1000  # Puissance en chevaux
+masse = 1250  # Masse en kg
 
+# Liste des rapports de vitesse
+rapports = [0, 1/5, 1/4, 1/3, 1/2, 1]
 
-# Paramètres
-a = 0
-b = 1/np.pi
-c = 1
-d = 0
+# Calcul de l'accélération pour chaque rapport de vitesse
+accelerations = [(puissance * rapport) / masse for rapport in rapports]
 
-
-# Création des données
-x = np.linspace(-10, 10, 100)
-y = np.arctan(a + b*np.arctan(c*x - d))
-
-
-# Affichage de la courbe
-plt.plot(x, y)
-plt.xlabel('x')
-plt.ylabel(f'arctan({a} + {b}*arctan({c}*x + {d}))')
-plt.title('Courbe de arctan(a + b*arctan(c*x + d))')
+# Tracé du graphique
+plt.plot(rapports, accelerations)
+plt.xlabel('Rapport de vitesse')
+plt.ylabel('Accélération')
+plt.title('Accélération en fonction du rapport de vitesse')
 plt.grid(True)
 plt.show()

@@ -29,21 +29,21 @@ class Courbe:
         vitesse = vitesse_x_y_normalise * self.plage_vitesse + self.vitesse_initiale
         return vitesse
 
+if __name__ == "__main__":
+    import matplotlib.pyplot as plt
 
-import matplotlib.pyplot as plt
+    position_depart = 40
+    position_arrivee = 70
+    vitesse_initiale = 80
+    vitesse_finale = 50
 
-position_depart = 40
-position_arrivee = 70
-vitesse_initiale = 80
-vitesse_finale = 50
-
-x = np.linspace(position_depart, position_arrivee, 100)
-y = Courbe(position_depart, position_arrivee, vitesse_initiale, vitesse_finale).result(x)
+    x = np.linspace(position_depart, position_arrivee, 100)
+    y = Courbe(position_depart, position_arrivee, vitesse_initiale, vitesse_finale).result(x)
 
 
-plt.plot(x, y)
-plt.xlabel('x')
-plt.ylabel('y')
-plt.title('Courbe')
-plt.grid(True)
-plt.show()
+    plt.plot(x, y)
+    plt.xlabel('x')
+    plt.ylabel('y')
+    plt.title('Courbe')
+    plt.grid(True)
+    plt.show()

@@ -3,6 +3,7 @@ import json
 from arrete import Arrete
 from noeud import Intersection_T, Intersection_X, Virage, Noeud
 from vecteur_2d import Vecteur2D
+import numpy as np
 
 class Simulation:
     
@@ -17,6 +18,25 @@ class Simulation:
 
         self.graphe: dict[list[int, int]: list[list[int, int]]] = {}
         #            position_noeud : list[position_noeuds]
+
+        self.moyenne_agressivite = 0.5
+        self.ecart_type_agressivite = 0.25
+
+    def generer_agressivite(self):
+        agressivite = np.random.normal(self.moyenne_agressivite, self.ecart_type_agressivite)
+        if agressivite < 0:
+            agressivite = 0
+        elif agressivite > 1:
+            agressivite = 1
+        return agressivite
+
+    def generer_couple_moteur(self):
+        couple = int(np.random.normal(300, 100))
+        if couple > 500:
+            couple = 500
+        elif couple < 100:
+            couple = 100
+        return int(np.random.normal(300, 100))  
 
     def import_configuration_carte(self, file_path: str):
         with open(file_path, 'r') as file:

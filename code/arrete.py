@@ -6,7 +6,7 @@ from vecteur_2d import Vecteur2D
 class Arrete:
 
     def __init__(self, position_depart: Vecteur2D, position_arrivee: Vecteur2D, longueur) -> None:
-        self.voitures = []
+        self.voitures: list[Voiture] = []
         vecteur = position_arrivee-position_depart
         self.longueur = vecteur.norme_manathan()
         self.position_depart = position_depart
@@ -19,7 +19,7 @@ class Arrete:
             return True
         return False
     
-    def has_voiture(self):
+    def a_des_voitures(self):
         return len(self.voitures) > 0
     
     def get_first_voiture(self) -> Voiture:

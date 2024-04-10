@@ -41,6 +41,9 @@ class Noeud:
 
     def voie_est_libre(self, voiture):
         return True
+    
+    def est_empruntee(self) -> bool:
+        return self.usagers > 0
 
 class Virage(Noeud):
     def __init__(self, position, aretes=None):

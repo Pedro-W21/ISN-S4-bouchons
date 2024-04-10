@@ -1,13 +1,16 @@
 from car import Voiture
+from arrete import Arrete
 from vecteur_2d import Vecteur2D
 
 class Noeud:
+    size = Vecteur2D(6, 6)
 
-    Virage = "Virage"
-    Intersection_T = "Intersection_T"
-    Intersection_X = "Intersection_X"
+    VIRAGE = "VIRAGE"
+    INTERSECTION_T = "INTERSECTION_T"
+    INTERSECTION_X = "INTERSECTION_X"
+    ENTREE_SORTIE = "ENTREE_SORTIE"
 
-    def __init__(self, position: Vecteur2D, arretes, rayon=40):
+    def __init__(self, position: Vecteur2D, arretes: list[Arrete]):
         #Implémentation données pour affichage
         self.position = Vecteur2D(position.get_x(), position.get_y())
 
@@ -15,11 +18,9 @@ class Noeud:
         # self.usagers: dict[Voiture : list[Vecteur2D, Vecteur2D]] = {}
         #                 {voiture : [orientation, direction_prochaine]}
 
-
-        
-        self.rayon = rayon
         self.vitesse_max = 40
-        self.distance_securite = 8*rayon
+        temps_deceleration = abs(0 - 40) / 8
+        self.distance_securite = 1/2 * (8 / 3.6) * temps_deceleration**2
         self.arretes = arretes
 
     def retirer_usager(self, voiture):
@@ -27,7 +28,7 @@ class Noeud:
         #Ou alors directement utiliser voiture, mais donc implémenter fonction __eq__ pour vérifier que c'est la même voiture
 
     def get_poids(self):
-        return self.rayon / self.get_vitesse_moyenne()
+        return self.size.x / self.get_vitesse_moyenne()
     
     def get_vitesse_moyenne(self):
         if len(self.usagers) != 0:
@@ -48,7 +49,7 @@ class Noeud:
 class Virage(Noeud):
     def __init__(self, position, aretes=None):
         super().__init__(position, aretes)
-        self.type="Virage"
+        self.type=self.VIRAGE
 
     def voie_est_libre(self, voiture):
         return True
@@ -56,7 +57,7 @@ class Virage(Noeud):
 class Intersection_T(Noeud):
     def __init__(self, position, aretes=None):
         super().__init__(position, aretes)
-        self.type="Intersection_T"
+        self.type=self.INTERSECTION_T
     
     def voie_est_libre(self, voiture: Voiture):
         orientation, intention = voiture.intention()
@@ -106,15 +107,12 @@ class Intersection_T(Noeud):
                         return False  
         self.enregistrer_usager(voiture, orientation, intention)
         return True
-
 
 class Intersection_X(Noeud):
 
     def __init__(self, position, aretes=None) -> None:
         super().__init__(position, aretes)
-        self.type="Intersection_X"
-
-    
+        self.type=self.INTERSECTION_X
     
     def voie_est_libre(self, voiture: Voiture):
         orientation, intention = voiture.intention()
@@ -164,3 +162,9 @@ class Intersection_X(Noeud):
                         return False  
         self.enregistrer_usager(voiture, orientation, intention)
         return True
+
+class EntreeSortie(Noeud):
+
+    def __init__(self, position, aretes):
+        super().__init__(position, aretes)
+        self.type=self.ENTREE_SORTIE

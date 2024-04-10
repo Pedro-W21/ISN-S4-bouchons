@@ -30,14 +30,6 @@ class Simulation:
             agressivite = 1
         return agressivite
 
-    def generer_couple_moteur(self):
-        couple = int(np.random.normal(300, 100))
-        if couple > 500:
-            couple = 500
-        elif couple < 100:
-            couple = 100
-        return int(np.random.normal(300, 100))  
-
     def import_configuration_carte(self, file_path: str):
         with open(file_path, 'r') as file:
             json_file = json.load(file)
@@ -92,7 +84,11 @@ class Simulation:
         for arrete in self.arretes:
             for voiture in arrete.voitures:
                 voiture.update()
-                 
     
+    def recuperer_voitures(self):
+        voitures = []
+        for arrete in self.arretes:
+            voitures += arrete.voitures
+        return voitures
 
-Simulation().import_configuration_carte('routes.json')
+Simulation().import_configuration_carte('routes.json')  

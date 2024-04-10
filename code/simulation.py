@@ -4,6 +4,7 @@ from arrete import Arrete
 from noeud import Intersection_T, Intersection_X, Virage, Noeud
 from vecteur_2d import Vecteur2D
 import numpy as np
+from carte import Carte
 
 class Simulation:
     
@@ -12,7 +13,7 @@ class Simulation:
     INTERSECTION_T = 'intersection_t'
     ARRETE = 'arrete'
 
-    def __init__(self) -> None:
+    def __init__(self, carte: Carte) -> None:
         self.arretes: list[Arrete] = []
         self.noeuds: list[Noeud] = []
 

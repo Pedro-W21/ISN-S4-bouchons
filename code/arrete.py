@@ -9,7 +9,7 @@ class Arrete:
     
     def __init__(self, position_depart: Vecteur2D, position_arrivee: Vecteur2D, longueur) -> None:
         self.voitures: list[Voiture] = []
-        vecteur = position_arrivee-position_depart
+        vecteur = position_arrivee - position_depart
         self.longueur = vecteur.norme_manathan()
         self.position_depart = position_depart
         self.position_arrivee = position_arrivee

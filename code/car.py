@@ -15,15 +15,6 @@ voiture.reassign(...2)
 
 """
 
-def GestionnaireVitesse():
-
-    def __init__(self, voiture: Voiture):
-        self.voiture = voiture
-        self.courbe_par_defaut = Courbe(voiture.position, , voiture.vitesse, 0)
-    
-
-
-
 class Voiture:
     size = Vecteur2D(4.5, 2.5) # m [longueur, largeur]
 
@@ -78,12 +69,12 @@ class Voiture:
         return self.distance_deceleration(self.vitesse, 0) + self.distance_marge_securite
 
     def distance_deceleration(self, vitesse_initiale, vitesse_finale) -> float:
-        temps_deceleration = abs(vitesse_initiale - vitesse_finale) / self.deceleration
+        temps_deceleration = abs(vitesse_initiale/3.6 - vitesse_finale/3.6) / self.deceleration
         distance = 1/2 * self.deceleration * temps_deceleration**2
         return distance
         
     def distance_acceleration(self, vitesse_initiale, vitesse_finale) -> float:
-        temps_acceleration = abs(vitesse_finale - vitesse_initiale) / self.acceleration
+        temps_acceleration = abs(vitesse_finale/3.6 - vitesse_initiale/3.6) / self.acceleration
         distance = 1/2 * self.acceleration * temps_acceleration**2
         return distance
 
@@ -271,3 +262,36 @@ class Voiture:
                 else:
                     return None
         return None
+
+class GestionnaireVitesse:
+
+    def __init__(self, voiture):
+        self.voiture: Voiture = voiture
+
+        self.courbe_par_defaut = Courbe(voiture.position, voiture.position + voiture.arrete_actuelle.longueur, voiture.vitesse, voiture.vitesse)
+        self.position_depart_par_defaut: Vecteur2D = voiture.position
+        
+        self.courbe_obstacle_voiture = self.courbe_par_defaut
+        self.position_depart_obstacle_voiture: Vecteur2D = voiture.position
+
+        self.courbe_obstacle_noeud = self.courbe_par_defaut
+        self.position_depart_obstacle_noeud: Vecteur2D = voiture.position
+
+        self.courbe_acceleration = self.courbe_par_defaut
+        self.position_depart_acceleration: Vecteur2D = voiture.position
+
+
+        #TODO: gerer les x et y position de la voiture avec les positions de depart
+        #TODO: faire une courbe d'arret
+        #TODO: verifier que tout est bon
+        #TODO: faire les courbes de ralentissement voitures v1 et v2 variables d  = distance de securite variable
+
+    def genere_courbe_obstacle_voiture(self, voiture_obstacle: Voiture):
+        self.courbe_obstacle_voiture = Courbe(self.voiture.position, voiture_obstacle.position, self.voiture.vitesse, 0)
+
+    def genere_courbe_obstacle_noeud(self, noeud_obstacle: Noeud):
+        self.courbe_obstacle_noeud = Courbe(self.voiture.position, noeud_obstacle.position - noeud_obstacle.distance_securite, self.voiture.vitesse, noeud_obstacle.vitesse_max)
+
+    def genere_courbe_acceleration(self, vitesse_finale: float):
+        self.courbe_acceleration = Courbe(self.voiture.position, self.voiture.distance_acceleration(self.voiture.vitesse, vitesse_finale), self.voiture.vitesse, vitesse_finale)
+

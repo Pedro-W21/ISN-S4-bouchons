@@ -1,19 +1,8 @@
-import matplotlib.pyplot as plt
+from matplotlib import pyplot as plt
+import numpy as np
 
-# Données du véhicule
-puissance = 90 * 1.36 * 1000  # Puissance en chevaux
-masse = 1250  # Masse en kg
+temps_deceleration = abs(0 - 40) / 8
+print(temps_deceleration)
 
-# Liste des rapports de vitesse
-rapports = [0, 1/5, 1/4, 1/3, 1/2, 1]
-
-# Calcul de l'accélération pour chaque rapport de vitesse
-accelerations = [(puissance * rapport) / masse for rapport in rapports]
-
-# Tracé du graphique
-plt.plot(rapports, accelerations)
-plt.xlabel('Rapport de vitesse')
-plt.ylabel('Accélération')
-plt.title('Accélération en fonction du rapport de vitesse')
-plt.grid(True)
-plt.show()
+distance = 1/2 * (8 / 3.6) * temps_deceleration**2
+print(distance)

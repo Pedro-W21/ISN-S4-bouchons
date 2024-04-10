@@ -15,65 +15,64 @@ voiture.reassign(...2)
 
 """
 
+def GestionnaireVitesse():
+
+    def __init__(self, voiture: Voiture):
+        self.voiture = voiture
+        self.courbe_par_defaut = Courbe(voiture.position, , voiture.vitesse, 0)
+    
+
+
 
 class Voiture:
+    size = Vecteur2D(4.5, 2.5) # m [longueur, largeur]
 
-    def __init__(self, id, position, objectif, vitesse, agressivite, size, road_size, noeud_depart, noeud_arrivee):
+    def __init__(self, id: int, agressivite: float, noeud_depart: Noeud, noeud_arrivee: Noeud, graphe: dict):
         self.id = id
-        self.position = Vecteur2D(position[0], position[1]) #[x,y]
-        self.objectif = Vecteur2D(objectif[0], objectif[1])
+
+        self.position = noeud_depart.position
 
         self.noeud_depart: Noeud = noeud_depart
         self.noeud_arrivee: Noeud = noeud_arrivee
+        self.graphe = graphe
         
-        #Implémentation PID
-        self.vitesse = vitesse
-        # acceleration en m/s^2 prise sur une voiture de 0 à 100 km/h en 10s
+        self.vitesse = 0
+        self.gestionnaire_vitesse = GestionnaireVitesse(self)
+
         self.agressivite = agressivite # compris entre 0 et 1
         
         self.modulation_acceleration = 3 * agressivite
 
-        self.acceleration = 5 + self.modulation_acceleration # km/h*s 
-        self.deceleration = 5 + self.modulation_acceleration # km/h*s àw changer en fonction des resultats experimentaux
+        self.acceleration = (5 + self.modulation_acceleration) / 3.6
+        self.deceleration = (5 + self.modulation_acceleration)  / 3.6
 
-        self.size = size #longueur/largeur
         #Variables primaires (ne changeront plus)
         self.generate_color()
-        self.calculer_vitesse_max()
         self.distance_securite()
 
+        self.chemin: list[Noeud] = self.recherche_chemin(noeud_depart)
 
-        self.arrete_actuelle: Arrete = None
-        self.prochaine_arrete: Arrete = None
-        self.distance_marge_securite = size[0] + size[1]
+        self.arrete_actuelle: Arrete = self.trouver_arrete(self.chemin[0], self.chemin[1])
+        self.prochaine_arrete: Arrete = self.trouver_arrete(self.chemin[1], self.chemin[2])
+        self.ancienne_arrete: Arrete = None
 
-        self.ancienne_orientation = self.orientation()
-
-        self.chemin: list[Noeud] = []
+        self.distance_marge_securite = self.size.x + self.size.y
 
 
     def update(self):
-        distance_voiture = None
-        if self.arrete_actuelle.get_first_voiture().id != self.id and self.arrete_actuelle.voitures >1:
-            position_in_list = self.arrete_actuelle.voitures.index(self)
+        # TODO: Implementer la logique de mise à jour de la voiture
+        voiture_obstacle = self.trouver_voiture_sur_mon_chemin()
+        if voiture_obstacle and self.est_dans_zone_securite(voiture_obstacle.position):
+            # la voiture est dans la zone de sécurité
+            # On doit ralentir : on genere une courbe de ralentissement
+            pass
             
-            # recupere la distance entre la voiture et la voiture qui la precede
-            distance_voiture = (self.arrete_actuelle.voitures[position_in_list-1].position - self.position).norme_manathan()
-        #recupere la distance entre la voiture et le prochain noeud
-        distance_noeud = (self.arrete_actuelle.position_arrivee - self.position).norme_manathan()
 
-        # TODO: Implementer la fonction de controle de la voiture en vitesse
-        if distance_voiture < distance_noeud:
-            pass
-            # faire la courbe selon la distance entre la voiture et la voiture qui la precede
-        else:
-            # faire la courbe selon la distance entre la voiture et le prochain noeud
-            pass
-        
-        if self.ancienne_orientation != self.orientation():
-
-
-            self.ancienne_orientation = self.orientation()
+    def recherche_chemin(self, noeud_depart) -> list[Noeud]:
+        # TODO: Implementer l'algorithme de recherche de chemin
+        self.graphe
+        self.noeud_arrivee
+        return None
 
     def distance_securite(self) -> float:
         return self.distance_deceleration(self.vitesse, 0) + self.distance_marge_securite
@@ -88,33 +87,33 @@ class Voiture:
         distance = 1/2 * self.acceleration * temps_acceleration**2
         return distance
 
-    def reassign(self, position, objectif, vitesse, agressivite, kp, noeud_depart, noeud_arrivee):
-        self.position = Vecteur2D(position[0], position[1]) #[x,y]
-        self.objectif = Vecteur2D(objectif[0], objectif[1])
+    def reassign(self, agressivite: float, noeud_depart: Noeud, noeud_arrivee: Noeud):
 
-        self.noeud_depart = noeud_depart
-        self.noeud_arrivee = noeud_arrivee
-        #Implémentation PID
-        self.vitesse = vitesse
-        self.kp = kp
+        self.position = noeud_depart.position
+
+        self.noeud_depart: Noeud = noeud_depart
+        self.noeud_arrivee: Noeud = noeud_arrivee
+        
+        self.vitesse = 0
+
         self.agressivite = agressivite # compris entre 0 et 1
         
+        self.modulation_acceleration = 3 * agressivite
 
+        self.acceleration = (5 + self.modulation_acceleration) / 3.6
+        self.deceleration = (5 + self.modulation_acceleration)  / 3.6
 
         #Variables primaires (ne changeront plus)
         self.generate_color()
-        self.calculer_vitesse_max()
+        self.distance_securite()
 
-        self.status = self.ROULE
+        self.chemin: list[Noeud] = self.recherche_chemin(noeud_depart)
 
-        self.generate_color()
-        self.calculer_vitesse_max()
+        self.arrete_actuelle: Arrete = self.trouver_arrete(self.chemin[0], self.chemin[1])
+        self.prochaine_arrete: Arrete = self.trouver_arrete(self.chemin[1], self.chemin[2])
+        self.ancienne_arrete: Arrete = None
 
-        self.chemin: list[Noeud] = []
-        self.courbe_vitesse = Courbe(self.position, self.position)
-        self.courbe_vitesse_suivant_noeud = Courbe(self.position, self.position+0.1, self.vitesse, self.vitesse)
-        self.courbe_vitesse_suivant_voiture = Courbe(self.position, self.position+0.1, self.vitesse, self.vitesse)
-        self.courbe_vitesse = C
+        self.distance_marge_securite = self.size.x + self.size.y
 
     def intention(self):
         return self.orientation(), self.direction_prochain_chemin()
@@ -125,9 +124,9 @@ class Voiture:
         return vect
     
     def trouver_arrete(self, noeud_depart: Noeud, noeud_arrivee: Noeud):
-        for arete in noeud_depart.arrete:
-            if arete == [noeud_depart, noeud_arrivee]:
-                return arete
+        for arrete in noeud_depart.arretes:
+            if arrete == [noeud_depart, noeud_arrivee]:
+                return arrete
             
     def orientation(self):
         dir_x = self.arrete_actuelle.position_depart.x - self.arrete_actuelle.position_arrivee.x / abs(self.arrete_actuelle.position_depart.x - self.arrete_actuelle.position_arrivee.x)
@@ -138,16 +137,6 @@ class Voiture:
         colors = ['red', 'blue', 'green', 'yellow', 'orange', 'purple', 'pink', 'brown', 'cyan', 'magenta']
         randomIndex = math.floor(random.random() * colors.length)
         self.couleur = colors[randomIndex]
-
-    def reguler_vitesse(self, agressivite, vitesse_max, vitesse_initiale, distance_point):
-        ##Utiliser self.contrainte_plus_proche
-        #TODO
-        #Déclencher newcurve sur un changement de phase
-        #si rien ne pose problème avant une dist_secu suffisante
-        #self.followcurve
-        #si on doit s'arrêter bientôt
-        #self.followcurve
-        pass
 
     def follow_curve(self, newcurve=None):
         if newcurve:
@@ -170,12 +159,7 @@ class Voiture:
         self.position[0] += self.vitesse * math.cos(self.orientation)
         self.position[1] += self.vitesse * math.sin(self.orientation)
 
-    def update_position(self, distance_obstacle, time_elapsed):
-        # Appeler la méthode PID pour calculer la vitesse cible en fonction de la distance à l'obstacle
-        # Puis mettre à jour la vitesse actuelle avec la vitesse cible
-        self.vitesse = self.PID(distance_obstacle, time_elapsed)
-        
-        # Mettre à jour la position en fonction de la nouvelle vitesse
+    def update_position(self, time_elapsed):
         self.position.x += self.vitesse * math.cos(self.orientation()) * time_elapsed
         self.position.y += self.vitesse * math.sin(self.orientation()) * time_elapsed
 
@@ -183,9 +167,6 @@ class Voiture:
         dir_x = self.prochaine_arrete.position_depart.x - self.prochaine_arrete.position_arrivee.x / abs(self.prochaine_arrete.position_depart.x - self.prochaine_arrete.position_arrivee.x)
         dir_y = self.prochaine_arrete.position_depart.y - self.prochaine_arrete.position_arrivee.y / abs(self.prochaine_arrete.position_depart.y - self.prochaine_arrete.position_arrivee.y)
         return dir_x, dir_y
-
-    def update_position(self):
-        self.reguler_vitesse()
 
     def contrainte_plus_proche(self):
 

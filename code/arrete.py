@@ -4,7 +4,9 @@ from vecteur_2d import Vecteur2D
 
 
 class Arrete:
-
+    
+    size = Vecteur2D(6, 6) # m [longueur, largeur]
+    
     def __init__(self, position_depart: Vecteur2D, position_arrivee: Vecteur2D, longueur) -> None:
         self.voitures: list[Voiture] = []
         vecteur = position_arrivee-position_depart

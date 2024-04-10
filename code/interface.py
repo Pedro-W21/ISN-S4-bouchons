@@ -148,6 +148,10 @@ class App(ctk.CTk):
         self.creer_route = CTkButton(master=self.creation, text="créer une route", fg_color="purple")
         self.creer_route.pack(side=TOP, expand=True)
         self.creer_route.bind('<Button-1>', self.creer_nouvelle_carte)
+
+        self.filtre_route = CTkButton(master=self.creation, text="appliquer le filtre")
+        self.filtre_route.pack(side=TOP, expand=True)
+        self.filtre_route.bind('<Button-1>', self.filtre_correction_carte)
         
         
     def afficher_scale_creation(self, event):
@@ -322,7 +326,7 @@ class App(ctk.CTk):
         scale_2 = self.niveau_agressivite.get()
         model.get_data(scale_1)
         model.get_data(scale_2)
-        print(123,model.data)
+        
     def affichage_france(self, event):
         """
         Affichage de la carte de France de l'agressivité
@@ -402,17 +406,19 @@ class App(ctk.CTk):
                 self.canvas_affichage.itemconfigure(self.grille_canvas[yc * self.largeur_carte + xc], fill=self.couleur_de_curseur(xc, yc))
             else:
                 lxc, lyc = self.last_mouse_coords
-                self.canvas_affichage.itemconfigure(self.grille_canvas[lyc * self.largeur_carte + lxc], fill=self.couleur_de_case(lxc, lyc))
+                self.update_affichage_case(lxc, lyc)
                 self.canvas_affichage.itemconfigure(self.grille_canvas[yc * self.largeur_carte + xc], fill=self.couleur_de_curseur(xc, yc))
         elif self.last_mouse_coords != None:
             lxc, lyc = self.last_mouse_coords
-            self.canvas_affichage.itemconfigure(self.grille_canvas[lyc * self.largeur_carte + lxc], fill=self.couleur_de_case(lxc, lyc))
+            self.update_affichage_case(lxc, lyc)
         self.last_mouse_coords = coords
         self.after(50, self.surligne_case_selectionnee)
 
+    def update_affichage_case(self, xc, yc):
+         self.canvas_affichage.itemconfigure(self.grille_canvas[yc * self.largeur_carte + xc], fill=self.couleur_de_case(xc, yc))
+
     def calcul_coordonnees_souris_carte(self):
         xs, ys = self.winfo_pointerxy()
-        print(xs, ys)
         xs -= self.canvas_affichage.winfo_rootx() + self.xo
         ys -= self.canvas_affichage.winfo_rooty() + self.yo
         xc, yc = xs // self.echelle, ys // self.echelle
@@ -535,6 +541,103 @@ class App(ctk.CTk):
         self.update()
         self.update_idletasks()
 
+    def case_dedans_valide(self, xc, yc):
+        checks = [(-1,0), (1,0), (0, 1), (0, -1)]
+        ret = True
+        if self.point_dans_grille_ou_0(xc, yc) == 1:
+            total = 0
+            for (dx, dy) in checks:
+                total += self.point_dans_grille_ou_0(xc + dx, yc + dy)
+            if total <= 1:
+                ret = False
+        return ret
+    
+    def case_bord_valide(self, xc, yc):
+        checks = [-1, 1]
+        bads = 0
+        goods = 0
+        ret = True
+        if xc == 0 or xc == self.largeur_carte - 1:
+            for dy in checks:
+                bads += self.point_dans_grille_ou_0(xc, yc + dy)
+            for dx in checks:
+                goods += self.point_dans_grille_ou_0(xc + dx, yc)
+        if yc == 0 or yc == self.hauteur_carte - 1:
+            for dx in checks:
+                bads += self.point_dans_grille_ou_0(xc + dx, yc)
+            for dy in checks:
+                goods += self.point_dans_grille_ou_0(xc, yc + dy)
+        if bads > 0 and goods == 0:
+            ret = False
+        elif goods == 0:
+            ret = False
+        return ret
+            
+
+    def filtre_correction_carte(self, event=None):
+        bon = False
+        while bon == False:
+            changements = []
+            for yc in range(0, self.hauteur_carte):
+                for xc in range(0, self.largeur_carte):
+                    if self.grille_route[xc, yc] == 1:
+                        bord = (xc == 0 or xc == self.largeur_carte - 1 or yc == 0 or yc == self.hauteur_carte - 1)
+                        if bord and not self.case_bord_valide(xc, yc):
+                            changements.append((xc, yc))
+                        elif not bord and not self.case_dedans_valide(xc, yc):
+                            changements.append((xc, yc))
+            self.applique_changements(changements)
+            if len(changements) == 0:
+                bon = True
+        
+        changements = []
+        composantes = self.trouve_composantes_connexes()
+        if len(composantes) > 1:
+            id_plus_petite = 0
+            for i in range(len(composantes)):
+                if len(composantes[i]) < len(composantes[id_plus_petite]):
+                    id_plus_petite = i
+            for xc, yc in composantes[id_plus_petite]:
+                changements.append((xc, yc))
+        self.applique_changements(changements)
+
+    def applique_changements(self, changements):
+        for xc, yc in changements:
+            if self.grille_route[xc, yc] != 0:
+                self.grille_route[xc, yc] = 0
+                self.routes_placees -= 1
+            self.update_affichage_case(xc, yc)
+        
+
+    def trouve_composantes_connexes(self):
+        explores = {}
+        composantes = []
+        decalages_possibles = [(-1,0), (1,0), (0, 1), (0, -1)]
+        for yc in range(0, self.hauteur_carte):
+            for xc in range(0, self.largeur_carte):
+                if self.point_dans_grille_ou_0(xc, yc) == 1 and explores.get((xc,yc), None) == None:
+                    queue = [(xc, yc)]
+                    id_composante = len(composantes)
+                    composantes.append([(xc, yc)])
+                    explores[(xc, yc)] = id_composante
+                    set_local = {(xc, yc)}
+                    while len(queue) > 0:
+                        axc, ayc = queue.pop()
+                        for (dx, dy) in decalages_possibles:
+                            nxc, nyc = axc + dx, ayc + dy
+                            if self.point_dans_grille_ou_0(nxc, nyc) == 1 and (nxc, nyc) not in set_local:
+                                explores[(nxc, nyc)] = id_composante
+                                queue.append((nxc, nyc))
+                                set_local.add((nxc, nyc))
+                                composantes[id_composante].append((nxc, nyc))
+        return composantes
+
+
+
+
+
+        
+        
 
 if __name__ == "__main__":
     os.chdir(dirname(abspath(__file__)))

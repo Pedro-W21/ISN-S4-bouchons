@@ -28,7 +28,14 @@ class Voiture:
         
         #Implémentation PID
         self.vitesse = vitesse
+        # acceleration en m/s^2 prise sur une voiture de 0 à 100 km/h en 10s
         self.agressivite = agressivite # compris entre 0 et 1
+        
+        self.modulation_acceleration = 3 * agressivite
+
+        self.acceleration = 5 + self.modulation_acceleration # km/h*s 
+        self.deceleration = 5 + self.modulation_acceleration # km/h*s àw changer en fonction des resultats experimentaux
+
         self.size = size #longueur/largeur
         #Variables primaires (ne changeront plus)
         self.generate_color()
@@ -38,21 +45,12 @@ class Voiture:
 
         self.arrete_actuelle: Arrete = None
         self.prochaine_arrete: Arrete = None
-
-
-        self.road_size = road_size
-        marge = 0.75*size[0]*(1-self.agressivite)
-        self.distance_modulation_voiture = 0.5*size[0]+0.25*size[1]+marge
-        self.distance_securite_voiture = self.distance_modulation_voiture*1.5
-        marge = 0.5*size[1]
-        self.distance_arret_point = 0.5*self.road_size+0.5*size[0]+marge
-        self.distance_securite_point = 4*self.road_size+0.5*size[0]+marge*(2-self.agressivite)
-        self.acceleration = 0
-        self.noeuds = {} # {Noeud:"stop",Noeud:"pass",Noeud:"slow",Noeud:"regulate"}
+        self.distance_marge_securite = size[0] + size[1]
 
         self.ancienne_orientation = self.orientation()
 
         self.chemin: list[Noeud] = []
+
 
     def update(self):
         distance_voiture = None
@@ -77,10 +75,19 @@ class Voiture:
 
             self.ancienne_orientation = self.orientation()
 
-    def distance_securite(self) -> int:
-        #TODO
-        pass
+    def distance_securite(self) -> float:
+        return self.distance_deceleration(self.vitesse, 0) + self.distance_marge_securite
+
+    def distance_deceleration(self, vitesse_initiale, vitesse_finale) -> float:
+        temps_deceleration = abs(vitesse_initiale - vitesse_finale) / self.deceleration
+        distance = 1/2 * self.deceleration * temps_deceleration**2
+        return distance
         
+    def distance_acceleration(self, vitesse_initiale, vitesse_finale) -> float:
+        temps_acceleration = abs(vitesse_finale - vitesse_initiale) / self.acceleration
+        distance = 1/2 * self.acceleration * temps_acceleration**2
+        return distance
+
     def reassign(self, position, objectif, vitesse, agressivite, kp, noeud_depart, noeud_arrivee):
         self.position = Vecteur2D(position[0], position[1]) #[x,y]
         self.objectif = Vecteur2D(objectif[0], objectif[1])
@@ -246,7 +253,7 @@ class Voiture:
     def distance_a_entite(self, position_entite: Vecteur2D):
         return (position_entite - self.position).norme_manathan()
 
-    def est_dans_zone_securite(self, position_entite: Vecteur2D):
+    def est_dans_zone_securite(self, position_entite: Vecteur2D) -> bool:
         return self.distance_a_entite(position_entite) < self.distance_securite()
 
     def trouver_voiture_sur_mon_chemin(self):

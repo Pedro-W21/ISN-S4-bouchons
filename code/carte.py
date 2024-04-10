@@ -8,7 +8,7 @@ class Carte:
         self.largeur = largeur
         self.hauteur = hauteur
 
-    def into_aretes_noeuds(self) -> List[Noeud]:
+    def into_aretes_noeuds(self) -> list[Noeud]:
         noeuds_dict = {}
         for xc in range(self.largeur):
             for yc in range(self.hauteur):
@@ -16,13 +16,13 @@ class Carte:
                     noeuds_dict[(xc, yc)] = []
         directions = [(-1,0), (1,0), (0,1), (0,-1)]
         for ((xc, yc), aretes) in noeuds_dict.items():
-            fxc, fyc = xc, yc
             for (dx, dy) in directions:
+                fxc, fyc = xc, yc
                 while self.get_at_or_0(fxc + dx, fyc + dy) == 1:
                     fxc += dx
                     fyc += dy
-            if not (fxc == xc and fyc == yc):
-                aretes.append(Arrete(Vecteur2D(xc, yc), Vecteur2D(fxc, fyc)))
+                if not (fxc == xc and fyc == yc):
+                    aretes.append(Arrete(Vecteur2D(xc, yc), Vecteur2D(fxc, fyc), abs(fxc - xc) + abs(fyc - yc) ))
         return [self.cree_noeud(xc, yc, aretes) for ((xc, yc), aretes) in noeuds_dict.items()]
 
 

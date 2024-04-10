@@ -1,4 +1,3 @@
-from car import Voiture
 from arrete import Arrete
 from vecteur_2d import Vecteur2D
 
@@ -14,7 +13,7 @@ class Noeud:
         #Implémentation données pour affichage
         self.position = Vecteur2D(position.get_x(), position.get_y())
 
-        self.usagers: dict[Voiture : Vecteur2D, Vecteur2D] = {}
+        self.usagers = {}
         # self.usagers: dict[Voiture : list[Vecteur2D, Vecteur2D]] = {}
         #                 {voiture : [orientation, direction_prochaine]}
 
@@ -59,7 +58,7 @@ class Intersection_T(Noeud):
         super().__init__(position, aretes)
         self.type=self.INTERSECTION_T
     
-    def voie_est_libre(self, voiture: Voiture):
+    def voie_est_libre(self, voiture):
         orientation, intention = voiture.intention()
         from_right_to_left = [orientation[1],-orientation[0]]
         from_left_to_right = [-orientation[1],orientation[0]]
@@ -114,7 +113,7 @@ class Intersection_X(Noeud):
         super().__init__(position, aretes)
         self.type=self.INTERSECTION_X
     
-    def voie_est_libre(self, voiture: Voiture):
+    def voie_est_libre(self, voiture):
         orientation, intention = voiture.intention()
         from_right_to_left = [orientation[1],-orientation[0]]
         from_left_to_right = [-orientation[1],orientation[0]]

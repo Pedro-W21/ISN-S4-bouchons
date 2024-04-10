@@ -1,5 +1,3 @@
-
-from car import Voiture
 from vecteur_2d import Vecteur2D
 
 
@@ -8,7 +6,7 @@ class Arrete:
     size = Vecteur2D(6, 6) # m [longueur, largeur]
     
     def __init__(self, position_depart: Vecteur2D, position_arrivee: Vecteur2D, longueur) -> None:
-        self.voitures: list[Voiture] = []
+        self.voitures = []
         vecteur = position_arrivee - position_depart
         self.longueur = vecteur.norme_manathan()
         self.position_depart = position_depart
@@ -24,10 +22,10 @@ class Arrete:
     def a_des_voitures(self):
         return len(self.voitures) > 0
     
-    def get_first_voiture(self) -> Voiture:
+    def get_first_voiture(self):
         return self.voitures[0]
     
-    def get_last_voiture(self) -> Voiture:
+    def get_last_voiture(self):
         return self.voitures[-1]
     
     def pop_voiture(self):

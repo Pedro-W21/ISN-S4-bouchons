@@ -8,6 +8,9 @@ from recup_donnees import Model
 import numpy as np
 import tkinter as tk
 import math
+from carte import Carte
+from noeud import Noeud
+from arrete import Arrete
 
 def from_rgb(rgb):
     """prend un tuple rgb et le transforme en string héxadécimal de couleur tkinter
@@ -24,6 +27,7 @@ BLANC = from_rgb((255,255,255))
 NOIR = from_rgb((0,0,0))
 ROUGE = from_rgb((255,0,0))
 VERT = from_rgb((0,255,0))
+BLUE = from_rgb((100, 100, 255))
 
 
 
@@ -152,8 +156,27 @@ class App(ctk.CTk):
         self.filtre_route = CTkButton(master=self.creation, text="appliquer le filtre")
         self.filtre_route.pack(side=TOP, expand=True)
         self.filtre_route.bind('<Button-1>', self.filtre_correction_carte)
-        
-        
+
+        self.transforme_into_noeuds = CTkButton(master=self.creation, text="tester la conversion")
+        self.transforme_into_noeuds.pack(side=TOP, expand=True)
+        self.transforme_into_noeuds.bind('<Button-1>', self.test_transforme)
+    
+    def test_transforme(self, event=None):
+        carte = Carte(self.largeur_carte,self.hauteur_carte,self.grille_route)
+        noeuds:list[Noeud] = carte.into_aretes_noeuds()
+        for noeud in noeuds:
+            for arete in noeud.arretes:
+                self.affiche_arrete(arete)
+
+    def grille_to_canvas_pos(self, xc, yc):
+        return (int(self.xo + xc * self.echelle), int(self.yo + yc * self.echelle))
+
+    def affiche_arrete(self, arete:Arrete):
+        x0, y0 = self.grille_to_canvas_pos(arete.position_depart.get_x(), arete.position_depart.get_y())
+        x1, y1 = self.grille_to_canvas_pos(arete.position_arrivee.get_x(), arete.position_arrivee.get_y())
+        decalage = int(self.echelle * 0.5)
+        self.canvas_affichage.create_line(x0 + decalage, y0 + decalage, x1 + decalage, y1 + decalage, arrow="first",fill=BLUE)
+
     def afficher_scale_creation(self, event):
         """
         Récupère la valeur des sliders relatifs à la taille de l'écran

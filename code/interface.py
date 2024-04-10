@@ -369,6 +369,7 @@ class App(ctk.CTk):
         self.yo = 0
         self.last_mouse_coords = None
         self.grille_canvas = []
+        self.voitures = []
         self.grille_route = np.zeros((self.largeur_carte, self.hauteur_carte))
         self.routes_placees = 0
 
@@ -633,6 +634,15 @@ class App(ctk.CTk):
         return composantes
 
 
+    def pos_de_noeud(self, xc, yc):
+        decalages = [(-1,0), (1,0), (0, 1), (0, -1)]
+        compteur = 0
+        for (dx, dy) in decalages:
+            compteur += self.point_dans_grille_ou_0(xc + dx, yc + dy)
+
+    def grille_to_carte(self):
+        aretes = []
+        noeuds = []
 
 
 

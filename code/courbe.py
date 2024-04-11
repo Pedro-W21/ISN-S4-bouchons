@@ -28,6 +28,9 @@ class Courbe:
         vitesse_x_y_normalise = fonction(x_y_normalise)
         vitesse = vitesse_x_y_normalise * self.plage_vitesse + self.vitesse_initiale
         return vitesse
+    
+    def __eq__(self, courbe) -> bool:
+        return self.position_depart == courbe.position_depart and self.position_arrivee == courbe.position_arrivee and self.vitesse_initiale == courbe.vitesse_initiale and self.vitesse_finale == courbe.vitesse_finale
 
 if __name__ == "__main__":
     import matplotlib.pyplot as plt

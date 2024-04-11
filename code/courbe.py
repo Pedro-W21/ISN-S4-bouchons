@@ -22,12 +22,23 @@ class Courbe:
 
         self.plage_position = (position_arrivee - position_depart)
         self.plage_vitesse = (vitesse_finale - vitesse_initiale)
+
+        self.active = True
     
     def result(self, x_y: float):
         x_y_normalise = (x_y - self.position_depart) / self.plage_position
         vitesse_x_y_normalise = fonction(x_y_normalise)
         vitesse = vitesse_x_y_normalise * self.plage_vitesse + self.vitesse_initiale
         return vitesse
+    
+    def est_activee(self):
+        return self.active
+    
+    def desactiver(self):
+        self.active = False
+    
+    def activer(self):
+        self.active = True
     
     def __eq__(self, courbe) -> bool:
         return self.position_depart == courbe.position_depart and self.position_arrivee == courbe.position_arrivee and self.vitesse_initiale == courbe.vitesse_initiale and self.vitesse_finale == courbe.vitesse_finale

@@ -19,7 +19,7 @@ class Noeud:
 
         self.vitesse_max = 40
         temps_deceleration = abs(0 - 40) / 8
-        self.distance_securite = 1/2 * (8 / 3.6) * temps_deceleration**2
+        self.distance_securite = 1/2 * (8 / 3.6) * temps_deceleration**2 + 0.5 * self.size[0]
         self.arretes = arretes
 
     def retirer_usager(self, voiture):

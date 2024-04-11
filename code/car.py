@@ -37,6 +37,9 @@ class Voiture:
         self.acceleration = (5 + self.modulation_acceleration) / 3.6
         self.deceleration = (5 + self.modulation_acceleration)  / 3.6
 
+        self.deceleration_demarage = 0.6 #m/s^2 -> acceleration pour passer de 0 à 0.01 m/s en 1/60s
+        self.acceleration_demarage = 0.6 #m/s^2 -> acceleration pour passer de 0 à 0.01 m/s en 1/60s
+
         #Variables primaires (ne changeront plus)
         self.generate_color()
         self.distance_securite()
@@ -65,13 +68,16 @@ class Voiture:
         self.noeud_arrivee
         return None
 
-    def distance_securite(self) -> float:
-        return self.distance_deceleration(self.vitesse, 0) + self.distance_marge_securite
+    def distance_securite(self, vitesse: float) -> float:
+        return self.distance_deceleration(vitesse, 0) + self.distance_marge_securite
 
     def distance_deceleration(self, vitesse_initiale, vitesse_finale) -> float:
         temps_deceleration = abs(vitesse_initiale/3.6 - vitesse_finale/3.6) / self.deceleration
         distance = 1/2 * self.deceleration * temps_deceleration**2
         return distance
+    
+    def dsitance_freinage_complet(self):
+        return self.distance_deceleration(self.vitesse, 0)
         
     def distance_acceleration(self, vitesse_initiale, vitesse_finale) -> float:
         temps_acceleration = abs(vitesse_finale/3.6 - vitesse_initiale/3.6) / self.acceleration
@@ -151,6 +157,10 @@ class Voiture:
         self.position[1] += self.vitesse * math.sin(self.orientation)
 
     def update_position(self, time_elapsed):
+        # suivre la courbe sauf si :
+        # - la vitesse est nulle
+        # - la position est celle de depart (coup de pouce recursif)
+
         self.position.x += self.vitesse * math.cos(self.orientation()) * time_elapsed
         self.position.y += self.vitesse * math.sin(self.orientation()) * time_elapsed
 
@@ -265,8 +275,22 @@ class Voiture:
 
 class GestionnaireVitesse:
 
+
+    # sert à savoir l'etat d'une voiture notamment pour les voitures de derrière
+    ACCELERATION = "ACCELERATION"
+    FREINAGE = "FREINAGE"
+    SUIVRE_VOITURE = "SUIVRE_VOITURE"
+    ARRET = "ARRET"
+    ROULE = "ROULE"
+
+
+
+
     def __init__(self, voiture):
+
         self.voiture: Voiture = voiture
+
+        self.etat = self.ACCELERATION
 
         self.courbe_par_defaut = Courbe(voiture.position, voiture.position + voiture.arrete_actuelle.longueur, voiture.vitesse, voiture.vitesse)
         self.position_depart_par_defaut: Vecteur2D = voiture.position
@@ -277,9 +301,15 @@ class GestionnaireVitesse:
         self.courbe_obstacle_noeud = self.courbe_par_defaut
         self.position_depart_obstacle_noeud: Vecteur2D = voiture.position
 
+        self.courbe_arret = self.courbe_par_defaut
+        self.position_depart_arret: Vecteur2D = voiture.position
+
         self.courbe_acceleration = self.courbe_par_defaut
         self.position_depart_acceleration: Vecteur2D = voiture.position
 
+        self.courbe_courante = self.courbe_par_defaut
+        self.position_depart_courante: Vecteur2D = voiture.position
+        
 
         #TODO: gerer les x et y position de la voiture avec les positions de depart
         #TODO: faire une courbe d'arret
@@ -287,11 +317,41 @@ class GestionnaireVitesse:
         #TODO: faire les courbes de ralentissement voitures v1 et v2 variables d  = distance de securite variable
 
     def genere_courbe_obstacle_voiture(self, voiture_obstacle: Voiture):
-        self.courbe_obstacle_voiture = Courbe(self.voiture.position, voiture_obstacle.position, self.voiture.vitesse, 0)
+        
+        self.position_depart_obstacle_voiture: Vecteur2D = self.voiture.position
+
+        courbe_voiture_obstacle = voiture_obstacle.gestionnaire_vitesse.courbe_courante
+        distance_securite_finale = self.voiture.distance_securite(courbe_voiture_obstacle.vitesse_finale)
+        self.courbe_obstacle_voiture = Courbe(self.voiture.position, courbe_voiture_obstacle.position_arrivee - distance_securite_finale, self.voiture.vitesse, courbe_voiture_obstacle.vitesse_finale)
 
     def genere_courbe_obstacle_noeud(self, noeud_obstacle: Noeud):
+
+        self.position_depart_obstacle_noeud: Vecteur2D = self.voiture.position
         self.courbe_obstacle_noeud = Courbe(self.voiture.position, noeud_obstacle.position - noeud_obstacle.distance_securite, self.voiture.vitesse, noeud_obstacle.vitesse_max)
 
-    def genere_courbe_acceleration(self, vitesse_finale: float):
-        self.courbe_acceleration = Courbe(self.voiture.position, self.voiture.distance_acceleration(self.voiture.vitesse, vitesse_finale), self.voiture.vitesse, vitesse_finale)
+    def genere_courbe_acceleration_arrete(self, arrete: Arrete):
+        self.position_depart_acceleration: Vecteur2D = self.voiture.position
+        self.courbe_acceleration = Courbe(self.voiture.position, self.voiture.distance_acceleration(self.voiture.vitesse, arrete.vitesse_max), self.voiture.vitesse, arrete.vitesse_max)
 
+    def genere_courbe_par_defaut(self):
+        self.position_depart_par_defaut: Vecteur2D = self.voiture.position
+        self.courbe_par_defaut = Courbe(self.voiture.position, self.voiture.position + self.voiture.arrete_actuelle.longueur, self.voiture.vitesse, self.voiture.vitesse)
+    
+    def genere_courbe_arret(self, position_finale):
+        self.position_depart_arret: Vecteur2D = self.voiture.position
+        self.courbe_arret = Courbe(self.voiture.position, position_finale, self.voiture.vitesse, 0)
+
+    def recuperer_vitesse(self, default: bool, acceleration: bool, obstacle_voiture: bool, obstacle_noeud: bool, arret: bool):
+        vitesses = []
+        if default:
+            vitesses.append(self.courbe_par_defaut.result(self.voiture.position - self.position_depart_par_defaut).norme_manathan())
+        if acceleration:
+            vitesses.append(self.courbe_acceleration.result(self.voiture.position - self.position_depart_acceleration).norme_manathan())
+        if obstacle_voiture:
+            vitesses.append(self.courbe_obstacle_voiture.result(self.voiture.position - self.position_depart_obstacle_voiture).norme_manathan())
+        if obstacle_noeud:
+            vitesses.append(self.courbe_obstacle_noeud.result(self.voiture.position - self.position_depart_obstacle_noeud).norme_manathan())
+        if arret:
+            vitesses.append(self.courbe_arret.result(self.voiture.position - self.position_depart_arret).norme_manathan())
+        
+        return min(vitesses)

@@ -11,6 +11,8 @@ import math
 from carte import Carte
 from noeud import Noeud
 from arrete import Arrete
+from simulation import Simulation
+from car import Voiture
 
 def from_rgb(rgb):
     """prend un tuple rgb et le transforme en string héxadécimal de couleur tkinter
@@ -27,7 +29,7 @@ BLANC = from_rgb((255,255,255))
 NOIR = from_rgb((0,0,0))
 ROUGE = from_rgb((255,0,0))
 VERT = from_rgb((0,255,0))
-BLUE = from_rgb((100, 100, 255))
+BLUE = from_rgb((170, 170, 255))
 
 
 
@@ -57,7 +59,15 @@ class App(ctk.CTk):
         self.frame_carte.grid(row=0, column=1, rowspan=2, pady=5, padx=5, sticky='nsew')
         #initialisation des routes
         self.routes = {}
+        self.simulation = None
+        self.mode_affichage = "rien"
+        self.largeur_carte = 10
+        self.hauteur_carte = 10
+        self.fini_affichage = False
+        self.en_train_dafficher = False
 
+
+        self.setup_frame_canvas()
         #actualise le dic des routes
         self.ajout_routes()
 
@@ -71,6 +81,7 @@ class App(ctk.CTk):
         #cree la tabview parametres
         self.tabview_parametres_voitures()
 
+        
 
         self.grille_affichee = False #initialisation de l'affichage grille
 
@@ -132,14 +143,28 @@ class App(ctk.CTk):
         self.bouton_resize.pack(side=TOP, expand=True)
         self.bouton_resize.bind('<Button-1>', self.resize_func)
 
+    def fonction_resize_canvas(self, event=None):
+        if self.mode_affichage == "edition":
+            if self.mode_avant == "simulation":
+                self.canvas_affichage.delete("all")
+                self.grille_canvas = []
+            self.affiche_carte_dans_canvas(event)
+        elif self.mode_affichage == "simulation":
+            if self.mode_avant == "edition":
+                self.canvas_affichage.delete("all")
+                self.grille_canvas = []
+            self.affiche_carte_dans_canvas(event)
+            self.update_affiche_sim(event)
+        self.mode_avant = self.mode_affichage
+
     def tabview_creation(self):
 
         self.longueur_x_Label = CTkLabel(master=self.creation, text="longueur (x)")
         self.longueur_x_Label.pack(side=TOP, expand=True)
         self.longueur_x_Label_affichees = CTkLabel(master=self.creation, text="", text_color="white")
         self.longueur_x_Label_affichees.pack(side=TOP, expand=True)
-        self.longueur_x_scale = CTkSlider(master=self.creation, progress_color="white", from_=10, to=50, command=self.afficher_scale_creation)
-        self.longueur_x_scale.pack(side=TOP, expand=True)
+        self.largeur_x_scale = CTkSlider(master=self.creation, progress_color="white", from_=10, to=50, command=self.afficher_scale_creation)
+        self.largeur_x_scale.pack(side=TOP, expand=True)
 
 
         self.hauteur_y_Label = CTkLabel(master=self.creation, text="hauteur (y)")
@@ -172,8 +197,10 @@ class App(ctk.CTk):
         return (int(self.xo + xc * self.echelle), int(self.yo + yc * self.echelle))
 
     def affiche_arrete(self, arete:Arrete):
-        x0, y0 = self.grille_to_canvas_pos(arete.position_depart.get_x(), arete.position_depart.get_y())
-        x1, y1 = self.grille_to_canvas_pos(arete.position_arrivee.get_x(), arete.position_arrivee.get_y())
+        sx = Noeud.size.get_x()
+        sy = Noeud.size.get_y()
+        x0, y0 = self.grille_to_canvas_pos(arete.position_depart.get_x() / sx, arete.position_depart.get_y() / sy)
+        x1, y1 = self.grille_to_canvas_pos(arete.position_arrivee.get_x() / sx, arete.position_arrivee.get_y() / sy)
         decalage = int(self.echelle * 0.5)
         self.canvas_affichage.create_line(x0 + decalage, y0 + decalage, x1 + decalage, y1 + decalage, arrow="first",fill=BLUE)
 
@@ -183,7 +210,7 @@ class App(ctk.CTk):
         :param event:
         :return: aucun (affiche la valeur des sliders)
         """
-        longueur_x = self.longueur_x_scale.get()
+        longueur_x = self.largeur_x_scale.get()
         hauteur_y = self.hauteur_y_scale.get()
     
         if longueur_x < 10:
@@ -212,72 +239,43 @@ class App(ctk.CTk):
         :return:
         """
         self.resizable(False, False)
-
-
-
         self.bool_previsualisation = False
+
+
     def creer_nouvelle_carte(self, event):
         """
         Création d'une nouvelle carte
         paramètres : aucun
         :return: aucun
         """
-        print(f"longueur {int(self.longueur_x_scale.get())}, largeur : {int(self.hauteur_y_scale.get())}")
+        print(f"longueur {int(self.largeur_x_scale.get())}, largeur : {int(self.hauteur_y_scale.get())}")
 
-        if not self.grille_affichee :
+        if not self.en_train_dafficher :
 
-            self.grille_affichee = True #pour savoir si on a affiché la grille
-            self.largeur_carte = int(self.longueur_x_scale.get())
+            self.en_train_dafficher = True #pour savoir si on a affiché la grille
+            self.largeur_carte = int(self.largeur_x_scale.get())
             self.hauteur_carte = int(self.hauteur_y_scale.get())
 
-
-
-
-            self.echelle = 16*max(self.largeur_carte, self.hauteur_carte)/25 # Nombre de pixels de coté d'une case sur la grille et ici on considère carré
-            self.setup_frame_canvas()
-
+            self.canvas_affichage.delete("all")
+            self.grille_canvas = []
+            self.voitures = []
+            self.grille_route = np.zeros((self.largeur_carte, self.hauteur_carte))
+            self.routes_placees = 0
 
             self.previsualisation = False
+            self.mode_affichage = "edition"
+            self.mode_avant = "edition"
+            self.affiche_carte_dans_canvas()
+            self.en_train_dafficher = False
 
-            self.after(1000, self.affiche_carte_dans_canvas)
-            self.after(50, self.surligne_case_selectionnee)
+    def lance_simulation(self, event):
+        self.filtre_correction_carte()
 
-        else :
-            self.grille_affichee = False
-            self.frame_carte = CTkFrame(self, fg_color='#4C6085')
-            self.frame_carte.grid(row=0, column=1, rowspan=2, pady=5, padx=5, sticky='nsew')
+        carte = Carte(self.largeur_carte,self.hauteur_carte,self.grille_route)
+        
+        self.simulation = Simulation(carte)
 
-
-
-    def affichage_route(self, liste_route):
-        """
-        Affichage de la route choisie
-        paramètres : liste_route
-        :return: aucun, affiche la route choisie
-        """
-        route_types = {
-            "route_vertical": "../photos/route_vertical.png",
-            "route_horizontal": "../photos/route_horizontal.png",
-            "route_haut_gauche": "../photos/route_gauche.png",
-            "route_bas_droite": "../photos/route_bas_droite.png",
-            "croix": "../photos/route_croix.png"
-        }
-
-        for name, positions in liste_route.items():
-            for position in positions:
-                self.create_route_label(route_types[name], position)
-
-    def create_route_label(self, image_path, position):
-        """
-        Création d'un label pour chaque route
-        :param image_path:
-        :param position:
-        :return: aucun (affiche les routes)
-        """
-        route_image = CTkImage(light_image=Image.open(image_path), size=(100, 100))
-        route_label = CTkLabel(master=self.carte, image=route_image, text="")
-        route_label.place(x=position[0], y=position[1], anchor="center")
-        route_label.image = route_image
+        self.mode_affichage = "simulation"
 
     ########## TABVIEW PARAMETRES ##########
     def tabview_parametres_voitures(self):
@@ -307,6 +305,14 @@ class App(ctk.CTk):
         self.niveau_agressivite = CTkSlider(master=self.parametres, progress_color="red", from_=1, to=100, command=self.afficher_scale_voitures)
         self.niveau_agressivite.pack(side=TOP, expand=True)
 
+        self.lance_simu_button = CTkButton(master=self.parametres, text="lancer simulation de test")
+        self.lance_simu_button.pack(side=TOP, expand=True)
+        self.lance_simu_button.bind("<Button-1>", self.lance_simulation)
+
+        self.stop_simu_button = CTkButton(master=self.parametres, text="arrêter simulation")
+        self.stop_simu_button.pack(side=TOP, expand=True)
+        self.stop_simu_button.bind("<Button-1>", self.stop_simulation)
+
         self.carte_france_button = CTkButton(master=self.parametres, text="carte de France de l'agressivité")
         self.carte_france_button.pack(side=TOP, expand=True)
         self.carte_france_button.bind('<Button-1>', self.affichage_france)
@@ -316,6 +322,12 @@ class App(ctk.CTk):
         self.validation_para_button.bind('<Button-1>', self.validew)
 
         self.bool_carte_affichee = False
+    
+    def stop_simulation(self, event):
+        self.mode_affichage = "edition"
+
+        self.simulation = None
+
     def afficher_scale_voitures(self, event):
         """
         Récupère la valeur des sliders relatifs aux voitures
@@ -393,16 +405,86 @@ class App(ctk.CTk):
         self.last_mouse_coords = None
         self.grille_canvas = []
         self.voitures = []
+        self.voitures_canvas = []
         self.grille_route = np.zeros((self.largeur_carte, self.hauteur_carte))
         self.routes_placees = 0
-
+        
         self.canvas_affichage = tk.Canvas(self.frame_carte, background="green")
 
-        self.canvas_affichage.bind("<Configure>", self.affiche_carte_dans_canvas)
-        self.canvas_affichage.bind("<B1-Motion>", self.rajoute_route_click)
-        self.canvas_affichage.bind("<B3-Motion>", self.enleve_route_click)
+        self.canvas_affichage.bind("<Configure>", self.fonction_resize_canvas)
+        self.canvas_affichage.bind("<B1-Motion>", self.fonction_clique_gauche_canvas)
+        self.canvas_affichage.bind("<Button-1>", self.fonction_clique_gauche_canvas)
+        self.canvas_affichage.bind("<Button-3>", self.fonction_clique_droit_canvas)
+        self.canvas_affichage.bind("<B3-Motion>", self.fonction_clique_droit_canvas)
         self.canvas_affichage.pack(fill="both", expand=True)
         self.frame_carte.grid(column=1, row=0, sticky='nsew')
+        self.affiche_carte_dans_canvas()
+        self.after(50, self.constant_canvas_update)
+
+    def fonction_clique_gauche_canvas(self, event=None):
+        if self.mode_affichage == "edition":
+            
+            self.rajoute_route_click(event)
+        elif self.mode_affichage == "simulation":
+            pass
+    def fonction_clique_droit_canvas(self, event=None):
+        if self.mode_affichage == "edition":
+            self.enleve_route_click(event)
+        elif self.mode_affichage == "simulation":
+            pass
+    
+    def constant_canvas_update(self, event=None):
+        if self.mode_affichage == "edition":
+            self.surligne_case_selectionnee()
+        elif self.mode_affichage == "simulation" and self.simulation != None:
+            self.update_affiche_sim()
+        self.after(50, self.constant_canvas_update)
+
+    def update_affiche_sim(self, event=None):
+        self.simulation.update()
+        sx = Noeud.size.get_x()
+        sy = Noeud.size.get_y()
+        tx, ty = Voiture.size.get_x() / sx, Voiture.size.get_y() / sy
+        tx, ty = self.grille_to_canvas_pos(tx, ty)
+        tx *= 0.5
+        ty *= 0.5
+        sx, sy = Noeud.size.get_x(), Noeud.size.get_y()
+        if len(self.voitures_canvas) != len(self.voitures) or len(self.voitures) == 0:
+            self.voitures:list[Voiture] = self.simulation.recuperer_voitures()
+            self.canvas_affichage.delete(self.voitures_canvas)
+            self.voitures_canvas = []
+            for voiture in self.voitures:
+                xv, yv = voiture.position.get_x() / sx, voiture.position.get_y() / sy
+                x_aff, y_aff = self.grille_to_canvas_pos(xv, yv)
+                self.voitures_canvas.append(self.canvas_affichage.create_rectangle(x_aff - tx, y_aff - ty, x_aff + tx, y_aff + ty, fill=BLUE))
+        elif len(self.voitures_canvas) == len(self.voitures):
+            for (i, voiture) in enumerate(self.voitures):
+                xv, yv = voiture.position.get_x() / sx, voiture.position.get_y() / sy
+                x_aff, y_aff = self.grille_to_canvas_pos(xv, yv)
+                self.canvas_affichage.moveto(self.voitures_canvas[i], x_aff - tx, y_aff - ty)
+
+    def resize_voitures(self):
+        sx = Noeud.size.get_x()
+        sy = Noeud.size.get_y()
+        tx, ty = Voiture.size.get_x() / sx, Voiture.size.get_y() / sy
+        tx, ty = self.grille_to_canvas_pos(tx, ty)
+        tx *= 0.5
+        ty *= 0.5
+        sx, sy = Noeud.size.get_x(), Noeud.size.get_y()
+        if len(self.voitures_canvas) != len(self.voitures) or len(self.voitures) == 0:
+            self.voitures:list[Voiture] = self.simulation.recuperer_voitures()
+            self.canvas_affichage.delete(self.voitures_canvas)
+            self.voitures_canvas = []
+            for voiture in self.voitures:
+                xv, yv = voiture.position.get_x() / sx, voiture.position.get_y() / sy
+                x_aff, y_aff = self.grille_to_canvas_pos(xv, yv)
+                self.voitures_canvas.append(self.canvas_affichage.create_rectangle(x_aff - tx, y_aff - ty, x_aff + tx, y_aff + ty, fill=BLUE))
+        elif len(self.voitures_canvas) == len(self.voitures):
+            for (i, voiture) in enumerate(self.voitures):
+                xv, yv = voiture.position.get_x() / sx, voiture.position.get_y() / sy
+                x_aff, y_aff = self.grille_to_canvas_pos(xv, yv)
+                self.canvas_affichage.coords(self.voitures_canvas[i], x_aff - tx, y_aff - ty, x_aff + tx, y_aff + ty)
+
 
     def rajoute_route_click(self, event=None):
         coords = self.calcul_coordonnees_souris_carte()
@@ -436,7 +518,7 @@ class App(ctk.CTk):
             lxc, lyc = self.last_mouse_coords
             self.update_affichage_case(lxc, lyc)
         self.last_mouse_coords = coords
-        self.after(50, self.surligne_case_selectionnee)
+        
 
     def update_affichage_case(self, xc, yc):
          self.canvas_affichage.itemconfigure(self.grille_canvas[yc * self.largeur_carte + xc], fill=self.couleur_de_case(xc, yc))
@@ -464,7 +546,8 @@ class App(ctk.CTk):
         return ret
 
     def affiche_carte_dans_canvas(self, event=None):
-        if self.largeur_canvas != self.canvas_affichage.winfo_width() or self.hauteur_canvas != self.canvas_affichage.winfo_height():
+        if self.largeur_canvas != self.canvas_affichage.winfo_width() or self.hauteur_canvas != self.canvas_affichage.winfo_height() or not self.fini_affichage:
+            self.fini_affichage = True
             self.calcul_echelle()
             self.xo, self.yo = 0, 0
             if self.canvas_affichage.winfo_height() < self.canvas_affichage.winfo_width():
@@ -489,6 +572,7 @@ class App(ctk.CTk):
                         rect = self.grille_canvas[y * self.largeur_carte + x]
                         self.canvas_affichage.coords(rect, nx[x], ny[y], nx[x+1], ny[y+1])
                         #self.canvas_affichage.itemconfigure()
+            self.fini_affichage = False
 
     def position_posable(self, xc, yc) -> bool:
         positions_a_check_coins = [[(-1, -1), (-1, 0), (0, -1)], [(-1, 1), (-1, 0), (0, 1)], [(1,1), (0,1), (1,0)], [(1, -1), (0, -1), (1,0)]] # triplets de positions de coins
@@ -517,7 +601,7 @@ class App(ctk.CTk):
         self.hauteur_canvas = self.canvas_affichage.winfo_height()
         dimension_minimum_canvas = min(self.largeur_canvas, self.hauteur_canvas)
         dimension_maximum_carte = max(self.largeur_carte, self.hauteur_carte)
-        self.echelle = int(math.floor(dimension_minimum_canvas/dimension_maximum_carte))
+        self.echelle = max(2, int(math.floor(dimension_minimum_canvas/dimension_maximum_carte)))
 
 
     def ajout_routes2(self):
@@ -533,19 +617,6 @@ class App(ctk.CTk):
         for route in self.routes.keys():
             self.liste_cartes.insert("end", route)
         self.liste_cartes.pack(side=tk.TOP, fill="x")
-
-
-    def essaie_affiche(self, event=None):
-        if not self.previsualisation and False: # LE AND FALSE EST JUSTE RAJOUTE POUR DESACTIVER LA FEATURE
-            self.previsualisation = True
-
-            route_choisie = self.liste_cartes.get("active")
-            self.label_affichage.configure(text=f"Visualisation de la carte {route_choisie}")
-
-
-            self.affichage_route(self.routes[route_choisie])
-
-            self.previsualisation = False
 
     def affichage_route3(self, liste_route):
         route_types = {
@@ -600,13 +671,15 @@ class App(ctk.CTk):
 
     def filtre_correction_carte(self, event=None):
         bon = False
+        coins = [(0, 0), (0, self.hauteur_carte - 1), (self.largeur_carte - 1, 0), (self.largeur_carte - 1, self.hauteur_carte - 1)]
         while bon == False:
             changements = []
             for yc in range(0, self.hauteur_carte):
                 for xc in range(0, self.largeur_carte):
                     if self.grille_route[xc, yc] == 1:
                         bord = (xc == 0 or xc == self.largeur_carte - 1 or yc == 0 or yc == self.hauteur_carte - 1)
-                        if bord and not self.case_bord_valide(xc, yc):
+                        coin = (xc, yc) in coins
+                        if bord and ((coin and self.point_dans_grille_ou_0(xc, yc) == 1) or not self.case_bord_valide(xc, yc)):
                             changements.append((xc, yc))
                         elif not bord and not self.case_dedans_valide(xc, yc):
                             changements.append((xc, yc))
@@ -655,19 +728,6 @@ class App(ctk.CTk):
                                 set_local.add((nxc, nyc))
                                 composantes[id_composante].append((nxc, nyc))
         return composantes
-
-
-    def pos_de_noeud(self, xc, yc):
-        decalages = [(-1,0), (1,0), (0, 1), (0, -1)]
-        compteur = 0
-        for (dx, dy) in decalages:
-            compteur += self.point_dans_grille_ou_0(xc + dx, yc + dy)
-
-    def grille_to_carte(self):
-        aretes = []
-        noeuds = []
-
-
 
         
         

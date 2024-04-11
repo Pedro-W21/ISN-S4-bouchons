@@ -15,7 +15,7 @@ class Arrete:
         self.vitesse_max = 80
 
     def __eq__(self, noeuds):
-        if [self.position_depart, self.position_arrivee] == [noeuds[0].position_depart, noeuds[1].position_depart]:
+        if [self.position_depart, self.position_arrivee] == [noeuds.position_depart, noeuds.position_depart]:
             return True
         return False
     

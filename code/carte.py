@@ -9,12 +9,16 @@ class Carte:
         self.hauteur = hauteur
 
     def into_aretes_noeuds(self) -> list[Noeud]:
+
+
         noeuds_dict = {}
         for xc in range(self.largeur):
             for yc in range(self.hauteur):
                 if self.est_noeud(xc, yc):
                     noeuds_dict[(xc, yc)] = []
         directions = [(-1,0), (1,0), (0,1), (0,-1)]
+        sx = Noeud.size.get_x()
+        sy = Noeud.size.get_y()
         for ((xc, yc), aretes) in noeuds_dict.items():
             for (dx, dy) in directions:
                 fxc, fyc = xc, yc
@@ -22,7 +26,7 @@ class Carte:
                     fxc += dx
                     fyc += dy
                 if not (fxc == xc and fyc == yc):
-                    aretes.append(Arrete(Vecteur2D(xc, yc), Vecteur2D(fxc, fyc), abs(fxc - xc) + abs(fyc - yc) ))
+                    aretes.append(Arrete(Vecteur2D(xc * sx, yc * sy), Vecteur2D(fxc * sx, fyc * sy), abs(fxc - xc)  * sx + abs(fyc - yc) * sy ))
         return [self.cree_noeud(xc, yc, aretes) for ((xc, yc), aretes) in noeuds_dict.items()]
 
 
@@ -31,7 +35,10 @@ class Carte:
         compteur_v = 0
         ret = None
         decalages = [-1, 1]
-        pos = Vecteur2D(xc, yc)
+        sx = Noeud.size.get_x()
+        sy = Noeud.size.get_y()
+        pos = Vecteur2D(xc * sx, yc * sy)
+        
         for dx in decalages:
             compteur_h += self.get_at_or_0(xc + dx, yc)
         for dy in decalages:

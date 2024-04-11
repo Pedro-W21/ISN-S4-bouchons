@@ -15,11 +15,11 @@ class Simulation:
 
     def __init__(self, carte: Carte) -> None:
         self.arretes: list[Arrete] = []
-        self.noeuds: list[Noeud] = []
+        self.noeuds: list[Noeud] = carte.into_aretes_noeuds()
 
         self.graphe: dict[list[int, int]: list[list[int, int]]] = {}
         #            position_noeud : list[position_noeuds]
-
+        self.create_graphe()
         self.moyenne_agressivite = 0.5
         self.ecart_type_agressivite = 0.25
 
@@ -92,4 +92,6 @@ class Simulation:
             voitures += arrete.voitures
         return voitures
 
-Simulation().import_configuration_carte('routes.json')  
+
+if __name__ == "__main__":
+    Simulation().import_configuration_carte('routes.json')  

@@ -1,6 +1,8 @@
 import json
+import random
 
 from arrete import Arrete
+from voiture import Voiture
 from noeud import Intersection_T, Intersection_X, Virage, Noeud
 from vecteur_2d import Vecteur2D
 import numpy as np
@@ -8,27 +10,30 @@ from carte import Carte
 from random import choice
 
 class Simulation:
-    
-    ROND_POINT = 'rond_point'
-    VIRAGE = 'virage'
-    INTERSECTION_T = 'intersection_t'
-    ARRETE = 'arrete'
 
-    def __init__(self, carte: Carte) -> None:
-        self.arretes: list[Arrete] = []
+    VIRAGE = "VIRAGE"
+    INTERSECTION_T = "INTERSECTION_T"
+    INTERSECTION_X = "INTERSECTION_X"
+    ENTREE_SORTIE = "ENTREE_SORTIE"
+
+    def __init__(self, carte: Carte, nombre_voiture) -> None:
         self.noeuds: list[Noeud] = carte.into_aretes_noeuds()
+        self.arretes: list[Arrete] = [] # TODO: generer la liste
+
 
         self.graphe: dict[list[int, int]: list[list[int, int]]] = {}
         #            position_noeud : list[position_noeuds]
         self.create_graphe()
         self.moyenne_agressivite = 0.5
         self.ecart_type_agressivite = 0.25
-        #TODO range (nb_voiture a spawn)
-        voiture_to_spawn = [self.create_voiture() for _ in range(10)]
+        self.nombre_voiture = nombre_voiture
+        self.voiture_generee = [self.create_voiture() for _ in range(nombre_voiture)]
+        self.entree_sortie_libre: list[Noeud] = [noeud for noeud in self.noeuds if noeud.type == self.ENTREE_SORTIE]
 
     def create_voiture(self):
-        #TODO
-        pass
+        liste_entree_sortie = self.entree_sortie_libre.copy()
+        noeud_depart, noeud_arrivee = random.choices(liste_entree_sortie, k=2)
+        return Voiture(self.generer_agressivite(), noeud_depart, noeud_arrivee)
     
     def generer_agressivite(self):
         agressivite = np.random.normal(self.moyenne_agressivite, self.ecart_type_agressivite)
@@ -88,34 +93,33 @@ class Simulation:
                     # Si une arête commune est trouvée, l'ajouter au graphe
                     if arrete:
                         self.graphe[noeud_courant].append((noeud_arrivee, arrete))
-
-                
+          
     def update(self):
         # TODO: update la simulation
 
         # 1. spawn les voitures
-        dispo_tospawn = [noeud for noeud in self.noeuds if noeud.type == self.ENTREE_SORTIE and noeud.voie_est_libre()]
+        self.entree_sortie_libre = [noeud for noeud in self.noeuds if noeud.type == self.ENTREE_SORTIE]
 
-        for i in range(min(len(self.voiture_to_spawn), len(dispo_tospawn))):
-            noeud_spawn = choice(dispo_tospawn)
-            voiture_spawn = choice(self.voiture_to_spawn)
+        for i in range(min(len(self.voiture_generee), len(self.entree_sortie_libre))):
+            noeud_spawn = choice(self.entree_sortie_libre)
+            voiture_spawn = choice(self.voiture_generee)
             #voiture_spawn.reassign(TODO)
-            self.voiture_to_spawn.remove(voiture)
-            dispo_tospawn.remove(noeud_spawn)
+            self.voiture_generee.remove(voiture)
+            self.entree_sortie_libre.remove(noeud_spawn)
 
         # 2. update les voitures
         for arrete in self.arretes:
             for voiture in arrete.voitures:
                 voiture.update()
                 if voiture.affiche == False:
-                    self.voiture_to_spawn.append(voiture)
+                    self.voiture_generee.append(voiture)
         
         # 3. update les noeuds (intersection, rond-point uniquement)
         for noeud in self.noeuds:
             if noeud.type != self.VIRAGE:
                 noeud.update()
 
-    #TODO Quelle utilité ?
+    # sert pour l'affichage
     def recuperer_voitures(self):
         voitures = []
         for arrete in self.arretes:

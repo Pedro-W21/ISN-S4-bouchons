@@ -118,14 +118,23 @@ class Voiture:
                 self.ancienne_arrete.voitures.remove(self)
 
     def depasse_noeud(self):
-        # TODO: A FAIRE
-        # Renvoie True si on a dépassé le noeud
-        # Renvoie False si on est toujours sur le noeud
+        # selon de la voiture renvoie si elle a dépassé le prochain point sur le chemin
+        prochain_noeud = self.chemin[1]
+        if self.orientation() == (1, 0):
+            if self.position.x > prochain_noeud.position.x:
+                return True
+        elif self.orientation() == (-1, 0):
+            if self.position.x < prochain_noeud.position.x:
+                return True
+        elif self.orientation() == (0, 1):
+            if self.position.y > prochain_noeud.position.y:
+                return True
+        elif self.orientation() == (0, -1):
+            if self.position.y < prochain_noeud.position.y:
+                return True
 
-        # ne pas tenir compte des virages
-        # simple calcul d'orientation et de direction de la voiture par rapport au point
-        # renvoie NONE ou le noeud qui vient d'être dépassé
-        pass
+        return False
+
 
 
 

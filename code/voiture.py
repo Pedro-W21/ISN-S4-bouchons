@@ -94,16 +94,7 @@ class Voiture:
         voiture_obstacle: list[Voiture] = self.trouver_voiture_sur_mon_chemin()
         noeuds_obstacles: list[Noeud] = self.trouver_noeuds_sur_mon_chemin()
         
-        """
-
-        Si il n'y pas d'obstacle
-            Je desactive toutes les autres courbes
-            Si je n'ai pas déjà une courbe d'acceleration active : 
-                Je genere une courbe  d'acceleration et je l'active
-        Sinon
-            Je desactive la courbe
-
-        """
+        
         # Si il n'y pas d'obstacle
         if voiture_obstacle is None and not noeuds_obstacles == 0:
             #Je desactive toutes les autres courbes
@@ -123,6 +114,7 @@ class Voiture:
                 pass
 
             for i in range(len(noeuds_obstacles)):
+                # si c'est le premier noeud et que c'est une intersection
                 if i == 0 and noeuds_obstacles[0].type in (Noeud.INTERSECTION_T, Noeud.INTERSECTION_X):
                     # si je suis dans la zone de ping
                     if self.distance_a_entite(noeuds_obstacles[0].position) < noeuds_obstacles[0].distance_securite:
@@ -148,12 +140,6 @@ class Voiture:
             else:
                 # Je desactive les courbes
                 pass
-
-
-
-            
-
-        
     
     def update_position_graphe(self):
         noeud_depasse = self.depasse_noeud()
@@ -174,7 +160,7 @@ class Voiture:
                 self.arrete_actuelle = self.trouver_arrete(self.chemin[0], self.chemin[1])
 
                 # si le prochain noeud n'est pas une entré-sortie
-                if len(self.chemin) > 2:
+                if self.chemin[1].type != Noeud.ENTREE_SORTIE:
                     self.prochaine_arrete = self.trouver_arrete(self.chemin[1], self.chemin[2])
                 else:
                     self.prochaine_arrete = None
@@ -187,21 +173,21 @@ class Voiture:
         # selon de la voiture renvoie si elle a dépassé le prochain point sur le chemin
         prochain_noeud = self.chemin[1]
         if self.orientation() == (1, 0):
-            if self.position.x > prochain_noeud.position.x:
+            if self.position.x > prochain_noeud.position.x + prochain_noeud.size.x:
                 return True
         elif self.orientation() == (-1, 0):
-            if self.position.x < prochain_noeud.position.x:
+            if self.position.x < prochain_noeud.position.x - prochain_noeud.size.x:
                 return True
         elif self.orientation() == (0, 1):
-            if self.position.y > prochain_noeud.position.y:
+            if self.position.y > prochain_noeud.position.y + prochain_noeud.size.y:
                 return True
         elif self.orientation() == (0, -1):
-            if self.position.y < prochain_noeud.position.y:
+            if self.position.y < prochain_noeud.position.y - prochain_noeud.size.y:
                 return True
 
         return False
 
-    def recherche_chemin(self, noeud_depart: Noeud) -> list[Noeud]:
+    def recherche_chemin(self, noeud_depart: Noeud):
         # Recherche chemin à partir de dernier point passé
 
         chemin = {noeud: float('inf') for noeud in self.graphe}
@@ -218,7 +204,7 @@ class Voiture:
                 if new_distance < chemin[noeud_arrivee]:
                     chemin[noeud_arrivee] = new_distance
                     queue.append((new_distance, noeud_arrivee))
-        return chemin
+        self.chemin = chemin
 
     def distance_securite(self, vitesse: float) -> float:
         return self.distance_deceleration(vitesse, 0) + self.distance_marge_securite

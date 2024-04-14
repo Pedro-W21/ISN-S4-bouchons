@@ -82,39 +82,43 @@ class Intersection_T(Noeud):
         #vient de ma gauche / va à ma droite
         #vient d'en face / va vers moi
         #vient de ma voix / va en face de moi
-
+        libre = True
         for usager, intentions in self.usagers.items():
             orientation_usager, intention_usager = intentions
             if usager.id != voiture.id:
                 if intention == orientation: #Je vais tout droit
                     if orientation_usager == from_right_to_left and intention_usager in [intention, from_front_to_me, from_right_to_left]:
                         #Personne à ma droite ne doit tourner sur ma trajectoire ou la couper   
-                        return False
+                        libre = False
                     if orientation_usager == from_left_to_right and intention_usager in [intention, from_left_to_right]:
                         #Personne à ma gauche ne tourne sur ma trajectoire
-                        return False
+                        libre = False
                     if orientation_usager == from_front_to_me and intention_usager == from_left_to_right:
                         #Personne en face tourne à sa gauche
-                        return False 
+                        libre = False 
                 elif intention == from_left_to_right:#Je vais sur ma droite
                     if orientation_usager == from_front_to_me and intention_usager == from_left_to_right:
                         #Personne en face tourne à sa gauche
-                        return False
+                        libre = False
                     if orientation_usager == from_left_to_right and intention_usager == from_left_to_right:
                         #Personne à ma gauche tourne à sa gauche
-                        return False
+                        libre = False
                 elif intention == from_right_to_left:#Je vais sur ma gauche
                     if orientation_usager == from_right_to_left and intention_usager in [from_front_to_me, intention, from_me_to_front]:
                         #Personne à ma droite tourne
-                        return False
+                        libre = False
                     if orientation_usager == from_left_to_right and intention_usager in [from_left_to_right, from_me_to_front]:
                         #Personne à ma gauche tourne à sa gauche
-                        return False
+                        libre = False
                     if orientation_usager == from_front_to_me and intention_usager in [from_front_to_me, from_right_to_left, from_left_to_right]:
                         #Personne en face va tout droit
-                        return False  
-        self.enregistrer_usager(voiture, orientation, intention)
-        return True
+                        libre = False  
+        if libre:
+            self.enregistrer_usager(voiture, orientation, intention)
+        else:
+            # TODO: Implémenter gestion de la file de priorité
+            pass
+        return libre
 
 class Intersection_X(Noeud):
 
@@ -176,9 +180,5 @@ class EntreeSortie(Noeud):
     def __init__(self, position, aretes):
         super().__init__(position, aretes)
         self.type=self.ENTREE_SORTIE
-    
-    #TODO Implémenter fonction pour vérifier si la voie est libre
-    #Si quelqu'un a spawn c'est False 
-    #si le dernier qui a spawn est assez loin c'est True
     def voie_est_libre(self, voiture):
         return True

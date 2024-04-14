@@ -3,6 +3,7 @@ import math
 from arrete import Arrete
 from vecteur_2d import Vecteur2D
 from noeud import Noeud
+from gestionnaire_vitesse import GestionnaireVitesse
 
 """
 On fait 
@@ -88,7 +89,71 @@ class Voiture:
         self.update_position_graphe()
     
 
+    def update_vitesse(self):
+        # identification des obstacles dans ma zone de sécurité
+        voiture_obstacle: list[Voiture] = self.trouver_voiture_sur_mon_chemin()
+        noeuds_obstacles: list[Noeud] = self.trouver_noeuds_sur_mon_chemin()
+        
+        """
 
+        Si il n'y pas d'obstacle
+            Je desactive toutes les autres courbes
+            Si je n'ai pas déjà une courbe d'acceleration active : 
+                Je genere une courbe  d'acceleration et je l'active
+        Sinon
+            Je desactive la courbe
+
+        """
+        # Si il n'y pas d'obstacle
+        if voiture_obstacle is None and not noeuds_obstacles == 0:
+            #Je desactive toutes les autres courbes
+            #Si je n'ai pas déjà une courbe d'acceleration active
+                #Je genere une courbe  d'acceleration et je l'active
+            pass
+        else:
+            # je desactive la courbe d'acceleration
+            if voiture_obstacle is not None:
+                #Je prends sa courbe
+                #Si j'ai pas une courbe active
+                    #Je l'enregistre
+                    #Je l'active
+                pass
+            else:
+                #Je désactive la courbe de suivie des voitures
+                pass
+
+            for i in range(len(noeuds_obstacles)):
+                if i == 0 and noeuds_obstacles[0].type in (Noeud.INTERSECTION_T, Noeud.INTERSECTION_X):
+                    # si je suis dans la zone de ping
+                    if self.distance_a_entite(noeuds_obstacles[0].position) < noeuds_obstacles[0].distance_securite:
+                        # je demande si je peux passer
+                        if noeuds_obstacles[0].voie_est_libre(self):
+                            # Je désactive la courbe d'arret de ce point
+                            pass
+                        else:
+                            # Je genere une courbe d'arret
+                            # Je l'active
+                            pass
+                else:
+                    # si je suis dans la zone de ping
+                    if self.distance_a_entite(noeuds_obstacles[i].position) < noeuds_obstacles[i].distance_securite:
+                        # Je genere une courbe d'arret si elle n'exsite pas
+                            # Je l'active
+                        pass
+                    #Je prends sa courbe
+                    #Si j'ai pas une courbe active
+                        #Je la cré et l'enregistre
+                        #Je l'active
+                    pass
+            else:
+                # Je desactive les courbes
+                pass
+
+
+
+            
+
+        
     
     def update_position_graphe(self):
         noeud_depasse = self.depasse_noeud()
@@ -135,9 +200,6 @@ class Voiture:
                 return True
 
         return False
-
-
-
 
     def recherche_chemin(self, noeud_depart: Noeud) -> list[Noeud]:
         # Recherche chemin à partir de dernier point passé
@@ -193,28 +255,6 @@ class Voiture:
         return colors[randomIndex]
 
     ##TODO A SUPPRIMER SI PLUS BESOIN
-    def follow_curve(self, newcurve=None):
-        if newcurve:
-            self.curve = True
-            vitesse_origine = self.vitesse
-            point_origine = self.position
-            point_objectif = newcurve[0]
-            vitesse_objectif = newcurve[1]
-        
-        new_vitesse = vitesse_origine+(self.position-point_origine)(vitesse_objectif-vitesse_origine)/(point_objectif-point_origine)
-        if vitesse_origine < vitesse_objectif:
-            #croissant
-            new_vitesse = min(new_vitesse, vitesse_objectif)
-        else:
-            #décroissant
-            new_vitesse = max(new_vitesse, vitesse_objectif)
-        self.vitesse = new_vitesse
-
-        #TODO MANAGE DEPASSEMENT DE POINT (TOUS LES SENS)
-        self.position[0] += self.vitesse * math.cos(self.orientation)
-        self.position[1] += self.vitesse * math.sin(self.orientation)
-
-    ##TODO A SUPPRIMER SI PLUS BESOIN
     def update_position(self, time_elapsed):
         # suivre la courbe sauf si :
         # - la vitesse est nulle
@@ -227,55 +267,6 @@ class Voiture:
         dir_x = self.prochaine_arrete.position_depart.x - self.prochaine_arrete.position_arrivee.x / abs(self.prochaine_arrete.position_depart.x - self.prochaine_arrete.position_arrivee.x)
         dir_y = self.prochaine_arrete.position_depart.y - self.prochaine_arrete.position_arrivee.y / abs(self.prochaine_arrete.position_depart.y - self.prochaine_arrete.position_arrivee.y)
         return dir_x, dir_y
-
-    ##TODO A SUPPRIMER SI PLUS BESOIN
-    def contrainte_plus_proche(self):
-        # On obtient tous les points pouvant constituer des arêtes contenant des voitures sous la distance de sécurité
-        distance_totale = 0
-        noeuds_a_traiter = [(self,0)]
-        prochain_noeuds = iter(self.chemin.items())
-        premier_noeud = next(prochain_noeuds)
-        for noeud in prochain_noeuds.key():
-            distance_to_point = noeud.position - noeuds_a_traiter[-1][0].position
-            if distance_totale < self.distance_securite_point and self.noeuds[noeud]=="stop":
-                noeuds_a_traiter.append([noeud,distance_to_point])
-            distance_totale+=distance_to_point
-        noeuds_a_traiter[0] = (premier_noeud[0],0)
-        # On obtient toutes les voitures sous la distance de sécurité 
-        # (on pourrait aussi s'arrêter à la première voiture)
-        distance_totale = 0
-        voitures_a_traiter = [(self,0)]
-        #TODO
-        #trouver la voiture la plus proche (pas avant nous), qui peut être sur notre arête ou une suivante
-        for i in range(len(noeuds_a_traiter)-1):
-            arrete = self.trouver_arrete(noeuds_a_traiter[i][0], noeuds_a_traiter[i+1][0])
-            for voiture in arrete.voitures:
-                distance_to_voiture = voiture.position-voitures_a_traiter[-1][1]
-                distance_totale+=distance_to_voiture
-                if distance_totale < self.distance_securite_voiture:
-                    voitures_a_traiter.append((voiture,distance_totale))
-                    break
-            distance_totale+=noeuds_a_traiter[i][1]
-            if len(voitures_a_traiter)>1:
-                break
-        voitures_a_traiter.pop(0)
-        for noeud in noeuds_a_traiter:
-            # {Noeud:"stop",Noeud:"pass",Noeud:"slow"}
-            reponse = noeud[0].voie_est_libre(self)
-            if reponse:
-                if self.direction_prochain_chemin == self.orientation:
-                    self.noeuds[noeud[0]] = "go"
-                else:
-                    self.noeuds[noeud[0]] = "slow"
-            else:
-                self.noeuds[noeud[0]] = "stop"
-        contraintes = None#TODO
-        #tant que les points disent go ou slow et qu'il n'y a pas de voiture entre
-        #distance prochain obstacle = prochain point
-        #dès qu'on a une voiture, distance prochain obstacle c'est lui
-            #regulate pour obtenir v voiture à distance_modulation_voiture
-        #si un point a dit slow, alors on ralentit à distance_arret_point
-        ##NON REPRENDRE DEFINITION
 
     def trouver_arrete_entre_noeuds(self, noeud_depart: Noeud, noeud_arrivee: Noeud) -> Arrete:
         for arrete in noeud_depart.arretes:
@@ -305,21 +296,22 @@ class Voiture:
                 else:
                     return None
             else:
-                if arrete.voitures[0].id != self.id and len(arrete.voitures) > 1:
-                    voiture_obstacle = arrete.voitures[arrete.voitures.index(self)-1]
-                else:
-                    None
+                if arrete.voitures[0] != self and len(arrete.voitures) > 1:
+                   return arrete.voitures[arrete.voitures.index(self)-1]
         return None
 
-    def trouver_noeud_sur_mon_chemin(self):
-        # renvoie ou pas un noeud qui est dans ma distance de securite et sur mon chemin
+    def trouver_noeuds_sur_mon_chemin(self):
+        # renvoie ou pas tous les noeuds qui sont dans ma distance de securite et sur mon chemin
+        noeuds: Noeud = []
         for i in range(len(self.chemin)):
             if i != 0:
                 noeud_devant = self.chemin[i]
                 if self.est_dans_zone_securite(noeud_devant.position):
                     if noeud_devant.est_emprsuntee():
-                        return noeud_devant
+                        noeuds.append(noeud_devant)
                 else:
-                    return None
-        return None
+                    return noeuds
+        return noeuds
 
+    def __eq__(self, voiture) -> bool:
+        return self.id == voiture.id

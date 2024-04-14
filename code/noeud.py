@@ -4,10 +4,10 @@ from vecteur_2d import Vecteur2D
 class Noeud:
     size = Vecteur2D(6, 6)
 
-    VIRAGE = "virage"
-    INTERSECTION_T = "intersection_t"
-    INTERSECTION_X = "rond_point"
-    ENTREE_SORTIE = "entree_sortie"
+    VIRAGE = "VIRAGE"
+    INTERSECTION_T = "INTERSECTION_T"
+    INTERSECTION_X = "INTERSECTION_X"
+    ENTREE_SORTIE = "ENTREE_SORTIE"
 
     def __init__(self, position: Vecteur2D, arretes: list[Arrete]):
         #Implémentation données pour affichage

@@ -9,8 +9,6 @@ class Carte:
         self.hauteur = hauteur
 
     def into_aretes_noeuds(self) -> list[Noeud]:
-
-
         noeuds_dict = {}
         for xc in range(self.largeur):
             for yc in range(self.hauteur):
@@ -28,7 +26,6 @@ class Carte:
                 if not (fxc == xc and fyc == yc):
                     aretes.append(Arrete(Vecteur2D(xc * sx, yc * sy), Vecteur2D(fxc * sx, fyc * sy), abs(fxc - xc)  * sx + abs(fyc - yc) * sy ))
         return [self.cree_noeud(xc, yc, aretes) for ((xc, yc), aretes) in noeuds_dict.items()]
-
 
     def cree_noeud(self, xc, yc, aretes) -> Noeud:
         compteur_h = 0
@@ -52,6 +49,7 @@ class Carte:
         else:
             ret = Intersection_X(pos, aretes)
         return ret
+    
     def est_noeud(self, xc, yc) -> bool:
         compteur_h = 0
         compteur_v = 0

@@ -5,6 +5,7 @@ from noeud import Intersection_T, Intersection_X, Virage, Noeud
 from vecteur_2d import Vecteur2D
 import numpy as np
 from carte import Carte
+from random import choice
 
 class Simulation:
     
@@ -22,7 +23,13 @@ class Simulation:
         self.create_graphe()
         self.moyenne_agressivite = 0.5
         self.ecart_type_agressivite = 0.25
+        #TODO range (nb_voiture a spawn)
+        voiture_to_spawn = [self.create_voiture() for _ in range(10)]
 
+    def create_voiture(self):
+        #TODO
+        pass
+    
     def generer_agressivite(self):
         agressivite = np.random.normal(self.moyenne_agressivite, self.ecart_type_agressivite)
         if agressivite < 0:
@@ -73,19 +80,42 @@ class Simulation:
                 
     def create_graphe(self):
         for noeud_courant in self.noeuds:
-            self.graphe[noeud_courant.position] = []
+            self.graphe[noeud_courant] = []
             for noeud_arrivee in self.noeuds:
                 if noeud_arrivee.position != noeud_courant.position:
-                    # verifie que les noeuds sont bien reliés
-                    if any(arrete in noeud_courant.arretes for arrete in noeud_arrivee.arretes):
-                        self.graphe[noeud_courant.position].append(noeud_arrivee.position)
+                    # trouve l'arrete commune entre les deux noeuds
+                    arrete = next((arrete for arrete in noeud_arrivee.arretes if arrete in noeud_courant.arretes), None)
+                    # Si une arête commune est trouvée, l'ajouter au graphe
+                    if arrete:
+                        self.graphe[noeud_courant].append((noeud_arrivee, arrete))
+
                 
     def update(self):
         # TODO: update la simulation
+
+        # 1. spawn les voitures
+        dispo_tospawn = [noeud for noeud in self.noeuds if noeud.type == self.ENTREE_SORTIE and noeud.voie_est_libre()]
+
+        for i in range(min(len(self.voiture_to_spawn), len(dispo_tospawn))):
+            noeud_spawn = choice(dispo_tospawn)
+            voiture_spawn = choice(self.voiture_to_spawn)
+            #voiture_spawn.reassign(TODO)
+            self.voiture_to_spawn.remove(voiture)
+            dispo_tospawn.remove(noeud_spawn)
+
+        # 2. update les voitures
         for arrete in self.arretes:
             for voiture in arrete.voitures:
                 voiture.update()
-    
+                if voiture.affiche == False:
+                    self.voiture_to_spawn.append(voiture)
+        
+        # 3. update les noeuds (intersection, rond-point uniquement)
+        for noeud in self.noeuds:
+            if noeud.type != self.VIRAGE:
+                noeud.update()
+
+    #TODO Quelle utilité ?
     def recuperer_voitures(self):
         voitures = []
         for arrete in self.arretes:

@@ -7,5 +7,4 @@ class Creation_Route:
         width, height = App().carte.winfo_width(), App().carte.winfo_height()
         print(width, height)
 
-
 Creation_Route()

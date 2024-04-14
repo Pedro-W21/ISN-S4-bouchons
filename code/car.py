@@ -22,6 +22,7 @@ class Voiture:
         self.id = id
 
         self.position = noeud_depart.position
+        self.affiche = True
 
         self.noeud_depart: Noeud = noeud_depart
         self.noeud_arrivee: Noeud = noeud_arrivee
@@ -33,7 +34,7 @@ class Voiture:
         self.agressivite = agressivite # compris entre 0 et 1
         
         self.modulation_acceleration = 3 * agressivite
-
+        self.affiche = True
         self.acceleration = (5 + self.modulation_acceleration) / 3.6
         self.deceleration = (5 + self.modulation_acceleration)  / 3.6
 
@@ -41,7 +42,7 @@ class Voiture:
         self.acceleration_demarage = 0.6 #m/s^2 -> acceleration pour passer de 0 à 0.01 m/s en 1/60s
 
         #Variables primaires (ne changeront plus)
-        self.generate_color()
+        self.couleur = self.generate_color()
         self.distance_securite()
 
         self.chemin: list[Noeud] = self.recherche_chemin(noeud_depart)
@@ -52,42 +53,11 @@ class Voiture:
 
         self.distance_marge_securite = self.size.x + self.size.y
 
-
-    def update(self):
-        # TODO: Implementer la logique de mise à jour de la voiture
-        voiture_obstacle = self.trouver_voiture_sur_mon_chemin()
-        if voiture_obstacle and self.est_dans_zone_securite(voiture_obstacle.position):
-            # la voiture est dans la zone de sécurité
-            # On doit ralentir : on genere une courbe de ralentissement
-            pass
-            
-
-    def recherche_chemin(self, noeud_depart) -> list[Noeud]:
-        # TODO: Implementer l'algorithme de recherche de chemin
-        self.graphe
-        self.noeud_arrivee
-        return None
-
-    def distance_securite(self, vitesse: float) -> float:
-        return self.distance_deceleration(vitesse, 0) + self.distance_marge_securite
-
-    def distance_deceleration(self, vitesse_initiale, vitesse_finale) -> float:
-        temps_deceleration = abs(vitesse_initiale/3.6 - vitesse_finale/3.6) / self.deceleration
-        distance = 1/2 * self.deceleration * temps_deceleration**2
-        return distance
-    
-    def dsitance_freinage_complet(self):
-        return self.distance_deceleration(self.vitesse, 0)
-        
-    def distance_acceleration(self, vitesse_initiale, vitesse_finale) -> float:
-        temps_acceleration = abs(vitesse_finale/3.6 - vitesse_initiale/3.6) / self.acceleration
-        distance = 1/2 * self.acceleration * temps_acceleration**2
-        return distance
-
     def reassign(self, agressivite: float, noeud_depart: Noeud, noeud_arrivee: Noeud):
 
         self.position = noeud_depart.position
-
+        self.affiche = True
+        
         self.noeud_depart: Noeud = noeud_depart
         self.noeud_arrivee: Noeud = noeud_arrivee
         
@@ -111,14 +81,64 @@ class Voiture:
         self.ancienne_arrete: Arrete = None
 
         self.distance_marge_securite = self.size.x + self.size.y
+    
+    def update(self):
+        #TODO
+        # Obtenir la courbe de vitesse à suivre
+        # Mettre à jour les positions
+        # On a dépassé le noeud suivant sur notre orientation ?
+        #Si oui
+            #Est-ce qu'il y a une arrête après ?
+            # Si oui
+                # Mettre à jour nos présences sur les arrêtes et noeuds
+                # Recherche chemin à partir de dernier point passé
+                # Mettre à jour l'arrete actuelle et prochaine
+            #Si non
+                # self.affiche = False (sortie de carte)
+                # Mettre à jour nos présences sur les arrêtes et noeuds
+        
+        # Supprimer si plus besoin
+        voiture_obstacle = self.trouver_voiture_sur_mon_chemin()
+        if voiture_obstacle and self.est_dans_zone_securite(voiture_obstacle.position):
+            # la voiture est dans la zone de sécurité
+            # On doit ralentir : on genere une courbe de ralentissement
+            pass
+            
+    def recherche_chemin(self, noeud_depart) -> list[Noeud]:
+        chemin = {noeud: float('inf') for noeud in self.graphe}
+        chemin[noeud_depart] = 0
+
+        queue = [(0, noeud_depart)]
+
+        while queue:
+            dist, noeud = queue.pop(0)
+            if chemin[noeud] < dist:
+                continue
+            for (noeud_arrivee, arrete) in self.graphe[noeud].values():
+                new_distance = chemin[noeud] + arrete.get_poids()
+                if new_distance < chemin[noeud_arrivee]:
+                    chemin[noeud_arrivee] = new_distance
+                    queue.append((new_distance, noeud_arrivee))
+        return chemin
+
+    def distance_securite(self, vitesse: float) -> float:
+        return self.distance_deceleration(vitesse, 0) + self.distance_marge_securite
+
+    def distance_deceleration(self, vitesse_initiale, vitesse_finale) -> float:
+        temps_deceleration = abs(vitesse_initiale/3.6 - vitesse_finale/3.6) / self.deceleration
+        distance = 1/2 * self.deceleration * temps_deceleration**2
+        return distance
+    
+    def distance_freinage_complet(self):
+        return self.distance_deceleration(self.vitesse, 0)
+        
+    def distance_acceleration(self, vitesse_initiale, vitesse_finale) -> float:
+        temps_acceleration = abs(vitesse_finale/3.6 - vitesse_initiale/3.6) / self.acceleration
+        distance = 1/2 * self.acceleration * temps_acceleration**2
+        return distance
 
     def intention(self):
         return self.orientation(), self.direction_prochain_chemin()
-
-    def direction_prochain_chemin(self):
-        vect = (self.noeuds[2].position - self.noeuds[1].position) - (self.noeuds[2] - self.noeuds[1])
-        vect.vecteur_unitaire()
-        return vect
     
     def trouver_arrete(self, noeud_depart: Noeud, noeud_arrivee: Noeud):
         for arrete in noeud_depart.arretes:
@@ -133,8 +153,9 @@ class Voiture:
     def generate_color(self):
         colors = ['red', 'blue', 'green', 'yellow', 'orange', 'purple', 'pink', 'brown', 'cyan', 'magenta']
         randomIndex = math.floor(random.random() * colors.length)
-        self.couleur = colors[randomIndex]
+        return colors[randomIndex]
 
+    ##TODO A SUPPRIMER SI PLUS BESOIN
     def follow_curve(self, newcurve=None):
         if newcurve:
             self.curve = True
@@ -156,6 +177,7 @@ class Voiture:
         self.position[0] += self.vitesse * math.cos(self.orientation)
         self.position[1] += self.vitesse * math.sin(self.orientation)
 
+    ##TODO A SUPPRIMER SI PLUS BESOIN
     def update_position(self, time_elapsed):
         # suivre la courbe sauf si :
         # - la vitesse est nulle
@@ -169,9 +191,8 @@ class Voiture:
         dir_y = self.prochaine_arrete.position_depart.y - self.prochaine_arrete.position_arrivee.y / abs(self.prochaine_arrete.position_depart.y - self.prochaine_arrete.position_arrivee.y)
         return dir_x, dir_y
 
+    ##TODO A SUPPRIMER SI PLUS BESOIN
     def contrainte_plus_proche(self):
-
-
         # On obtient tous les points pouvant constituer des arêtes contenant des voitures sous la distance de sécurité
         distance_totale = 0
         noeuds_a_traiter = [(self,0)]
@@ -183,7 +204,6 @@ class Voiture:
                 noeuds_a_traiter.append([noeud,distance_to_point])
             distance_totale+=distance_to_point
         noeuds_a_traiter[0] = (premier_noeud[0],0)
-
         # On obtient toutes les voitures sous la distance de sécurité 
         # (on pourrait aussi s'arrêter à la première voiture)
         distance_totale = 0
@@ -202,12 +222,6 @@ class Voiture:
             if len(voitures_a_traiter)>1:
                 break
         voitures_a_traiter.pop(0)
-
-
-
-
-
-
         for noeud in noeuds_a_traiter:
             # {Noeud:"stop",Noeud:"pass",Noeud:"slow"}
             reponse = noeud[0].voie_est_libre(self)
@@ -218,7 +232,6 @@ class Voiture:
                     self.noeuds[noeud[0]] = "slow"
             else:
                 self.noeuds[noeud[0]] = "stop"
-        
         contraintes = None#TODO
         #tant que les points disent go ou slow et qu'il n'y a pas de voiture entre
         #distance prochain obstacle = prochain point

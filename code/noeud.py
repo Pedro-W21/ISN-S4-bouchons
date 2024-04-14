@@ -4,10 +4,10 @@ from vecteur_2d import Vecteur2D
 class Noeud:
     size = Vecteur2D(6, 6)
 
-    VIRAGE = "VIRAGE"
-    INTERSECTION_T = "INTERSECTION_T"
-    INTERSECTION_X = "INTERSECTION_X"
-    ENTREE_SORTIE = "ENTREE_SORTIE"
+    VIRAGE = "virage"
+    INTERSECTION_T = "intersection_t"
+    INTERSECTION_X = "rond_point"
+    ENTREE_SORTIE = "entree_sortie"
 
     def __init__(self, position: Vecteur2D, arretes: list[Arrete]):
         #Implémentation données pour affichage
@@ -16,12 +16,21 @@ class Noeud:
         self.usagers = {}
         # self.usagers: dict[Voiture : list[Vecteur2D, Vecteur2D]] = {}
         #                 {voiture : [orientation, direction_prochaine]}
-
         self.vitesse_max = 40
         temps_deceleration = abs(0 - 40) / 8
         self.distance_securite = 1/2 * (8 / 3.6) * temps_deceleration**2 + 0.5 * self.size[0]
         self.arretes = arretes
 
+    def update(self):
+        #TODO Est-ce que c'est la voiture qui se retire des usagers
+        #ou est-ce que c'est le noeud qui retire la voiture de ses usagers
+        #(après certaine distance parcourue)
+
+        #if usagers != last_usagers:
+            #for i in voiture_attente:
+            #   voie_est_libre(voiture)
+        pass
+    
     def retirer_usager(self, voiture):
         del self.usagers[voiture]
         #Ou alors directement utiliser voiture, mais donc implémenter fonction __eq__ pour vérifier que c'est la même voiture
@@ -167,3 +176,9 @@ class EntreeSortie(Noeud):
     def __init__(self, position, aretes):
         super().__init__(position, aretes)
         self.type=self.ENTREE_SORTIE
+    
+    #TODO Implémenter fonction pour vérifier si la voie est libre
+    #Si quelqu'un a spawn c'est False 
+    #si le dernier qui a spawn est assez loin c'est True
+    def voie_est_libre(self, voiture):
+        return True

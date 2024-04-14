@@ -12,7 +12,7 @@ from carte import Carte
 from noeud import Noeud
 from arrete import Arrete
 from simulation import Simulation
-from car import Voiture
+from voiture import Voiture
 
 def from_rgb(rgb):
     """prend un tuple rgb et le transforme en string héxadécimal de couleur tkinter

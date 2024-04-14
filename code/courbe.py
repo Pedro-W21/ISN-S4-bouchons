@@ -46,10 +46,10 @@ class Courbe:
 if __name__ == "__main__":
     import matplotlib.pyplot as plt
 
-    position_depart = 40
-    position_arrivee = 70
-    vitesse_initiale = 80
-    vitesse_finale = 50
+    position_depart = 0
+    position_arrivee = 50
+    vitesse_initiale = 0
+    vitesse_finale = 20
 
     x = np.linspace(position_depart, position_arrivee, 100)
     y = Courbe(position_depart, position_arrivee, vitesse_initiale, vitesse_finale).result(x)

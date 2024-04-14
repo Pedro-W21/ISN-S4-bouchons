@@ -82,29 +82,56 @@ class Voiture:
 
         self.distance_marge_securite = self.size.x + self.size.y
     
-    def update(self):
-        #TODO
-        # Obtenir la courbe de vitesse à suivre
-        # Mettre à jour les positions
-        # On a dépassé le noeud suivant sur notre orientation ?
-        #Si oui
-            #Est-ce qu'il y a une arrête après ?
-            # Si oui
-                # Mettre à jour nos présences sur les arrêtes et noeuds
-                # Recherche chemin à partir de dernier point passé
-                # Mettre à jour l'arrete actuelle et prochaine
-            #Si non
-                # self.affiche = False (sortie de carte)
-                # Mettre à jour nos présences sur les arrêtes et noeuds
-        
-        # Supprimer si plus besoin
-        voiture_obstacle = self.trouver_voiture_sur_mon_chemin()
-        if voiture_obstacle and self.est_dans_zone_securite(voiture_obstacle.position):
-            # la voiture est dans la zone de sécurité
-            # On doit ralentir : on genere une courbe de ralentissement
-            pass
-            
-    def recherche_chemin(self, noeud_depart) -> list[Noeud]:
+    def update(self, fps: int):
+        if fps == 0:
+            return
+        self.update_position(1/fps)
+        self.update_position_graphe()
+
+    
+    def update_position_graphe(self):
+        noeud_depasse = self.depasse_noeud()
+        # si on depasse un noeud
+        if noeud_depasse:
+            # si c'est une entree sortie
+            if self.prochaine_arrete is None:
+                # desactive la voiture
+                self.affiche = False
+                self.arrete_actuelle.voitures.remove(self)
+                # TODO: faire dispawn la voiture
+
+            else:
+                # recherche le chemin depuis le noeud depasse
+                self.recherche_chemin(noeud_depasse)
+                # update les variables de position sur le graphes
+                self.ancienne_arrete = self.arrete_actuelle
+                self.arrete_actuelle = self.trouver_arrete(self.chemin[0], self.chemin[1])
+
+                # si le prochain noeud n'est pas une entré-sortie
+                if len(self.chemin) > 2:
+                    self.prochaine_arrete = self.trouver_arrete(self.chemin[1], self.chemin[2])
+                else:
+                    self.prochaine_arrete = None
+                
+                # update les variables de position sur le graphes
+                self.arrete_actuelle.push_voiture(self)
+                self.ancienne_arrete.voitures.remove(self)
+
+    def depasse_noeud(self):
+        # TODO: A FAIRE
+        # Renvoie True si on a dépassé le noeud
+        # Renvoie False si on est toujours sur le noeud
+
+        # ne pas tenir compte des virages
+        # simple calcul d'orientation et de direction de la voiture par rapport au point
+        # renvoie NONE ou le noeud qui vient d'être dépassé
+        pass
+
+
+
+    def recherche_chemin(self, noeud_depart: Noeud) -> list[Noeud]:
+        # Recherche chemin à partir de dernier point passé
+
         chemin = {noeud: float('inf') for noeud in self.graphe}
         chemin[noeud_depart] = 0
 

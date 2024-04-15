@@ -162,6 +162,12 @@ class Simulation:
                 if voiture.affiche == False:
                     self.voitures_non_affichees.append(voiture)
 
-    # sert pour l'affichage
     def recuperer_voitures(self):
         return [voiture for voiture in self.voitures_generees if voiture not in self.voitures_non_affichees]
+
+    def mettre_a_jour_agressivite(self, agressivite: float):
+        # agressivite de 0 à 1
+        self.moyenne_agressivite = agressivite
+
+    def mettre_a_jour_nombre_voiture(self, nombre_voiture: float):
+        self.nombre_voiture = nombre_voiture

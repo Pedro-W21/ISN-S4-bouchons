@@ -1,10 +1,7 @@
 from courbe import Courbe
-
-# circular import incoming
-from voiture import Voiture
 from vecteur_2d import Vecteur2D
 from noeud import Noeud
-from arrete import Arrete
+from arete import Arete
 
 class RangeError(Exception):
     
@@ -25,11 +22,11 @@ class GestionnaireVitesse:
 
     def __init__(self, voiture):
 
-        self.voiture: Voiture = voiture
+        self.voiture = voiture
 
         self.etat = self.ACCELERATION
 
-        self.courbe_par_defaut = Courbe(voiture.position, voiture.position + voiture.arrete_actuelle.longueur, voiture.vitesse, voiture.vitesse)
+        self.courbe_par_defaut = Courbe(voiture.position, voiture.position + voiture.arete_actuelle.longueur, voiture.vitesse, voiture.vitesse)
         self.position_depart_par_defaut: Vecteur2D = voiture.position
         
         self.courbe_obstacle_voiture = self.courbe_par_defaut
@@ -49,7 +46,7 @@ class GestionnaireVitesse:
         
 
 
-    def genere_courbe_obstacle_voiture(self, voiture_obstacle: Voiture) -> tuple[float, str]:
+    def genere_courbe_obstacle_voiture(self, voiture_obstacle) -> tuple[float, str]:
         
         self.position_depart_obstacle_voiture: Vecteur2D = self.voiture.position
 
@@ -62,13 +59,13 @@ class GestionnaireVitesse:
         self.position_depart_obstacle_noeud: Vecteur2D = self.voiture.position
         self.courbe_obstacle_noeud = Courbe(self.voiture.position, noeud_obstacle.position - noeud_obstacle.distance_securite, self.voiture.vitesse, noeud_obstacle.vitesse_max)
 
-    def genere_courbe_acceleration_arrete(self, arrete: Arrete):
+    def genere_courbe_acceleration_arete(self, arete: Arete):
         self.position_depart_acceleration: Vecteur2D = self.voiture.position
-        self.courbe_acceleration = Courbe(self.voiture.position, self.voiture.distance_acceleration(self.voiture.vitesse, arrete.vitesse_max), self.voiture.vitesse, arrete.vitesse_max)
+        self.courbe_acceleration = Courbe(self.voiture.position, self.voiture.distance_acceleration(self.voiture.vitesse, arete.vitesse_max), self.voiture.vitesse, arete.vitesse_max)
 
     def genere_courbe_par_defaut(self):
         self.position_depart_par_defaut: Vecteur2D = self.voiture.position
-        self.courbe_par_defaut = Courbe(self.voiture.position, self.voiture.position + self.voiture.arrete_actuelle.longueur, self.voiture.vitesse, self.voiture.vitesse)
+        self.courbe_par_defaut = Courbe(self.voiture.position, self.voiture.position + self.voiture.arete_actuelle.longueur, self.voiture.vitesse, self.voiture.vitesse)
     
     def genere_courbe_arret(self, position_finale):
         self.position_depart_arret: Vecteur2D = self.voiture.position

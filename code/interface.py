@@ -10,7 +10,7 @@ import tkinter as tk
 import math
 from carte import Carte
 from noeud import Noeud
-from arrete import Arrete
+from arete import Arete
 from simulation import Simulation
 from voiture import Voiture
 
@@ -190,13 +190,13 @@ class App(ctk.CTk):
         carte = Carte(self.largeur_carte,self.hauteur_carte,self.grille_route)
         noeuds:list[Noeud] = carte.into_aretes_noeuds()
         for noeud in noeuds:
-            for arete in noeud.arretes:
-                self.affiche_arrete(arete)
+            for arete in noeud.aretes:
+                self.affiche_arete(arete)
 
     def grille_to_canvas_pos(self, xc, yc):
         return (int(self.xo + xc * self.echelle), int(self.yo + yc * self.echelle))
 
-    def affiche_arrete(self, arete:Arrete):
+    def affiche_arete(self, arete: Arete):
         sx = Noeud.size.get_x()
         sy = Noeud.size.get_y()
         x0, y0 = self.grille_to_canvas_pos(arete.position_depart.get_x() / sx, arete.position_depart.get_y() / sy)

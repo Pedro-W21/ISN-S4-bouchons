@@ -1,4 +1,4 @@
-from arrete import Arrete
+from arete import Arete
 from vecteur_2d import Vecteur2D
 
 class Noeud:
@@ -9,7 +9,7 @@ class Noeud:
     INTERSECTION_X = "INTERSECTION_X"
     ENTREE_SORTIE = "ENTREE_SORTIE"
 
-    def __init__(self, position: Vecteur2D, arretes: list[Arrete]):
+    def __init__(self, position: Vecteur2D, aretes: list[Arete]):
         #Implémentation données pour affichage
         self.position = Vecteur2D(position.get_x(), position.get_y())
 
@@ -19,7 +19,7 @@ class Noeud:
         self.vitesse_max = 40
         temps_deceleration = abs(0 - 40) / 8
         self.distance_securite = 1/2 * (8 / 3.6) * temps_deceleration**2 + 0.5 * self.size[0]
-        self.arretes = arretes
+        self.aretes = aretes
 
     def update(self):
         #TODO Est-ce que c'est la voiture qui se retire des usagers

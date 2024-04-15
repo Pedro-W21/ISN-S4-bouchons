@@ -1,7 +1,7 @@
 from vecteur_2d import Vecteur2D
 
 
-class Arrete:
+class Arete:
     
     size = Vecteur2D(6, 6) # m [longueur, largeur]
     

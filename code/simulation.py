@@ -1,7 +1,7 @@
 import json
 import random
 
-from arrete import Arrete
+from arete import Arete
 from voiture import Voiture
 from noeud import Intersection_T, Intersection_X, Virage, Noeud
 from vecteur_2d import Vecteur2D
@@ -18,7 +18,10 @@ class Simulation:
 
     def __init__(self, carte: Carte, nombre_voiture) -> None:
         self.noeuds: list[Noeud] = carte.into_aretes_noeuds()
-        self.arretes: list[Arrete] = [] # TODO: generer la liste
+
+    
+
+        self.aretes: list[Arete] = [] # TODO: generer la liste
 
 
         self.graphe: dict[list[int, int]: list[list[int, int]]] = {}
@@ -50,49 +53,49 @@ class Simulation:
             rond_points = json_file[self.ROND_POINT]
             intersections_t = json_file[self.INTERSECTION_T]
             virages = json_file[self.VIRAGE]
-            arretes = json_file[self.ARRETE]
+            aretes = json_file[self.arete]
 
-            for arrete in arretes:
-                point1, point2 = arrete
+            for arete in aretes:
+                point1, point2 = arete
                 point1 = Vecteur2D(point1[0], point1[1])
                 point2 = Vecteur2D(point2[0], point2[1])
                 longueur = (point1 - point2).norme()
                 
                 #TODO: ajout de l'aller-retour ?
-                self.arretes.append(Arrete(longueur, point1, point2))
-                self.arretes.append(Arrete(longueur, point2, point1))
+                self.aretes.append(arete(longueur, point1, point2))
+                self.aretes.append(arete(longueur, point2, point1))
             
             for rond_point in rond_points:
-                arretes_reliee = []
-                for arrete in self.arretes:
-                    if list(arrete.position_depart) == rond_point:
-                        arretes_reliee.append(arrete)
-                self.noeuds.append(Intersection_X(Vecteur2D(rond_point[0], rond_point[1]), arretes_reliee))
+                aretes_reliee = []
+                for arete in self.aretes:
+                    if list(arete.position_depart) == rond_point:
+                        aretes_reliee.append(arete)
+                self.noeuds.append(Intersection_X(Vecteur2D(rond_point[0], rond_point[1]), aretes_reliee))
             
             for virage in virages:
-                arretes_reliee = []
-                for arrete in self.arretes:
-                    if list(arrete.position_depart) == virage:
-                        arretes_reliee.append(arrete)
-                self.noeuds.append(Virage(Vecteur2D(virage[0], virage[1]), arretes_reliee))
+                aretes_reliee = []
+                for arete in self.aretes:
+                    if list(arete.position_depart) == virage:
+                        aretes_reliee.append(arete)
+                self.noeuds.append(Virage(Vecteur2D(virage[0], virage[1]), aretes_reliee))
                 
             for intersection in intersections_t:
-                arretes_reliee = []
-                for arrete in self.arretes:
-                    if list(arrete.position_depart) == intersection:
-                        arretes_reliee.append(arrete)
-                self.noeuds.append(Intersection_T(Vecteur2D(intersection[0], intersection[1]), arretes_reliee))
+                aretes_reliee = []
+                for arete in self.aretes:
+                    if list(arete.position_depart) == intersection:
+                        aretes_reliee.append(arete)
+                self.noeuds.append(Intersection_T(Vecteur2D(intersection[0], intersection[1]), aretes_reliee))
                 
     def create_graphe(self):
         for noeud_courant in self.noeuds:
             self.graphe[noeud_courant] = []
             for noeud_arrivee in self.noeuds:
                 if noeud_arrivee.position != noeud_courant.position:
-                    # trouve l'arrete commune entre les deux noeuds
-                    arrete = next((arrete for arrete in noeud_arrivee.arretes if arrete in noeud_courant.arretes), None)
+                    # trouve l'arete commune entre les deux noeuds
+                    arete = next((arete for arete in noeud_arrivee.aretes if arete in noeud_courant.aretes), None)
                     # Si une arête commune est trouvée, l'ajouter au graphe
-                    if arrete:
-                        self.graphe[noeud_courant].append((noeud_arrivee, arrete))
+                    if arete:
+                        self.graphe[noeud_courant].append((noeud_arrivee, arete))
           
     def update(self):
         # TODO: update la simulation
@@ -108,8 +111,8 @@ class Simulation:
             self.entree_sortie_libre.remove(noeud_spawn)
 
         # 2. update les voitures
-        for arrete in self.arretes:
-            for voiture in arrete.voitures:
+        for arete in self.aretes:
+            for voiture in arete.voitures:
                 voiture.update()
                 if voiture.affiche == False:
                     self.voiture_generee.append(voiture)
@@ -122,10 +125,8 @@ class Simulation:
     # sert pour l'affichage
     def recuperer_voitures(self):
         voitures = []
-        for arrete in self.arretes:
-            voitures += arrete.voitures
+        for arete in self.aretes:
+            voitures += arete.voitures
         return voitures
 
-
-if __name__ == "__main__":
-    Simulation().import_configuration_carte('routes.json')  
+    

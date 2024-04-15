@@ -1,4 +1,4 @@
-from arrete import Arrete
+from arete import Arete
 from noeud import Noeud, Intersection_T, Intersection_X, EntreeSortie, Virage
 from vecteur_2d import Vecteur2D
 
@@ -24,7 +24,7 @@ class Carte:
                     fxc += dx
                     fyc += dy
                 if not (fxc == xc and fyc == yc):
-                    aretes.append(Arrete(Vecteur2D(xc * sx, yc * sy), Vecteur2D(fxc * sx, fyc * sy), abs(fxc - xc)  * sx + abs(fyc - yc) * sy ))
+                    aretes.append(Arete(Vecteur2D(xc * sx, yc * sy), Vecteur2D(fxc * sx, fyc * sy), abs(fxc - xc)  * sx + abs(fyc - yc) * sy ))
         return [self.cree_noeud(xc, yc, aretes) for ((xc, yc), aretes) in noeuds_dict.items()]
 
     def cree_noeud(self, xc, yc, aretes) -> Noeud:

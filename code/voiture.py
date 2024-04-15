@@ -42,7 +42,7 @@ class Voiture:
         self.acceleration_demarage = 0.6 #m/s^2 -> acceleration pour passer de 0 à 0.01 m/s en 1/60s
 
         #Variables primaires (ne changeront plus)
-        self.couleur = self.generate_color()
+        self.couleur = self.genere_couleur()
         self.distance_securite()
 
         self.chemin: list[Noeud] = self.recherche_chemin(noeud_depart)
@@ -75,7 +75,7 @@ class Voiture:
         self.deceleration = (5 + self.modulation_acceleration)  / 3.6
 
         #Variables primaires (ne changeront plus)
-        self.generate_color()
+        self.genere_couleur()
         self.distance_securite()
 
         self.chemin: list[Noeud] = self.recherche_chemin(noeud_depart)
@@ -91,7 +91,7 @@ class Voiture:
             return
         self.update_position(1/fps)
         self.update_position_graphe()
-    
+        self.update_vitesse()
 
     def update_vitesse(self):
         # identification des obstacles dans ma zone de sécurité
@@ -239,10 +239,9 @@ class Voiture:
         dir_y = self.arete_actuelle.position_depart.y - self.arete_actuelle.position_arrivee.y / abs(self.arete_actuelle.position_depart.y - self.arete_actuelle.position_arrivee.y)
         return dir_x, dir_y
 
-    def generate_color(self):
-        colors = ['red', 'blue', 'green', 'yellow', 'orange', 'purple', 'pink', 'brown', 'cyan', 'magenta']
-        randomIndex = math.floor(random.random() * colors.length)
-        return colors[randomIndex]
+    def genere_couleur(self):
+        couleurs = ['red', 'blue', 'green', 'yellow', 'orange', 'purple', 'pink', 'brown', 'cyan', 'magenta']
+        return random.choice(couleurs)
 
     ##TODO A SUPPRIMER SI PLUS BESOIN
     def update_position(self, time_elapsed):

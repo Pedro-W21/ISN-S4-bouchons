@@ -85,6 +85,8 @@ class Voiture:
         self.ancienne_arete: Arete = None
 
         self.distance_marge_securite = self.size.x + self.size.y
+
+        self.ancient_usagers = {}
     
     def update(self, fps: int):
         if fps == 0:
@@ -122,14 +124,24 @@ class Voiture:
                 if i == 0 and noeuds_obstacles[0].type in (Noeud.INTERSECTION_T, Noeud.INTERSECTION_X):
                     # si je suis dans la zone de ping
                     if self.distance_a_entite(noeuds_obstacles[0].position) < noeuds_obstacles[0].distance_securite:
+                        
                         # je demande si je peux passer
-                        if noeuds_obstacles[0].voie_est_libre(self):
+                        # ceci est optimise pour ne pas faire de calcul inutile
+                        est_empruntee = noeuds_obstacles[0].est_empruntee()
+                        usagers_differents = self.ancient_usagers != noeuds_obstacles[0].get_usagers()
+                        voie_est_libre = usagers_differents and noeuds_obstacles[0].voie_est_libre(self)
+
+                        if (not est_empruntee) or (voie_est_libre):
                             # Je désactive la courbe d'arret de ce point
+                            self.ancient_usagers = {}
                             pass
                         else:
+
                             # Je genere une courbe d'arret
                             # Je l'active
                             pass
+                        if not voie_est_libre:
+                            self.ancient_usagers = noeuds_obstacles[0].get_usagers().copy()
                 else:
                     # si je suis dans la zone de ping
                     if self.distance_a_entite(noeuds_obstacles[i].position) < noeuds_obstacles[i].distance_securite:
@@ -146,7 +158,7 @@ class Voiture:
                 pass
     
     def update_position_graphe(self):
-        noeud_depasse = self.depasse_noeud()
+        noeud_depasse: Noeud = self.depasse_noeud()
         # si on depasse un noeud
         if noeud_depasse:
             # si c'est une entree sortie
@@ -157,6 +169,9 @@ class Voiture:
                 # TODO: faire dispawn la voiture
 
             else:
+                # si le noeud est une intersection
+                if noeud_depasse.type in (Noeud.INTERSECTION_T, Noeud.INTERSECTION_X):
+                    noeud_depasse.retirer_usager(self)
                 # recherche le chemin depuis le noeud depasse
                 self.recherche_chemin(noeud_depasse)
                 # update les variables de position sur le graphes

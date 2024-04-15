@@ -17,7 +17,7 @@ class Noeud:
         # self.usagers: dict[Voiture : list[Vecteur2D, Vecteur2D]] = {}
         #                 {voiture : [orientation, direction_prochaine]}
         self.vitesse_max = 40
-        temps_deceleration = abs(0 - 40) / 8
+        temps_deceleration = abs(0 - self.vitesse_max) / 8
         self.distance_securite = 1/2 * (8 / 3.6) * temps_deceleration**2 + 0.5 * self.size[0]
         self.aretes = aretes
 
@@ -33,7 +33,6 @@ class Noeud:
     
     def retirer_usager(self, voiture):
         del self.usagers[voiture]
-        #Ou alors directement utiliser voiture, mais donc implémenter fonction __eq__ pour vérifier que c'est la même voiture
 
     def get_poids(self):
         return self.size.x / self.get_vitesse_moyenne()
@@ -44,6 +43,9 @@ class Noeud:
         else:
             moyenne = self.vitesse_max
         return max(moyenne, 1)
+    
+    def get_usagers(self):
+        return self.usagers
     
     def enregistrer_usager(self, voiture, orientation, intention):
         self.usagers[voiture] = [orientation, intention]

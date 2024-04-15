@@ -151,31 +151,17 @@ class Simulation:
                         self.graphe[noeud_courant].append((noeud_arrivee, arete))
           
     def update(self):
-        # TODO: update la simulation
-
-        # 1. spawn les voitures       
         if not self.voitures_non_affichees:
             self.genere_voitures()
         else:
             self.reasign_voitures()
 
-        # 2. update les voitures
         for arete in self.aretes:
             for voiture in arete.voitures:
                 voiture.update()
                 if voiture.affiche == False:
                     self.voitures_non_affichees.append(voiture)
-        
-        # 3. update les noeuds (intersection, rond-point uniquement)
-        for noeud in self.noeuds:
-            if noeud.type not in (self.VIRAGE, self.entrees_sorties):
-                noeud.update()
 
     # sert pour l'affichage
     def recuperer_voitures(self):
-        voitures = []
-        for arete in self.aretes:
-            voitures += arete.voitures
-        return voitures
-
-    
+        return [voiture for voiture in self.voitures_generees if voiture not in self.voitures_non_affichees]

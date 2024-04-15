@@ -32,7 +32,12 @@ class Arete:
         return self.voitures.pop(0)
     
     def push_voiture(self, voiture):
-        self.voitures.append(voiture)
+        if self not in self.voitures:
+            self.voitures.append(voiture)
+        else:
+            # TODO : fix ca pour être sur que ca n'arrive pas
+            # lors des trys
+            print("tente d'ajouter une voiture deja sur l'arrete bug ?")
 
     def get_poids(self):
         return self.longueur / self.get_vitesse_moyenne()

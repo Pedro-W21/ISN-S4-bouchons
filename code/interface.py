@@ -272,8 +272,7 @@ class App(ctk.CTk):
         self.filtre_correction_carte()
 
         carte = Carte(self.largeur_carte,self.hauteur_carte,self.grille_route)
-        
-        self.simulation = Simulation(carte)
+        self.simulation = Simulation(carte, self.nombre_voiture_scale.get(), self.niveau_agressivite.get())
 
         self.mode_affichage = "simulation"
 

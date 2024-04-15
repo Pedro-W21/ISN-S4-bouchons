@@ -17,7 +17,7 @@ voiture.reassign(...2)
 
 class Voiture:
     size = Vecteur2D(4.5, 2.5) # m [longueur, largeur]
-
+    distance_marge_securite = size.x + size.y
     def __init__(self, id: int, agressivite: float, noeud_depart: Noeud, noeud_arrivee: Noeud, graphe: dict):
         self.id = id
 
@@ -51,7 +51,11 @@ class Voiture:
         self.prochaine_arete: Arete = self.trouver_arete(self.chemin[1], self.chemin[2])
         self.ancienne_arete: Arete = None
 
-        self.distance_marge_securite = self.size.x + self.size.y
+        # TODO: je sais pas si c'est utile ? car normalement au dépassement du point ca ajoute la voiture
+        # la voiture va peut être être en double
+        # a fix lors des try print debug dans push_voiture
+        self.arete_actuelle.push_voiture(self)
+
 
     def reassign(self, agressivite: float, noeud_depart: Noeud, noeud_arrivee: Noeud):
 

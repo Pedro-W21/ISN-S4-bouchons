@@ -14,7 +14,7 @@ def fonction(x):
 
 class Courbe:
 
-    def __init__(self, position_depart: float, position_arrivee: float, vitesse_initiale: float, vitesse_finale: float) -> None:
+    def __init__(self, position_depart: Vecteur2D, position_arrivee: Vecteur2D, vitesse_initiale: float, vitesse_finale: float) -> None:
         self.position_depart = position_depart
         self.position_arrivee = position_arrivee
         self.vitesse_initiale = vitesse_initiale
@@ -25,21 +25,13 @@ class Courbe:
 
         self.active = True
     
-    def result(self, x_y: float):
+    def result(self, x_y: float) -> float:
+        #TODO: fix les distances de manhattan car actuellement vecteur2D
         x_y_normalise = (x_y - self.position_depart) / self.plage_position
         vitesse_x_y_normalise = fonction(x_y_normalise)
         vitesse = vitesse_x_y_normalise * self.plage_vitesse + self.vitesse_initiale
         return vitesse
-    
-    def est_activee(self):
-        return self.active
-    
-    def desactiver(self):
-        self.active = False
-    
-    def activer(self):
-        self.active = True
-    
+
     def __eq__(self, courbe) -> bool:
         return self.position_depart == courbe.position_depart and self.position_arrivee == courbe.position_arrivee and self.vitesse_initiale == courbe.vitesse_initiale and self.vitesse_finale == courbe.vitesse_finale
 
@@ -53,7 +45,6 @@ if __name__ == "__main__":
 
     x = np.linspace(position_depart, position_arrivee, 100)
     y = Courbe(position_depart, position_arrivee, vitesse_initiale, vitesse_finale).result(x)
-
 
     plt.plot(x, y)
     plt.xlabel('x')

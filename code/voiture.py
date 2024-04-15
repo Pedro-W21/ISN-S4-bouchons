@@ -56,6 +56,12 @@ class Voiture:
         # a fix lors des try print debug dans push_voiture
         self.arete_actuelle.push_voiture(self)
 
+        self.ancient_usagers = {}
+
+        self.etat = GestionnaireVitesse.ACCELERATION
+
+
+
 
     def reassign(self, agressivite: float, noeud_depart: Noeud, noeud_arrivee: Noeud):
 
@@ -87,6 +93,9 @@ class Voiture:
         self.distance_marge_securite = self.size.x + self.size.y
 
         self.ancient_usagers = {}
+
+        self.etat = GestionnaireVitesse.ACCELERATION
+
     
     def update(self, fps: int):
         if fps == 0:
@@ -97,28 +106,41 @@ class Voiture:
 
     def update_vitesse(self):
         # identification des obstacles dans ma zone de sécurité
-        voiture_obstacle: list[Voiture] = self.trouver_voiture_sur_mon_chemin()
+        voiture_obstacle: Voiture = self.trouver_voiture_sur_mon_chemin()
         noeuds_obstacles: list[Noeud] = self.trouver_noeuds_sur_mon_chemin()
         
         
         # Si il n'y pas d'obstacle
-        if voiture_obstacle is None and not noeuds_obstacles == 0:
+        if voiture_obstacle is None and (not noeuds_obstacles):
+             
             #Je desactive toutes les autres courbes
-            #Si je n'ai pas déjà une courbe d'acceleration active
-                #Je genere une courbe  d'acceleration et je l'active
-            pass
+            desactiver_courbes = [GestionnaireVitesse.FREINAGE,
+                                    GestionnaireVitesse.SUIVRE_VOITURE,
+                                    GestionnaireVitesse.ARRET]
+            self.gestionnaire_vitesse.desactiver_courbes(desactiver_courbes)
+            
+            if self.vitesse != self.arete_actuelle.vitesse_max:
+                if not self.gestionnaire_vitesse.courbe_est_active(GestionnaireVitesse.ACCELERATION):
+                    self.gestionnaire_vitesse.genere_courbe_acceleration_arete()   
+            elif not self.gestionnaire_vitesse.courbe_est_active(GestionnaireVitesse.ROULE):
+                self.gestionnaire_vitesse.genere_courbe_par_defaut()
+        
         else:
-            # je desactive la courbe d'acceleration
-            if voiture_obstacle is not None:
-                #Je prends sa courbe
-                #Si j'ai pas une courbe active
-                    #Je l'enregistre
-                    #Je l'active
-                pass
-            else:
-                #Je désactive la courbe de suivie des voitures
-                pass
+            desactiver_courbes = [GestionnaireVitesse.ROULE,
+                                    GestionnaireVitesse.ACCELERATION]
+            self.gestionnaire_vitesse.desactiver_courbes(desactiver_courbes)
 
+
+            if voiture_obstacle is not None:
+                if not self.gestionnaire_vitesse.courbe_est_active(GestionnaireVitesse.SUIVRE_VOITURE):
+                    self.gestionnaire_vitesse.genere_courbe_suivre_voiture(voiture_obstacle)
+            else:
+                self.gestionnaire_vitesse.desactiver_courbes([GestionnaireVitesse.SUIVRE_VOITURE])
+
+
+            # TODO: il y a un probleme dans toute cette partie de code
+            # il faut revoir la logique : il manque des éléments et certaine condition ne sont pas complète
+            
             for i in range(len(noeuds_obstacles)):
                 # si c'est le premier noeud et que c'est une intersection
                 if i == 0 and noeuds_obstacles[0].type in (Noeud.INTERSECTION_T, Noeud.INTERSECTION_X):
@@ -132,30 +154,22 @@ class Voiture:
                         voie_est_libre = usagers_differents and noeuds_obstacles[0].voie_est_libre(self)
 
                         if (not est_empruntee) or (voie_est_libre):
-                            # Je désactive la courbe d'arret de ce point
+                            # TODO : de quel courbe d'arret on parle il y en a plusieurs
+                            self.gestionnaire_vitesse.desactiver_courbes([GestionnaireVitesse.ARRET])
                             self.ancient_usagers = {}
-                            pass
                         else:
-
-                            # Je genere une courbe d'arret
-                            # Je l'active
-                            pass
+                            self.gestionnaire_vitesse.genere_courbe_freinage()
+                        
                         if not voie_est_libre:
                             self.ancient_usagers = noeuds_obstacles[0].get_usagers().copy()
                 else:
                     # si je suis dans la zone de ping
                     if self.distance_a_entite(noeuds_obstacles[i].position) < noeuds_obstacles[i].distance_securite:
-                        # Je genere une courbe d'arret si elle n'exsite pas
-                            # Je l'active
-                        pass
-                    #Je prends sa courbe
-                    #Si j'ai pas une courbe active
-                        #Je la cré et l'enregistre
-                        #Je l'active
-                    pass
+                        self.gestionnaire_vitesse.genere_courbe_freinage()
             else:
-                # Je desactive les courbes
-                pass
+                desactiver_courbes = [GestionnaireVitesse.FREINAGE,
+                                    GestionnaireVitesse.ARRET]
+                self.gestionnaire_vitesse.desactiver_courbes(desactiver_courbes)
     
     def update_position_graphe(self):
         noeud_depasse: Noeud = self.depasse_noeud()

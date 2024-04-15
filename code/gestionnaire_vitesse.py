@@ -22,106 +22,67 @@ class GestionnaireVitesse:
 
     def __init__(self, voiture):
 
+        self.courbes = {
+            self.ACCELERATION: [],
+            self.FREINAGE: [],
+            self.SUIVRE_VOITURE: [],
+            self.ARRET: [],
+            self.ROULE: []
+        }
+
         self.voiture = voiture
 
-        self.etat = self.ACCELERATION
-
-        self.courbe_par_defaut = Courbe(voiture.position, voiture.position + voiture.arete_actuelle.longueur, voiture.vitesse, voiture.vitesse)
-        self.position_depart_par_defaut: Vecteur2D = voiture.position
-        
-        self.courbe_obstacle_voiture = self.courbe_par_defaut
-        self.position_depart_obstacle_voiture: Vecteur2D = voiture.position
-
-        self.courbe_obstacle_noeud = self.courbe_par_defaut
-        self.position_depart_obstacle_noeud: Vecteur2D = voiture.position
-
-        self.courbe_arret = self.courbe_par_defaut
-        self.position_depart_arret: Vecteur2D = voiture.position
-
-        self.courbe_acceleration = self.courbe_par_defaut
-        self.position_depart_acceleration: Vecteur2D = voiture.position
-
-        self.courbe_courante = self.courbe_par_defaut
-        self.position_depart_courante: Vecteur2D = voiture.position
-        
-
+    def desactiver_courbes(self, nom_courbes: list[str]):
+        for nom_courbe in nom_courbes:
+            self.courbes[nom_courbe] = []
 
     def genere_courbe_obstacle_voiture(self, voiture_obstacle) -> tuple[float, str]:
-        
-        self.position_depart_obstacle_voiture: Vecteur2D = self.voiture.position
-
         courbe_voiture_obstacle = voiture_obstacle.gestionnaire_vitesse.courbe_courante
         distance_securite_finale = self.voiture.distance_securite(courbe_voiture_obstacle.vitesse_finale)
-        self.courbe_obstacle_voiture = Courbe(self.voiture.position, courbe_voiture_obstacle.position_arrivee - distance_securite_finale, self.voiture.vitesse, courbe_voiture_obstacle.vitesse_finale)
+        courbe = Courbe(self.voiture.position, courbe_voiture_obstacle.position_arrivee - distance_securite_finale, self.voiture.vitesse, courbe_voiture_obstacle.vitesse_finale)
+        self.courbes[self.SUIVRE_VOITURE].append(courbe)
 
     def genere_courbe_obstacle_noeud(self, noeud_obstacle: Noeud):
+        courbe = Courbe(self.voiture.position, noeud_obstacle.position - noeud_obstacle.distance_securite, self.voiture.vitesse, noeud_obstacle.vitesse_max)
+        self.courbes[self.FREINAGE].append(courbe)
 
-        self.position_depart_obstacle_noeud: Vecteur2D = self.voiture.position
-        self.courbe_obstacle_noeud = Courbe(self.voiture.position, noeud_obstacle.position - noeud_obstacle.distance_securite, self.voiture.vitesse, noeud_obstacle.vitesse_max)
-
-    def genere_courbe_acceleration_arete(self, arete: Arete):
-        self.position_depart_acceleration: Vecteur2D = self.voiture.position
-        self.courbe_acceleration = Courbe(self.voiture.position, self.voiture.distance_acceleration(self.voiture.vitesse, arete.vitesse_max), self.voiture.vitesse, arete.vitesse_max)
+    def genere_courbe_acceleration_arete(self):
+        courbe = Courbe(self.voiture.position, self.voiture.distance_acceleration(self.voiture.vitesse, self.voiture.arete_actuelle.vitesse_max), self.voiture.vitesse, self.voiture.arete_actuelle.vitesse_max)
+        self.courbes[self.ACCELERATION].append(courbe)
 
     def genere_courbe_par_defaut(self):
-        self.position_depart_par_defaut: Vecteur2D = self.voiture.position
-        self.courbe_par_defaut = Courbe(self.voiture.position, self.voiture.position + self.voiture.arete_actuelle.longueur, self.voiture.vitesse, self.voiture.vitesse)
-    
+        courbe = Courbe(self.voiture.position, self.voiture.position + self.voiture.arete_actuelle.longueur, self.voiture.vitesse, self.voiture.vitesse)
+        self.courbes[self.ROULE].append(courbe)
+
     def genere_courbe_arret(self, position_finale):
-        self.position_depart_arret: Vecteur2D = self.voiture.position
         self.courbe_arret = Courbe(self.voiture.position, position_finale, self.voiture.vitesse, 0)
+        self.courbes[self.ARRET].append(self.courbe_arret)
 
-    def update_courbe_courante(self):
-        if self.etat == self.ACCELERATION:
-            self.courbe_courante = self.courbe_acceleration
-            self.position_depart_courante = self.position_depart_acceleration
-        elif self.etat == self.ROULE:
-            self.courbe_courante = self.courbe_par_defaut
-            self.position_depart_courante = self.position_depart_par_defaut
-        elif self.etat == self.FREINAGE:
-            self.courbe_courante = self.courbe_obstacle_noeud
-            self.position_depart_courante = self.position_depart_obstacle_noeud
-        elif self.etat == self.ARRET:
-            self.courbe_courante = self.courbe_arret
-            self.position_depart_courante = self.position_depart_arret
-        elif self.etat == self.SUIVRE_VOITURE:
-            self.courbe_courante = self.courbe_obstacle_voiture
-            self.position_depart_courante = self.position_depart_obstacle_voiture
+    def trouver_etat_par_courbe(self, courbe: Courbe) -> str:
+        for etat, courbes in self.courbes.items():
+            if courbe in courbes:
+                return etat
 
-    def recuperer_vitesse(self):
-        # TODO: refaire toute la classe pour optimiser et gerer plusieurs noeuds d'affiler
-        etat = []
-        vitesses = []
-        if self.courbe_par_defaut.active and (self.voiture.position - self.position_depart_par_defaut).norme_manathan() < self.courbe_par_defaut.position_arrivee:
-            vitesses.append(self.courbe_par_defaut.result(self.voiture.position - self.position_depart_par_defaut).norme_manathan())
-            etat.append(self.ROULE)
-        else:
-            raise RangeError("La voiture est hors de la courbe")
+    def recuperer_vitesse_etat(self):
+        vitesses: dict[float: Courbe] = {}
+        list_courbes: list[Courbe] = []
+        for courbes in self.courbes.values():
+            list_courbes += courbes
 
-        if self.courbe_acceleration.active and (self.voiture.position - self.position_depart_acceleration).norme_manathan() < self.courbe_acceleration.position_arrivee:
-            vitesses.append(self.courbe_acceleration.result(self.voiture.position - self.position_depart_acceleration).norme_manathan())
-            etat.append(self.ACCELERATION)
-        else:
-            raise RangeError("La voiture est hors de la courbe")
+        for courbe in list_courbes:
+            vitesse = courbe.result(self.voiture.position)
+            vitesses[vitesse] = courbe
 
-        if self.courbe_obstacle_voiture.active and (self.voiture.position - self.position_depart_obstacle_voiture).norme_manathan() < self.courbe_obstacle_voiture.position_arrivee:
-            vitesses.append(self.courbe_obstacle_voiture.result(self.voiture.position - self.position_depart_obstacle_voiture).norme_manathan())
-            etat.append(self.SUIVRE_VOITURE)
-        else:
-            raise RangeError("La voiture est hors de la courbe")
-        if self.courbe_obstacle_noeud.active and (self.voiture.position - self.position_depart_obstacle_noeud).norme_manathan() < self.courbe_obstacle_noeud.position_arrivee:
-            vitesses.append(self.courbe_obstacle_noeud.result(self.voiture.position - self.position_depart_obstacle_noeud).norme_manathan())
-            etat.append(self.FREINAGE)
-        else:
-            raise RangeError("La voiture est hors de la courbe")
-        
-        if self.courbe_arret.active and (self.voiture.position - self.position_depart_arret).norme_manathan() < self.courbe_arret.position_arrivee:
-            vitesses.append(self.courbe_arret.result(self.voiture.position - self.position_depart_arret).norme_manathan())
-            etat.append(self.ARRET)
-        else:
-            raise RangeError("La voiture est hors de la courbe")
-        
-        vitesse = min(vitesses)
-        self.etat = etat[vitesses.index(vitesse)]
-        self.update_courbe_courante() 
-        return vitesse, self.etat
+        vitesse = min(vitesses.keys())
+
+        self.voiture.etat = self.trouver_etat_par_courbe(vitesses[vitesse])
+
+        desactiver_courbes = [self.ACCELERATION, self.FREINAGE, self.SUIVRE_VOITURE, self.ARRET, self.ROULE]
+        desactiver_courbes.remove(self.voiture.etat)
+
+        self.desactiver_courbes(desactiver_courbes)
+
+        return vitesse
+
+    def courbe_est_active(self, nom_courbe: str) -> bool:
+        return bool(self.courbes[nom_courbe])

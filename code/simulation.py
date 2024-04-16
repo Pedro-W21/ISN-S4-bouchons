@@ -24,7 +24,7 @@ class Simulation:
             for arete in noeud.aretes:
                 if arete not in self.aretes:
                     self.aretes.append(arete)
-        self.entrees_sorties: list[EntreeSortie] = [noeud for noeud in self.noeuds if noeud.type == self.entrees_sorties]
+        self.entrees_sorties: list[EntreeSortie] = [noeud for noeud in self.noeuds if noeud.type == self.ENTREE_SORTIE]
 
 
         self.graphe: dict[Noeud: list[Noeud, Arete]] = {}

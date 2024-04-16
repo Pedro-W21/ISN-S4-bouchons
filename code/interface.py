@@ -602,32 +602,19 @@ class App(ctk.CTk):
         if total_cotes == 0 and self.routes_placees > 0:
             ret = False
         return ret
+    
     def point_dans_grille_ou_0(self, xc, yc) -> int:
         ret = 0
         if 0 <= xc < self.largeur_carte and 0 <= yc < self.hauteur_carte:
             ret = self.grille_route[xc,yc]
         return ret
+    
     def calcul_echelle(self):
         self.largeur_canvas = self.canvas_affichage.winfo_width()
         self.hauteur_canvas = self.canvas_affichage.winfo_height()
         dimension_minimum_canvas = min(self.largeur_canvas, self.hauteur_canvas)
         dimension_maximum_carte = max(self.largeur_carte, self.hauteur_carte)
         self.echelle = max(2, int(math.floor(dimension_minimum_canvas/dimension_maximum_carte)))
-
-
-    def ajout_routes2(self):
-        """
-        Ajout des routes dans le dictionnaire routes
-        paramètres : aucun
-        :return: aucun (actualise le dictionnaire "routes")
-        """
-        with open("routes.json", "r") as file:
-            self.routes = json.load(file)
-
-        self.liste_cartes = tk.Listbox(self.frame_param_carte)
-        for route in self.routes.keys():
-            self.liste_cartes.insert("end", route)
-        self.liste_cartes.pack(side=tk.TOP, fill="x")
 
     def affichage_route3(self, liste_route):
         route_types = {
@@ -646,39 +633,6 @@ class App(ctk.CTk):
                 self.canvas_affichage.create_image(position[0], position[1], image=self.images[name], anchor=tk.NW)
         self.update()
         self.update_idletasks()
-
-    def case_dedans_valide(self, xc, yc):
-        checks = [(-1,0), (1,0), (0, 1), (0, -1)]
-        ret = True
-        if self.point_dans_grille_ou_0(xc, yc) == 1:
-            total = 0
-            for (dx, dy) in checks:
-                total += self.point_dans_grille_ou_0(xc + dx, yc + dy)
-            if total <= 1:
-                ret = False
-        return ret
-    
-    def case_bord_valide(self, xc, yc):
-        checks = [-1, 1]
-        bads = 0
-        goods = 0
-        ret = True
-        if xc == 0 or xc == self.largeur_carte - 1:
-            for dy in checks:
-                bads += self.point_dans_grille_ou_0(xc, yc + dy)
-            for dx in checks:
-                goods += self.point_dans_grille_ou_0(xc + dx, yc)
-        if yc == 0 or yc == self.hauteur_carte - 1:
-            for dx in checks:
-                bads += self.point_dans_grille_ou_0(xc + dx, yc)
-            for dy in checks:
-                goods += self.point_dans_grille_ou_0(xc, yc + dy)
-        if bads > 0 and goods == 0:
-            ret = False
-        elif goods == 0:
-            ret = False
-        return ret
-            
 
     def filtre_correction_carte(self, event=None):
         carte = Carte(self.largeur_carte, self.hauteur_carte, self.grille_route)

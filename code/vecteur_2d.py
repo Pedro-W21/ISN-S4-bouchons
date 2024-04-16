@@ -41,3 +41,6 @@ class Vecteur2D:
 
     def __str__(self):
         return f"x : {self.x}, y : {self.y}"
+    
+    def __eq__(self, rhs):
+        return self.x == rhs.x and self.y == rhs.y

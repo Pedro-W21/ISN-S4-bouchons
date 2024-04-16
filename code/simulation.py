@@ -57,15 +57,16 @@ class Simulation:
     def reasign_voitures(self):
         entrees_libres = self.trouver_entrees_libres()
         for voiture in self.voitures_non_affichees:
-            sorties = self.entrees_sorties.copy()
-            entree = choice(entrees_libres)
-            
-            entrees_libres.remove(entrees_libres)
-            sorties.remove(entree)
-            
-            sortie = choice(sorties)
-            
-            voiture.reassign(self.genere_agressivite, entree, sortie)
+            if len(self.voitures_generees) - len(self.voitures_non_affichees) < self.nombre_voiture:
+                sorties = self.entrees_sorties.copy()
+                entree = choice(entrees_libres)
+                
+                entrees_libres.remove(entrees_libres)
+                sorties.remove(entree)
+                
+                sortie = choice(sorties)
+                
+                voiture.reassign(self.genere_agressivite, entree, sortie)
 
     def genere_id(self) -> int:
         self.compteur_id += 1

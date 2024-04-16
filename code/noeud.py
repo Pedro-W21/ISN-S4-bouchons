@@ -18,7 +18,7 @@ class Noeud:
         #                 {voiture : [orientation, direction_prochaine]}
         self.vitesse_max = 40
         temps_deceleration = abs(0 - self.vitesse_max) / 8
-        self.distance_securite = 1/2 * (8 / 3.6) * temps_deceleration**2 + 0.5 * self.size[0]
+        self.distance_securite = 1/2 * (8 / 3.6) * temps_deceleration**2 + 0.5 * self.size.get_x()
         self.aretes = aretes
 
     def update(self):

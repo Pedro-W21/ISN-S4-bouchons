@@ -178,6 +178,10 @@ class App(ctk.CTk):
         self.creer_route.pack(side=TOP, expand=True)
         self.creer_route.bind('<Button-1>', self.creer_nouvelle_carte)
 
+        self.generer_carte = CTkButton(master=self.creation, text="générer une carte")
+        self.generer_carte.pack(side=TOP, expand=True)
+        self.generer_carte.bind("<Button-1>", self.generer_carte_test)
+
         self.filtre_route = CTkButton(master=self.creation, text="appliquer le filtre")
         self.filtre_route.pack(side=TOP, expand=True)
         self.filtre_route.bind('<Button-1>', self.filtre_correction_carte)
@@ -186,6 +190,16 @@ class App(ctk.CTk):
         self.transforme_into_noeuds.pack(side=TOP, expand=True)
         self.transforme_into_noeuds.bind('<Button-1>', self.test_transforme)
     
+    def generer_carte_test(self, event=None):
+        if self.mode_affichage == "edition":
+            self.largeur_carte = int(self.largeur_x_scale.get())
+            self.hauteur_carte = int(self.hauteur_y_scale.get())
+            carte = Carte.genere_aleatoirement(self.largeur_carte, self.hauteur_carte)
+            self.grille_route = carte.grille
+            self.filtre_correction_carte()
+            self.affiche_carte_dans_canvas()
+
+
     def test_transforme(self, event=None):
         carte = Carte(self.largeur_carte,self.hauteur_carte,self.grille_route)
         noeuds:list[Noeud] = carte.into_aretes_noeuds()
@@ -554,15 +568,14 @@ class App(ctk.CTk):
             else:
                 self.yo = self.canvas_affichage.winfo_height()//2 - self.canvas_affichage.winfo_width()//2
 
-            if len(self.grille_canvas) == 0:
+            if len(self.grille_canvas) != self.largeur_carte * self.hauteur_carte:
+                self.grille_canvas = []
                 self.canvas_affichage.delete('all')
                 nx = np.ones(self.largeur_carte+1) * self.xo + np.arange(0, self.largeur_carte+1) * self.echelle
                 ny = np.ones(self.hauteur_carte+1) * self.yo + np.arange(0, self.hauteur_carte+1) * self.echelle
                 for y in range(self.hauteur_carte):
                     for x in range(self.largeur_carte):
-                        self.grille_canvas.append(self.canvas_affichage.create_rectangle(nx[x], ny[y], nx[x+1], ny[y+1], fill=from_rgb((255,255,255)), outline=from_rgb((0,0,0))))
-            elif 0 < len(self.grille_canvas) < self.largeur_carte * self.hauteur_carte:
-                pass
+                        self.grille_canvas.append(self.canvas_affichage.create_rectangle(nx[x], ny[y], nx[x+1], ny[y+1], fill=self.couleur_de_case(x, y), outline=from_rgb((0,0,0))))
             else:
                 nx = np.ones(self.largeur_carte+1) * self.xo + np.arange(0, self.largeur_carte+1) * self.echelle
                 ny = np.ones(self.hauteur_carte+1) * self.yo + np.arange(0, self.hauteur_carte+1) * self.echelle
@@ -570,7 +583,7 @@ class App(ctk.CTk):
                     for x in range(self.largeur_carte):
                         rect = self.grille_canvas[y * self.largeur_carte + x]
                         self.canvas_affichage.coords(rect, nx[x], ny[y], nx[x+1], ny[y+1])
-                        #self.canvas_affichage.itemconfigure()
+                        self.canvas_affichage.itemconfigure(rect, fill=self.couleur_de_case(x, y))
             self.fini_affichage = False
 
     def position_posable(self, xc, yc) -> bool:

@@ -9,6 +9,8 @@ import numpy as np
 from carte import Carte
 from random import choice, shuffle
 
+#TODO : ADAPTER les listes de voitures pour joindre toutes les voitures à afficher et pas à afficher
+
 class Simulation:
 
     VIRAGE = "VIRAGE"
@@ -24,80 +26,72 @@ class Simulation:
             for arete in noeud.aretes:
                 if arete not in self.aretes:
                     self.aretes.append(arete)
-        self.entrees_sorties: list[EntreeSortie] = [noeud for noeud in self.noeuds if noeud.type == self.ENTREE_SORTIE]
 
+        self.entrees_sorties: list[EntreeSortie] = [noeud for noeud in self.noeuds if noeud.type == self.ENTREE_SORTIE]
 
         self.graphe: dict[Noeud: list[Noeud, Arete]] = {}
         #            position_noeud : list[position_noeuds]
         self.genere_graphe()
 
         self.nombre_voiture = nombre_voiture
-        self.voitures_generees: list[Voiture] = []
+        self.voitures_actives: list[Voiture] = []
         self.voitures_non_affichees: list[Voiture] = []
 
         self.moyenne_agressivite = agressivite
         self.ecart_type_agressivite = 0.25
-        
-        self.compteur_id = 0
 
-    def genere_voitures(self):
+    def activer_voitures(self):
         entrees_libres = self.trouver_entrees_libres()
-        shuffle(entrees_libres)
+        entrees_libres_restantes = entrees_libres.copy()
+        entree_prise = []
+        sorties = self.entrees_sorties.copy()
 
-        for entree in entrees_libres:
-            if len(self.voitures_generees) < self.nombre_voiture:
-                sorties = self.entrees_sorties.copy()
-                sorties.remove(entree)
+        #Si on a besoin de créer de nouvelles voitures
+        for i in range(max(0,self.nombre_voiture-len(self.voitures_actives)-len(self.voitures_non_affichees))):
+            if len(entrees_libres_restantes) == 0:
+                entree = choice(self.entrees_sorties)
+            else: 
+                entree = choice(entrees_libres_restantes)
+                entrees_libres_restantes.remove(entree)
+            entree_prise.append(entree)
+            sorties = self.entrees_sorties.copy().remove(entree)
+            sortie = choice(sorties)
+            
+            nouvelle_voiture = Voiture(self.genere_id(), self.genere_agressivite(), entree, sortie, self.graphe)
+            self.voitures_non_affichees.append(nouvelle_voiture)
+            
+        for voiture in reversed(self.voitures_non_affichees):
+            #voiture fraichement créée et les voitures non affiche qui peuvent apparaitre
+            if voiture.noeud_depart in entrees_libres:
+                voiture.affiche = True
+                self.voitures_actives.append(voiture)
+                voiture.noeud_depart.enregistrer_usager(voiture)
+                self.voitures_non_affichees.remove(voiture)
+                entrees_libres.remove(voiture.noeud_depart)
+            #voiture qui a pour entrée une entrée déjà prise, mais il reste des entrées disponibles 
+            elif len(entrees_libres_restantes)>0:
+                entree = choice(entrees_libres_restantes)
+                entrees_libres_restantes.remove(entree)
                 sortie = choice(sorties)
-
-                self.voitures_generees.append(Voiture(self.genere_id(), self.genere_agressivite(), entree, sortie, self.graphe))
-            else:
-                break
-        
-    def reasign_voitures(self):
-        entrees_libres = self.trouver_entrees_libres()
-        for voiture in self.voitures_non_affichees:
-            if len(self.voitures_generees) - len(self.voitures_non_affichees) < self.nombre_voiture:
-                sorties = self.entrees_sorties.copy()
-                entree = choice(entrees_libres)
-                
-                entrees_libres.remove(entrees_libres)
-                sorties.remove(entree)
-                
-                sortie = choice(sorties)
-                
                 voiture.reassign(self.genere_agressivite, entree, sortie)
+                voiture.affiche = True
+                self.voitures_actives.append(voiture)
+                voiture.noeud_depart.enregistrer_usager(voiture)
+                self.voitures_non_affichees.remove(voiture)
 
     def genere_id(self) -> int:
-        self.compteur_id += 1
-        return self.compteur_id - 1
+        return len(self.voitures_actives)+len(self.voitures_non_affichees)
  
     def trouver_entrees_libres(self) -> list[EntreeSortie]:
         entrees_libres: list[EntreeSortie] = self.entrees_sorties.copy()
-
-        for voiture in self.voitures_generees:
-            if entrees_libres:
-                # verifie si il n'y pas des voitures deja générées sur le point
-                if voiture.noeud_depart in entrees_libres:
-                    entrees_libres.remove(voiture.noeud_depart)
-            else:
-                break
-        
-        entrees_restantes: list[EntreeSortie] = entrees_libres.copy()
-        for entree in entrees_restantes:
-            # TODO: problème si les aretes sont plus petites que la distance de sécurité ?
-            # vérifie que il n'y a pas de voiture proche
-            if entree.aretes[0].voitures and entree.aretes[0].voitures[-1].distance_a_entite(entree.position) < Voiture.distance_marge_securite:
-                entrees_libres.remove(entree)
+        for noeud in entrees_libres:
+            if not noeud.voie_est_libre():
+                entrees_libres.remove(noeud)      
         return entrees_libres
 
     def genere_agressivite(self):
         agressivite = np.random.normal(self.moyenne_agressivite, self.ecart_type_agressivite)
-        if agressivite < 0:
-            agressivite = 0
-        elif agressivite > 1:
-            agressivite = 1
-        return agressivite
+        return min(max(0.0,agressivite),1.0)
 
     def import_configuration_carte(self, file_path: str):
         with open(file_path, 'r') as file:
@@ -152,23 +146,22 @@ class Simulation:
                         self.graphe[noeud_courant].append((noeud_arrivee, arete))
           
     def update(self):
-        if not self.voitures_non_affichees:
-            self.genere_voitures()
-        else:
-            self.reasign_voitures()
+        #Si on veut générer + de voitures
+        if self.nombre_voiture > len(self.voitures_actives):
+            self.activer_voitures()
 
-        for arete in self.aretes:
-            for voiture in arete.voitures:
-                voiture.update()
-                if voiture.affiche == False:
-                    self.voitures_non_affichees.append(voiture)
-
-    def recuperer_voitures(self):
-        return [voiture for voiture in self.voitures_generees if voiture not in self.voitures_non_affichees]
+        for voiture in self.voitures_actives:
+            voiture.update()
+            if voiture.affiche == False:
+                self.voitures_non_affichees.append(voiture)
+                self.voitures_actives.remove(voiture)
 
     def mettre_a_jour_agressivite(self, agressivite: float):
         # agressivite de 0 à 1
-        self.moyenne_agressivite = agressivite
+        self.moyenne_agressivite = min(max(0.0,agressivite),1.0)
 
-    def mettre_a_jour_nombre_voiture(self, nombre_voiture: float):
+    def mettre_a_jour_nombre_voiture(self, nombre_voiture: int):
         self.nombre_voiture = nombre_voiture
+
+    def recuperer_voiture_afficher(self):
+        return self.voitures_actives

@@ -11,8 +11,7 @@ class Noeud:
 
     def __init__(self, position: Vecteur2D, aretes: list[Arete]):
         #Implémentation données pour affichage
-        self.position = Vecteur2D(position.get_x(), position.get_y())
-
+        self.position = position
         self.usagers = {}
         # self.usagers: dict[Voiture : list[Vecteur2D, Vecteur2D]] = {}
         #                 {voiture : [orientation, direction_prochaine]}
@@ -20,16 +19,6 @@ class Noeud:
         temps_deceleration = abs(0 - self.vitesse_max) / 8
         self.distance_securite = 1/2 * (8 / 3.6) * temps_deceleration**2 + 0.5 * self.size.get_x()
         self.aretes = aretes
-
-    def update(self):
-        #TODO Est-ce que c'est la voiture qui se retire des usagers
-        #ou est-ce que c'est le noeud qui retire la voiture de ses usagers
-        #(après certaine distance parcourue)
-
-        #if usagers != last_usagers:
-            #for i in voiture_attente:
-            #   voie_est_libre(voiture)
-        pass
     
     def retirer_usager(self, voiture):
         del self.usagers[voiture]
@@ -55,6 +44,9 @@ class Noeud:
     
     def est_empruntee(self) -> bool:
         return self.usagers > 0
+    
+    def est_un_usager(self, voiture) -> bool:
+        return voiture in self.usagers
 
 class Virage(Noeud):
     def __init__(self, position, aretes=None):
@@ -184,4 +176,12 @@ class EntreeSortie(Noeud):
         self.type=self.ENTREE_SORTIE
 
     def voie_est_libre(self, voiture):
-        return True
+        if self.usagers:
+            return False
+        else: 
+            return True
+    
+    def update(self):
+        for voiture in self.usagers:
+            if voiture.distance_a_entite(self) < voiture.distance_marge_securite:
+                del self.usagers[voiture]

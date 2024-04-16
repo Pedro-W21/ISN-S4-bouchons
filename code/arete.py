@@ -32,7 +32,7 @@ class Arete:
         return self.voitures.pop(0)
     
     def push_voiture(self, voiture):
-        if self not in self.voitures:
+        if voiture not in self.voitures:
             self.voitures.append(voiture)
         else:
             # TODO : fix ca pour être sur que ca n'arrive pas

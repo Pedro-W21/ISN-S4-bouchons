@@ -17,9 +17,6 @@ class GestionnaireVitesse:
     ARRET = "ARRET"
     ROULE = "ROULE"
 
-
-
-
     def __init__(self, voiture):
 
         self.courbes = {
@@ -49,7 +46,7 @@ class GestionnaireVitesse:
 
     def cree_courbe(self, position_depart: float, position_arrivee: float, vitesse_initiale: float, vitesse_finale: float):
         return Courbe(position_depart, position_arrivee, vitesse_initiale, vitesse_finale)
-
+    
     # vu
     def genere_courbe_freinage(self, position_finale: float, vitesse_finale: float):
         courbe = Courbe(self.voiture.position, position_finale, self.voiture.vitesse, vitesse_finale)
@@ -64,6 +61,10 @@ class GestionnaireVitesse:
         courbe = Courbe(self.voiture.position, self.voiture.distance_acceleration(self.voiture.vitesse, vitesse_finale), self.voiture.vitesse, vitesse_finale)
         self.courbes[self.ACCELERATION].append(courbe)
     
+    def genere_courbe_acceleration_arrete(self):
+        pass
+
+
     # vu
     def genere_courbe_roule_vitesse_max(self, vitesse_max: float):
         courbe = Courbe(self.voiture.position, self.voiture.position + self.voiture.arete_actuelle.longueur, vitesse_max, vitesse_max)

@@ -196,7 +196,6 @@ class App(ctk.CTk):
             self.hauteur_carte = int(self.hauteur_y_scale.get())
             carte = Carte.genere_aleatoirement_2(self.largeur_carte, self.hauteur_carte)
             self.grille_route = carte.grille
-            self.filtre_correction_carte()
             self.affiche_carte_dans_canvas()
 
 
@@ -682,33 +681,10 @@ class App(ctk.CTk):
             
 
     def filtre_correction_carte(self, event=None):
-        bon = False
-        coins = [(0, 0), (0, self.hauteur_carte - 1), (self.largeur_carte - 1, 0), (self.largeur_carte - 1, self.hauteur_carte - 1)]
-        while bon == False:
-            changements = []
-            for yc in range(0, self.hauteur_carte):
-                for xc in range(0, self.largeur_carte):
-                    if self.grille_route[xc, yc] == 1:
-                        bord = (xc == 0 or xc == self.largeur_carte - 1 or yc == 0 or yc == self.hauteur_carte - 1)
-                        coin = (xc, yc) in coins
-                        if bord and ((coin and self.point_dans_grille_ou_0(xc, yc) == 1) or not self.case_bord_valide(xc, yc)):
-                            changements.append((xc, yc))
-                        elif not bord and not self.case_dedans_valide(xc, yc):
-                            changements.append((xc, yc))
-            self.applique_changements(changements)
-            if len(changements) == 0:
-                bon = True
-        
-        changements = []
-        composantes = self.trouve_composantes_connexes()
-        if len(composantes) > 1:
-            id_plus_petite = 0
-            for i in range(len(composantes)):
-                if len(composantes[i]) < len(composantes[id_plus_petite]):
-                    id_plus_petite = i
-            for xc, yc in composantes[id_plus_petite]:
-                changements.append((xc, yc))
-        self.applique_changements(changements)
+        carte = Carte(self.largeur_carte, self.hauteur_carte, self.grille_route)
+        carte.filtre_correction_carte()
+        self.grille_route = carte.grille
+        self.affiche_carte_dans_canvas()
 
     def applique_changements(self, changements):
         for xc, yc in changements:
@@ -718,28 +694,7 @@ class App(ctk.CTk):
             self.update_affichage_case(xc, yc)
         
 
-    def trouve_composantes_connexes(self):
-        explores = {}
-        composantes = []
-        decalages_possibles = [(-1,0), (1,0), (0, 1), (0, -1)]
-        for yc in range(0, self.hauteur_carte):
-            for xc in range(0, self.largeur_carte):
-                if self.point_dans_grille_ou_0(xc, yc) == 1 and explores.get((xc,yc), None) == None:
-                    queue = [(xc, yc)]
-                    id_composante = len(composantes)
-                    composantes.append([(xc, yc)])
-                    explores[(xc, yc)] = id_composante
-                    set_local = {(xc, yc)}
-                    while len(queue) > 0:
-                        axc, ayc = queue.pop()
-                        for (dx, dy) in decalages_possibles:
-                            nxc, nyc = axc + dx, ayc + dy
-                            if self.point_dans_grille_ou_0(nxc, nyc) == 1 and (nxc, nyc) not in set_local:
-                                explores[(nxc, nyc)] = id_composante
-                                queue.append((nxc, nyc))
-                                set_local.add((nxc, nyc))
-                                composantes[id_composante].append((nxc, nyc))
-        return composantes
+    
 
         
         

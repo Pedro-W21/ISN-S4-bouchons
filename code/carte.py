@@ -207,8 +207,75 @@ class Carte:
             nb = randint(3, 10)
             while len(cases_avec_dirs) > nb and randint(0, 10) > 1:
                 cases_avec_dirs.remove(choice(list(cases_avec_dirs)))
+        carte.filtre_correction_carte()
         return carte
-            
+    def applique_changements(self, changements):
+        for xc, yc in changements:
+            if self.grille[xc, yc] != 0:
+                self.grille[xc, yc] = 0
+
+    def trouve_composantes_connexes(self):
+        explores = {}
+        composantes = []
+        decalages_possibles = [(-1,0), (1,0), (0, 1), (0, -1)]
+        for yc in range(0, self.hauteur):
+            for xc in range(0, self.largeur):
+                if self.get_at_or_0(xc, yc) == 1 and explores.get((xc,yc), None) == None:
+                    queue = [(xc, yc)]
+                    id_composante = len(composantes)
+                    composantes.append([(xc, yc)])
+                    explores[(xc, yc)] = id_composante
+                    set_local = {(xc, yc)}
+                    while len(queue) > 0:
+                        axc, ayc = queue.pop()
+                        for (dx, dy) in decalages_possibles:
+                            nxc, nyc = axc + dx, ayc + dy
+                            if self.get_at_or_0(nxc, nyc) == 1 and (nxc, nyc) not in set_local:
+                                explores[(nxc, nyc)] = id_composante
+                                queue.append((nxc, nyc))
+                                set_local.add((nxc, nyc))
+                                composantes[id_composante].append((nxc, nyc))
+        return composantes
+
+    def case_dedans_valide(self, xc, yc):
+        checks = [(-1,0), (1,0), (0, 1), (0, -1)]
+        ret = True
+        if self.get_at_or_0(xc, yc) == 1:
+            total = 0
+            for (dx, dy) in checks:
+                total += self.get_at_or_0(xc + dx, yc + dy)
+            if total <= 1:
+                ret = False
+        return ret
+
+    def filtre_correction_carte(self):
+        bon = False
+        coins = [(0, 0), (0, self.hauteur - 1), (self.largeur - 1, 0), (self.largeur - 1, self.hauteur - 1)]
+        while bon == False:
+            changements = []
+            for yc in range(0, self.hauteur):
+                for xc in range(0, self.largeur):
+                    if self.grille[xc, yc] == 1:
+                        bord = (xc == 0 or xc == self.largeur - 1 or yc == 0 or yc == self.hauteur - 1)
+                        coin = (xc, yc) in coins
+                        if bord and ((coin and self.get_at_or_0(xc, yc) == 1) or not self.case_bord_valide(xc, yc)):
+                            changements.append((xc, yc))
+                        elif not bord and not self.case_dedans_valide(xc, yc):
+                            changements.append((xc, yc))
+            self.applique_changements(changements)
+            if len(changements) == 0:
+                bon = True
+        
+        changements = []
+        composantes = self.trouve_composantes_connexes()
+        if len(composantes) > 1:
+            id_plus_petite = 0
+            for i in range(len(composantes)):
+                if len(composantes[i]) < len(composantes[id_plus_petite]):
+                    id_plus_petite = i
+            for xc, yc in composantes[id_plus_petite]:
+                changements.append((xc, yc))
+        self.applique_changements(changements)
 
     def entree_sortie_possible(self):
         total = 0

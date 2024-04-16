@@ -89,8 +89,10 @@ class Carte:
         return (xc == 0 and yc == 0) or (xc == 0 and yc == self.hauteur - 1) or (xc == self.largeur - 1 and yc == 0) or (xc == self.largeur - 1 and yc == self.hauteur - 1)
 
     def position_posable_et_vide(self, xc:int, yc:int) -> bool:
+        return self.get_at_or_0(xc, yc) == 0 and self.position_posable(xc, yc)
+    def position_posable(self, xc:int, yc:int) -> bool:
         ret = True
-        if self.get_at_or_0(xc, yc) == 1 or self.dans_un_coin(xc, yc):
+        if self.dans_un_coin(xc, yc):
             ret = False
         else:
             positions_a_check_coins = [[(-1, -1), (-1, 0), (0, -1)], [(-1, 1), (-1, 0), (0, 1)], [(1,1), (0,1), (1,0)], [(1, -1), (0, -1), (1,0)]] # triplets de positions de coins
@@ -103,7 +105,6 @@ class Carte:
             if self.sur_le_bord(xc, yc) and not self.case_bord_valide(xc, yc):
                 ret = False
         return ret
-    
     def case_bord_valide(self, xc, yc):
         checks = [-1, 1]
         bads = 0
@@ -165,6 +166,58 @@ class Carte:
             if len(a_poser) == 0:
                 fini = True
         return carte
+    def set_dirs_depuis(self, xc, yc):
+        dirs = self.directions_posables_a(xc, yc)
+        ens = set()
+        while len(dirs) > 0:
+            choix = choice(dirs)
+            dirs.remove(choix)
+            ens.add(choix)
+        return ens
+
+    def genere_aleatoirement_2(largeur:int, hauteur:int):
+        carte = Carte(largeur=largeur, hauteur=hauteur)
+        sx, sy = carte.pos_utilisable_comme_start(randint(0, largeur - 1), randint(0, hauteur - 1))
+        dirs_depuis = {(sx, sy):carte.set_dirs_depuis(sx, sy)}
+        cases_avec_dirs = {(sx, sy)}
+        while len(cases_avec_dirs) > 0:
+            a_rajouter = []
+            a_enlever = []
+            avec_dirs = choice(list(cases_avec_dirs))
+            xc, yc = avec_dirs
+            for dx, dy in dirs_depuis[avec_dirs]:
+                i = 1
+                while carte.position_posable_et_vide(xc + i * dx, yc + i * dy):
+                    a_rajouter.append((xc + i * dx, yc + i * dy))
+                    carte.grille[xc + i * dx, yc + i * dy] = 1
+                    i += 1
+            for (xc, yc) in cases_avec_dirs:
+                ens = carte.set_dirs_depuis(xc, yc)
+                if len(ens) == 0:
+                    a_enlever.append((xc, yc))
+                else:
+                    dirs_depuis[(xc, yc)] = ens
+            for (xc, yc) in a_rajouter:
+                ens = carte.set_dirs_depuis(xc, yc)
+                if len(ens) > 1:
+                    cases_avec_dirs.add((xc, yc))
+                    dirs_depuis[(xc, yc)] = ens
+            for enlev in a_enlever:
+                cases_avec_dirs.remove(enlev)
+            nb = randint(3, 10)
+            while len(cases_avec_dirs) > nb and randint(0, 10) > 1:
+                cases_avec_dirs.remove(choice(list(cases_avec_dirs)))
+        return carte
             
+
+    def entree_sortie_possible(self):
+        total = 0
+        for xc in range(self.largeur):
+            for yc in range(self.hauteur):
+                if self.sur_le_bord(xc, yc) and self.grille[xc, yc] == 1:
+                    total += 1
+        return total >= 2
+
+        
 
 

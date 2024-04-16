@@ -194,7 +194,7 @@ class App(ctk.CTk):
         if self.mode_affichage == "edition":
             self.largeur_carte = int(self.largeur_x_scale.get())
             self.hauteur_carte = int(self.hauteur_y_scale.get())
-            carte = Carte.genere_aleatoirement(self.largeur_carte, self.hauteur_carte)
+            carte = Carte.genere_aleatoirement_2(self.largeur_carte, self.hauteur_carte)
             self.grille_route = carte.grille
             self.filtre_correction_carte()
             self.affiche_carte_dans_canvas()

@@ -166,5 +166,5 @@ class Simulation:
     def mettre_a_jour_nombre_voiture(self, nombre_voiture: int):
         self.nombre_voiture = nombre_voiture
 
-    def recuperer_voiture_afficher(self):
+    def recuperer_voitures(self):
         return self.voitures_actives

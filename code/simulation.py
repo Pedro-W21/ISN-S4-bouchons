@@ -156,6 +156,9 @@ class Simulation:
                 self.voitures_non_affichees.append(voiture)
                 self.voitures_actives.remove(voiture)
 
+    def update(self):
+        pass
+
     def mettre_a_jour_agressivite(self, agressivite: float):
         # agressivite de 0 à 1
         self.moyenne_agressivite = min(max(0.0,agressivite),1.0)

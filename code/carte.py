@@ -14,6 +14,12 @@ class Carte:
         self.hauteur = hauteur
 
     def into_aretes_noeuds(self) -> list[Noeud]:
+        """
+        renvoie les noeuds avec arêtes associés à la carte sur laquelle la méthode est appelée
+
+        input : rien
+        return : liste de noeuds valide
+        """
         noeuds_dict = {}
         for xc in range(self.largeur):
             for yc in range(self.hauteur):
@@ -33,6 +39,15 @@ class Carte:
         return [self.cree_noeud(xc, yc, aretes) for ((xc, yc), aretes) in noeuds_dict.items()]
 
     def cree_noeud(self, xc, yc, aretes) -> Noeud:
+        """
+        renvoie le noeud associé au point (xc, yc) rempli des arêtes données
+
+        input : 
+            - xc : entier de coordonnée horizontale valide dans la carte
+            - yc : entier de coordonnée verticale valide dans la carte
+            - aretes : liste d'Arete partant de (xc, yc)
+        return : type de Noeud valide pour la configuration autour de (xc, yc)
+        """
         compteur_h = 0
         compteur_v = 0
         ret = None
@@ -56,6 +71,14 @@ class Carte:
         return ret
     
     def est_noeud(self, xc, yc) -> bool:
+        """
+        Renvoie True si la position de la carte en (xc, yc) est un noeud, False sinon
+
+        input : 
+            - xc : entier de coordonnée horizontale valide dans la carte
+            - yc : entier de coordonnée verticale valide dans la carte
+        return : booléen indiquant si la position (xc, yc) est un noeud
+        """
         compteur_h = 0
         compteur_v = 0
         ret = False
@@ -70,12 +93,28 @@ class Carte:
         return ret
 
     def get_at_or_0(self, xc:int, yc:int) -> int:
+        """
+        renvoie la valeur de la grille de route en (xc, yc) si elle est dans la carte ou 0 sinon
+
+        input : 
+            - xc : entier de coordonnée horizontale
+            - yc : entier de coordonnée verticale
+        return : entier, 0 ou 1 (pas un booléen car la plupart des fonctions qui appellent celle-ci le font pour compter des voisins)
+        """
         ret = 0
         if 0 <= xc < self.largeur and 0 <= yc < self.hauteur:
             ret = self.grille[xc,yc]
         return ret
 
     def directions_posables_a(self, xc:int, yc:int) -> list[tuple[int,int]]:
+        """
+        renvoie les directions dans lesquelles on peut poser une route à partir de la coordonnée (xc, yc) dans la carte
+
+        input :
+            - xc : entier de coordonnée horizontale valide dans la carte
+            - yc : entier de coordonnée verticale valide dans la carte
+        return : liste de directions (dx, dy), tuples d'entiers signés
+        """
         posables = []
         directions = [(-1, 0), (1, 0), (0, 1), (0, -1)]
         for dx, dy in directions:
@@ -84,13 +123,46 @@ class Carte:
         return posables
 
     def sur_le_bord(self, xc:int, yc:int) -> bool:
+        """
+        renvoie True si (xc, yc) est sur le bord ou en dehors de la carte, False sinon
+
+        input :
+            - xc : entier de coordonnée horizontale
+            - yc : entier de coordonnée verticale
+        return : booléen indiquant si (xc, yc) est sur le bord ou en dehors de la carte
+        """
         return xc <= 0 or xc >= self.largeur - 1 or yc <= 0 or yc >= self.hauteur - 1
     def dans_un_coin(self, xc:int, yc:int) -> bool:
+        """
+        renvoie True si (xc, yc) est dans un coin de la carte, False sinon
+
+        input :
+            - xc : entier de coordonnée horizontale valide dans la carte
+            - yc : entier de coordonnée verticale valide dans la carte
+        return : booléen indiquant si (xc, yc) est dans un coin de la carte
+        """
         return (xc == 0 and yc == 0) or (xc == 0 and yc == self.hauteur - 1) or (xc == self.largeur - 1 and yc == 0) or (xc == self.largeur - 1 and yc == self.hauteur - 1)
 
     def position_posable_et_vide(self, xc:int, yc:int) -> bool:
+        """
+        renvoie True si (xc, yc) est une position vide où l'on peut poser une route, False sinon
+
+        input :
+            - xc : entier de coordonnée horizontale valide dans la carte
+            - yc : entier de coordonnée verticale valide dans la carte
+        return : booléen
+        """
         return self.get_at_or_0(xc, yc) == 0 and self.position_posable(xc, yc)
+    
     def position_posable(self, xc:int, yc:int) -> bool:
+        """
+        renvoie True si (xc, yc) est une position où l'on peut poser une route, False sinon
+
+        input :
+            - xc : entier de coordonnée horizontale valide dans la carte
+            - yc : entier de coordonnée verticale valide dans la carte
+        return : booléen
+        """
         ret = True
         if self.dans_un_coin(xc, yc):
             ret = False
@@ -105,7 +177,17 @@ class Carte:
             if self.sur_le_bord(xc, yc) and not self.case_bord_valide(xc, yc):
                 ret = False
         return ret
-    def case_bord_valide(self, xc, yc):
+    def case_bord_valide(self, xc:int, yc:int) -> bool:
+        """
+        Envoie True si la case (xc, yc) serait une case de bord valide si elle était pleine, False sinon
+
+        définition case de bord valide : pas de voisin sur le même bord, et 1 lien vers l'intérieur de la carte
+
+        input : 
+            - xc : entier de coordonnée horizontale valide dans la carte
+            - yc : entier de coordonnée verticale valide dans la carte
+        return : booléen
+        """
         checks = [-1, 1]
         bads = 0
         goods = 0
@@ -127,6 +209,14 @@ class Carte:
         return ret
 
     def pos_utilisable_comme_start(self, xc:int, yc:int) -> tuple[int, int]:
+        """
+        renvoie une position corrigée de (xc, yc) de façon à ce qu'elle ne soit pas dans un coin
+
+        input:
+            - xc : entier de coordonnée horizontale valide dans la carte
+            - yc : entier de coordonnée verticale valide dans la carte
+        return : tuple d'entier (rx, ry) contenus dans la carte, possiblement sur un bord mais pas dans un coin
+        """
         rx, ry = xc, yc
         if xc == 0 and yc == 0:
             rx += 1
@@ -137,36 +227,16 @@ class Carte:
         elif xc == self.largeur - 1 and yc == self.hauteur - 1:
             rx -= 1
         return (rx, ry)
-
-    def genere_aleatoirement(largeur:int, hauteur:int):
-        carte = Carte(largeur=largeur, hauteur=hauteur)
-        sx, sy = carte.pos_utilisable_comme_start(randint(0, largeur - 1), randint(0, hauteur - 1))
-        fini = False
-        cases_posees = {(sx, sy)}
-        directions = [(-1, 0), (1, 0), (0, 1), (0, -1)]
-        while not fini:
-            a_poser = []
-            a_enlever = []
-            for (xc, yc) in cases_posees:
-                if len(cases_posees) > 5 and randint(0, 10) <= 3:
-                    a_enlever.append((xc, yc))
-                else:
-                    for (dx, dy) in directions:
-                        i = 1
-                        while carte.position_posable_et_vide(xc + i * dx, yc + i * dy) and randint(0, 10) >= 4:
-                            a_poser.append((xc + i * dx, yc + i * dy))
-                            carte.grille[xc + i * dx, yc + i * dy] = 1
-                            i += 1
-                    a_enlever.append((xc, yc))
-            for (xc, yc) in a_poser:
-                cases_posees.add((xc, yc))
-            for (xc, yc) in a_enlever:
-                cases_posees.remove((xc, yc))
     
-            if len(a_poser) == 0:
-                fini = True
-        return carte
     def set_dirs_depuis(self, xc, yc):
+        """
+        package les directions posables depuis (xc, yc) dans un set généré aléatoirement pour changer l'ordre des explorations de direction
+
+        input :
+            - xc : entier de coordonnée horizontale valide dans la carte
+            - yc : entier de coordonnée verticale valide dans la carte
+        return : set de tuples (dx, dy) indiquant des directions explorables dans la carte au moment où cette fonction est exécutée 
+        """
         dirs = self.directions_posables_a(xc, yc)
         ens = set()
         while len(dirs) > 0:
@@ -175,7 +245,15 @@ class Carte:
             ens.add(choix)
         return ens
 
-    def genere_aleatoirement_2(largeur:int, hauteur:int):
+    def genere_aleatoirement(largeur:int, hauteur:int):
+        """
+        génère aléatoirement une carte de largeur et hauteur données en respectant toutes les règles de construction
+
+        input :
+            - largeur : entier >= 3
+            - hauteur : entier >= 3
+        return : Carte respectant toutes les règles de construction imposées par la simulation
+        """
         carte = Carte(largeur=largeur, hauteur=hauteur)
         sx, sy = carte.pos_utilisable_comme_start(randint(0, largeur - 1), randint(0, hauteur - 1))
         dirs_depuis = {(sx, sy):carte.set_dirs_depuis(sx, sy)}
@@ -205,16 +283,29 @@ class Carte:
             for enlev in a_enlever:
                 cases_avec_dirs.remove(enlev)
             nb = randint(3, 10)
-            while len(cases_avec_dirs) > nb and randint(0, 10) > 1:
+            while len(cases_avec_dirs) > nb and randint(0, 10) > -1:
                 cases_avec_dirs.remove(choice(list(cases_avec_dirs)))
         carte.filtre_correction_carte()
         return carte
-    def applique_changements(self, changements):
+    def applique_changements(self, changements:list[tuple[int, int]]):
+        """
+        mets les coordonnées dans la liste de changements à 0
+
+        input : liste de coordonnées (xc, yc) valides dans la carte
+        return : rien
+        
+        effets secondaires : modifie self.grille à toutes les coordonnées données
+        """
         for xc, yc in changements:
-            if self.grille[xc, yc] != 0:
-                self.grille[xc, yc] = 0
+            self.grille[xc, yc] = 0
 
     def trouve_composantes_connexes(self):
+        """
+        trouve et renvoie une liste des composantes connexes du graphe de routes total
+
+        input : rien
+        return : liste de liste de points (xc, yc) entiers et valides dans la carte. Chaque sous liste est une composante connexe
+        """
         explores = {}
         composantes = []
         decalages_possibles = [(-1,0), (1,0), (0, 1), (0, -1)]
@@ -237,7 +328,15 @@ class Carte:
                                 composantes[id_composante].append((nxc, nyc))
         return composantes
 
-    def case_dedans_valide(self, xc, yc):
+    def case_dedans_valide(self, xc:int, yc:int) -> bool:
+        """
+        renvoie True si (xc, yc) est une case intérieur utilisable pour une route (au moins 2 voisins directs remplis)
+
+        input :
+            - xc : entier de coordonnée horizontale valide dans la carte
+            - yc : entier de coordonnée verticale valide dans la carte
+        return : booléen, True si la case peut faire parti d'une route, False sinon
+        """
         checks = [(-1,0), (1,0), (0, 1), (0, -1)]
         ret = True
         if self.get_at_or_0(xc, yc) == 1:
@@ -249,6 +348,16 @@ class Carte:
         return ret
 
     def filtre_correction_carte(self):
+        """
+        applique sur la carte actuelle un filtre de correction de carte enlevant les cul-de-sac, et toutes les composantes connexes sauf la plus grande
+
+        input : rien
+        return : rien
+
+        effets secondaires : change la carte actuelle, et la rend valide pour la simulation si elle a déjà 1 entrée/sortie
+
+        note : le calcul de composantes connexes ne sert à rien pour les cartes générées procéduralement, car la procédure renvoie une carte connexe de façon garantie
+        """
         bon = False
         coins = [(0, 0), (0, self.hauteur - 1), (self.largeur - 1, 0), (self.largeur - 1, self.hauteur - 1)]
         while bon == False:
@@ -278,6 +387,12 @@ class Carte:
         self.applique_changements(changements)
 
     def entree_sortie_possible(self):
+        """
+        renvoie True si la carte a au moins 2 entrées/sortie séparées, False sinon
+
+        input : rien
+        return : booléen
+        """
         total = 0
         for xc in range(self.largeur):
             for yc in range(self.hauteur):

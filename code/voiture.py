@@ -247,17 +247,18 @@ class Voiture:
 
     def depasse_noeud(self):
         # selon de la voiture renvoie si elle a dépassé le prochain point sur le chemin
+        # TODO : verifier que c'est bien self.direction_prochain_chemin
         prochain_noeud = self.chemin[1]
-        if self.direction == Vecteur2D(1, 0):
+        if self.direction_prochain_chemin == Vecteur2D(1, 0):
             if self.position.x > prochain_noeud.position.x + prochain_noeud.size.x:
                 return True
-        elif self.direction == Vecteur2D(-1, 0):
+        elif self.direction_prochain_chemin == Vecteur2D(-1, 0):
             if self.position.x < prochain_noeud.position.x - prochain_noeud.size.x:
                 return True
-        elif self.direction == Vecteur2D(0, 1):
+        elif self.direction_prochain_chemin == Vecteur2D(0, 1):
             if self.position.y > prochain_noeud.position.y + prochain_noeud.size.y:
                 return True
-        elif self.direction == Vecteur2D(0, -1):
+        elif self.direction_prochain_chemin == Vecteur2D(0, -1):
             if self.position.y < prochain_noeud.position.y - prochain_noeud.size.y:
                 return True
 

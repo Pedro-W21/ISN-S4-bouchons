@@ -31,6 +31,7 @@ if __name__ == "__main__":
         # augmenter l'acceleration de depart
 
         # controller les parametre pour voir si la vitesse finale est atteinte
+        # faire une courbe avec une acceleration moyenne de 8m/s²
 
         fps = 60
 

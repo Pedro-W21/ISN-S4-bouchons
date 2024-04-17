@@ -1,3 +1,4 @@
+import math
 from courbe import Courbe
 import numpy as np
 import matplotlib.pyplot as plt
@@ -23,16 +24,23 @@ if __name__ == "__main__":
         plt.show()
     
     elif test == "test2":
-        
+        # TODO : 
+        # observation courbe trop bombé donc pas de vitessse suffisante pour accelerer
+        # augmenter le nombre de fps
+        # diminuer le nombre de frame
+        # augmenter l'acceleration de depart
+
+        # controller les parametre pour voir si la vitesse finale est atteinte
+
         fps = 60
 
         position_depart = 0
         position_arrivee = 50
         vitesse_initiale = 0
-        vitesse_finale = 20
+        vitesse_finale = 20/3.6
         
         courbe = Courbe(position_depart, position_arrivee, vitesse_initiale, vitesse_finale)
-        frames = np.arange(1, 3600, 1)
+        frames = np.arange(1, 999999999, 1)
         
         vitesses = [0]
         positions = [0]
@@ -40,7 +48,7 @@ if __name__ == "__main__":
 
 
 
-        acceleration_depart = 400
+        acceleration_depart = 0.01
         position = position_depart
         vitesse = 0
 
@@ -56,21 +64,22 @@ if __name__ == "__main__":
                     position += vitesse/fps
             except ValueError:
                 print("Erreur")
+                break
 
             temps.append(temps_courant)
             vitesses.append(vitesse)
             positions.append(position)
 
-            if frame == 5:
-                break
+            """if frame == 5:
+                break"""
 
 
-        print("temps", temps)
-        print("vitesses", vitesses)
-        print("positions", positions)
+        #print("temps", temps)
+        #print("vitesses", vitesses)
+        #print("positions", positions)
 
         plt.plot(temps, vitesses, label='Vitesse')
-        #plt.plot(temps, positions, label='Position')
+        plt.plot(temps, positions, label='Position')
         plt.xlabel('Temps')
         plt.ylabel('Vitesse / Position')
         plt.title('Évolution de la vitesse et de la position')

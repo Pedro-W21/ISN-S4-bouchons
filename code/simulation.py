@@ -34,8 +34,7 @@ class Simulation:
         self.genere_graphe()
 
         self.nombre_voiture = nombre_voiture
-        self.voitures_actives: list[Voiture] = []
-        self.voitures_non_affichees: list[Voiture] = []
+        self.voitures: list[Voiture] = []
 
         self.moyenne_agressivite = agressivite
         self.ecart_type_agressivite = 0.25
@@ -47,7 +46,7 @@ class Simulation:
         sorties = self.entrees_sorties.copy()
 
         #Si on a besoin de créer de nouvelles voitures
-        for i in range(max(0,self.nombre_voiture-len(self.voitures_actives)-len(self.voitures_non_affichees))):
+        for i in range(max(0,self.nombre_voiture-len(self.voitures))):
             if len(entrees_libres_restantes) == 0:
                 entree = choice(self.entrees_sorties)
             else: 
@@ -58,29 +57,25 @@ class Simulation:
             sortie = choice(sorties)
             
             nouvelle_voiture = Voiture(self.genere_id(), self.genere_agressivite(), entree, sortie, self.graphe)
-            self.voitures_non_affichees.append(nouvelle_voiture)
+            self.voitures.append(nouvelle_voiture)
             
-        for voiture in reversed(self.voitures_non_affichees):
-            #voiture fraichement créée et les voitures non affiche qui peuvent apparaitre
-            if voiture.noeud_depart in entrees_libres:
-                voiture.affiche = True
-                self.voitures_actives.append(voiture)
-                voiture.noeud_depart.enregistrer_usager(voiture)
-                self.voitures_non_affichees.remove(voiture)
-                entrees_libres.remove(voiture.noeud_depart)
-            #voiture qui a pour entrée une entrée déjà prise, mais il reste des entrées disponibles 
-            elif len(entrees_libres_restantes)>0:
-                entree = choice(entrees_libres_restantes)
-                entrees_libres_restantes.remove(entree)
-                sortie = choice(sorties)
-                voiture.reassign(self.genere_agressivite, entree, sortie)
-                voiture.affiche = True
-                self.voitures_actives.append(voiture)
-                voiture.noeud_depart.enregistrer_usager(voiture)
-                self.voitures_non_affichees.remove(voiture)
+        for voiture in reversed(self.voitures):
+            if not voiture.affiche:
+                #voitures fraichement créées et les voitures non affichées qui peuvent apparaitre sans rien changer
+                if voiture.noeud_depart in entrees_libres:
+                    voiture.affiche = True
+                    voiture.noeud_depart.enregistrer_usager(voiture)
+                    entrees_libres.remove(voiture.noeud_depart)
+                #voiture qui a pour entrée une entrée déjà prise, mais il reste des entrées disponibles
+                elif len(entrees_libres_restantes)>0:
+                    entree = choice(entrees_libres_restantes)
+                    entrees_libres_restantes.remove(entree)
+                    sortie = choice(sorties)
+                    voiture.reassign(self.genere_agressivite, entree, sortie)
+                    voiture.noeud_depart.enregistrer_usager(voiture)
 
     def genere_id(self) -> int:
-        return len(self.voitures_actives)+len(self.voitures_non_affichees)
+        return len(self.voitures)
  
     def trouver_entrees_libres(self) -> list[EntreeSortie]:
         entrees_libres: list[EntreeSortie] = self.entrees_sorties.copy()
@@ -147,14 +142,12 @@ class Simulation:
           
     def update(self):
         #Si on veut générer + de voitures
-        if self.nombre_voiture > len(self.voitures_actives):
+        if self.nombre_voiture > len(self.voitures):
             self.activer_voitures()
-
-        for voiture in self.voitures_actives:
+        
+        voitures_actives = self.recuperer_voitures()
+        for voiture in voitures_actives:
             voiture.update()
-            if voiture.affiche == False:
-                self.voitures_non_affichees.append(voiture)
-                self.voitures_actives.remove(voiture)
 
     def update(self):
         pass
@@ -167,4 +160,4 @@ class Simulation:
         self.nombre_voiture = nombre_voiture
 
     def recuperer_voitures(self):
-        return self.voitures_actives
+        return self.voitures

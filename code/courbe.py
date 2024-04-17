@@ -1,4 +1,3 @@
-from vecteur_2d import Vecteur2D
 import numpy as np
 
 
@@ -27,6 +26,8 @@ class Courbe:
     
     def result(self, position: float) -> float:
         position_normalise = (position - self.position_depart) / self.plage_position
+        if position_normalise > 1:
+            raise ValueError("position doit être entre position_depart et position_arrivee")
         vitesse_position_normalise = fonction(position_normalise)
         vitesse = vitesse_position_normalise * self.plage_vitesse + self.vitesse_initiale
         return vitesse
@@ -34,20 +35,3 @@ class Courbe:
     def __eq__(self, courbe) -> bool:
         return self.position_depart == courbe.position_depart and self.position_arrivee == courbe.position_arrivee and self.vitesse_initiale == courbe.vitesse_initiale and self.vitesse_finale == courbe.vitesse_finale
 
-if __name__ == "__main__":
-    import matplotlib.pyplot as plt
-
-    position_depart = 0
-    position_arrivee = 50
-    vitesse_initiale = 0
-    vitesse_finale = 20
-
-    x = np.linspace(position_depart, position_arrivee, 100)
-    y = Courbe(position_depart, position_arrivee, vitesse_initiale, vitesse_finale).result(x)
-
-    plt.plot(x, y)
-    plt.xlabel('x')
-    plt.ylabel('y')
-    plt.title('Courbe')
-    plt.grid(True)
-    plt.show()

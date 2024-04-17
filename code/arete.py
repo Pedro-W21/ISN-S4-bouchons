@@ -13,11 +13,6 @@ class Arete:
         self.position_arrivee = position_arrivee
         self.vitesse_moyenne = 0
         self.vitesse_max = 80
-
-    def __eq__(self, noeuds):
-        if [self.position_depart, self.position_arrivee] == [noeuds.position_depart, noeuds.position_depart]:
-            return True
-        return False
     
     def a_des_voitures(self):
         return len(self.voitures) > 0

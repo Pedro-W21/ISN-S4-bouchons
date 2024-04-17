@@ -14,7 +14,7 @@ def fonction(x):
 
 class Courbe:
 
-    def __init__(self, position_depart: Vecteur2D, position_arrivee: Vecteur2D, vitesse_initiale: float, vitesse_finale: float) -> None:
+    def __init__(self, position_depart: float, position_arrivee: float, vitesse_initiale: float, vitesse_finale: float) -> None:
         self.position_depart = position_depart
         self.position_arrivee = position_arrivee
         self.vitesse_initiale = vitesse_initiale
@@ -25,11 +25,10 @@ class Courbe:
 
         self.active = True
     
-    def result(self, x_y: float) -> float:
-        #TODO: fix les distances de manhattan car actuellement vecteur2D
-        x_y_normalise = (x_y - self.position_depart) / self.plage_position
-        vitesse_x_y_normalise = fonction(x_y_normalise)
-        vitesse = vitesse_x_y_normalise * self.plage_vitesse + self.vitesse_initiale
+    def result(self, position: float) -> float:
+        position_normalise = (position - self.position_depart) / self.plage_position
+        vitesse_position_normalise = fonction(position_normalise)
+        vitesse = vitesse_position_normalise * self.plage_vitesse + self.vitesse_initiale
         return vitesse
 
     def __eq__(self, courbe) -> bool:

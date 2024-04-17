@@ -61,9 +61,27 @@ class Voiture:
         self.etat = GestionnaireVitesse.ACCELERATION
 
     def reassign(self, agressivite: float, noeud_depart: Noeud, noeud_arrivee: Noeud):
+        """
+        Initialise de nouveau un objet Voiture.
 
+        Cette méthode est utilisée pour remettre en fonctionnement une voiture qui a terminé un trajet.
+
+        Inputs:
+            agressivite (float): Le niveau d'agressivité de la voiture, compris entre 0 et 1.
+            noeud_depart (Noeud): Le nouveau noeud de départ de la voiture.
+            noeud_arrivee (Noeud): Le nouveau noeud d'arrivée de la voiture.
+
+        Returns:
+            None
+
+        Effets secondaires:
+            Cette méthode initialise plusieurs attributs de la voiture, notamment son identifiant, sa position, sa direction,
+            sa vitesse, son agressivité, etc. Elle génère également une couleur pour la voiture et calcule la distance de sécurité.
+            La méthode détermine le chemin à suivre par la voiture, ainsi que les arêtes actuelle, prochaine et ancienne sur lesquelles elle se trouve.
+            Enfin, elle met à jour l'orientation de la voiture et initialise son état de vitesse.
+        """
         self.position = noeud_depart.position        
-        self.affiche = False
+        self.affiche = True
         
         self.noeud_depart: Noeud = noeud_depart
         self.noeud_arrivee: Noeud = noeud_arrivee
@@ -286,6 +304,7 @@ class Voiture:
         # - la vitesse est nulle
         # - la position est celle de depart (coup de pouce recursif)
 
+        #TODO Vérifier que cet addition fonctionne bien
         self.position.x += self.vitesse * math.cos(self.direction) * time_elapsed
         self.position.y += self.vitesse * math.sin(self.direction) * time_elapsed
 
@@ -342,3 +361,9 @@ class Voiture:
 
     def __eq__(self, voiture) -> bool:
         return self.id == voiture.id
+
+    def recuperer_position(self):
+        angle = -math.atan2(self.orientation.y, self.orientation.x)
+        x = self.position.get_x+Noeud.size.get_x/4*math.sin(angle)
+        y = self.position.get_y+Noeud.size.get_x/4*math.cos(angle)
+        return (Vecteur2D(x,y), angle)

@@ -3,6 +3,7 @@ from noeud import Noeud, Intersection_T, Intersection_X, EntreeSortie, Virage
 from vecteur_2d import Vecteur2D
 from random import randint, choice
 import numpy as np
+import json
 
 class Carte:
     def __init__(self, largeur:int, hauteur:int, grille_interface=None):
@@ -400,6 +401,90 @@ class Carte:
                     total += 1
         return total >= 2
 
+    def charger_carte(nom_fichier):
+        """
+        charge la carte contenue dans le fichier du nom nom_fichier dans le dossier routes
+
+        input : nom_fichier, str du nom complet d'un fichier dans le dossier routes
+        return : Carte correspondante si le ficheir est valide et existe, None sinon
+        """
+        carte = None
+        try:
+            with open("../routes/" + nom_fichier, "r") as file:
+                dico:dict[str:list] = json.load(file)
+                grille = dico.get("grille", None)
+                if grille != None:
+                    largeur = grille["largeur"]
+                    hauteur = grille["hauteur"]
+                    data = np.array(grille["donnees"])
+                    carte = Carte(largeur, hauteur, data)
+                else:
+                    aretes_decodees:list[Arete] = []
+                    # erreur incoming selon le format de fichier
+                    aretes = dico["ARETE"]
+
+                    max_x = 0
+                    max_y = 0
+                    for arete in aretes:
+                        
+                        point1, point2 = arete
+                        point1 = Vecteur2D(point1[0], point1[1])
+                        point2 = Vecteur2D(point2[0], point2[1])
+                        longueur = (point1 - point2).norme()
+                        
+                        # TODO: ajout de l'aller-retour ?
+                        aretes_decodees.append(Arete(longueur, point1, point2))
+                        aretes_decodees.append(Arete(longueur, point2, point1))
+
+                        max_x = max(max_x, point1.get_x(), point2.get_x())
+                        max_y = max(max_y, point1.get_y(), point2.get_y())
+
+                    largeur = int(max_x / Noeud.size.get_x())
+                    hauteur = int(max_y / Noeud.size.get_y())
+                    grille_route = np.zeros((largeur, hauteur))
+                    for arete in aretes_decodees:
+                        direction:Vecteur2D = (arete.position_arrivee - arete.position_depart) / Noeud.size.get_x()
+                        start:Vecteur2D = Vecteur2D(arete.position_depart.get_x(), arete.position_depart.get_y()) / Noeud.size.get_x()
+                        dir_normalisee = direction / direction.norme_manathan()
+                        for i in range(int(direction.norme_manathan())):
+                            grille_route[int(start.get_x()), int(start.get_y())] = 1
+                            start += dir_normalisee
+                    carte = Carte(largeur, hauteur, grille_route)
+                    
+        except FileNotFoundError:
+            print("Le fichier n'existe pas !!!! petit malin.................")
         
+        except KeyError:
+            print("LE FICHIER EST MAL FORMATE, C'EST LA FIN DU MONDE !!!!!!")
+
+        except TypeError:
+            print("vraiment, quelqu'un a mis le mauvais type dans ce fichier ? bizarre bizarre....")
+
+        except Exception:
+            print("là c'est quoi cte merde par contre")
+
+        return carte
+    
+    def sauvegarder_carte(self, nom_fichier):
+        """
+        sauvegarde la carte actuelle dans le fichier de nom nom_fichier dans le dossier routes
+
+        input: nom_fichier, str représentant le nom du fichier COMPLET (avec extension)
+        return : rien
+
+        effets secondaires : sauvegarde dans le système de fichier
+        """
+        try:
+            with open("../routes/" + nom_fichier, "w") as file:
+                dico = {
+                    "grille":{
+                        "largeur":self.largeur,
+                        "hauteur":self.hauteur,
+                        "donnees":[[self.grille[x,y] for y in range(self.hauteur)] for x in range(self.largeur)]
+                    }
+                }
+                json.dump(dico, file)
+        except Exception:
+            print("gros problème !!!!!")
 
 

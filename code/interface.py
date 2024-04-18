@@ -58,7 +58,7 @@ class App(ctk.CTk):
         self.frame_carte = CTkFrame(self, fg_color='#4C6085')
         self.frame_carte.grid(row=0, column=1, rowspan=2, pady=5, padx=5, sticky='nsew')
         #initialisation des routes
-        self.routes = {}
+        self.routes = []
         self.simulation = None
         self.mode_avant = "rien"
         self.mode_affichage = "edition"
@@ -69,8 +69,6 @@ class App(ctk.CTk):
 
 
         self.setup_frame_canvas()
-        #actualise le dic des routes
-        self.ajout_routes()
 
         #crée les tabviews
         self.tabview()
@@ -89,12 +87,18 @@ class App(ctk.CTk):
 
     def ajout_routes(self):
         """
-        Ajout des routes dans le dictionnaire routes
+        Ajout des routes sauvegardées dans la liste des routes
         paramètres : aucun
         :return: aucun (actualise le dictionnaire "routes")
         """
-        with open("routes.json", "r") as file:
-            self.routes = json.load(file)
+        fichiers = os.listdir("../routes")
+        if self.routes != fichiers:
+            self.routes.clear()
+            for route in fichiers:
+                self.routes.append(route)
+            self.nom_route_combox.configure(values=self.routes)
+        self.after(2000, self.ajout_routes)
+
 
     def tabview(self):
         """
@@ -116,7 +120,6 @@ class App(ctk.CTk):
 
         self.update()
 
-
     ########## TABVIEW MODELE ##########
     def tabview_modele(self):
         """
@@ -124,18 +127,86 @@ class App(ctk.CTk):
         paramètres : aucun
         :return: la route choisie sous forme de ?
         """
-        liste_nom_routes = []
-        for nom_route in self.routes.keys():
-            liste_nom_routes.append(nom_route)
 
+        self.nom_route_combox = CTkComboBox(master=self.modele, values=["Choisissez ici"])
+        self.nom_route_combox.pack(side=TOP,expand=True, fill="x")
 
-        self.nom_route_combox = CTkComboBox(master=self.modele, values=liste_nom_routes)
-        self.nom_route_combox.pack(side=TOP,expand=True)
+        self.bouton_chargement = CTkButton(master=self.modele, text="charger la carte choisie")
+        self.bouton_chargement.pack(side=TOP, expand=True, fill="x")
+        self.bouton_chargement.bind("<Button-1>", self.charge_carte)
+
+        self.entree_sauvegarde = CTkEntry(master=self.modele)
+        self.entree_sauvegarde.pack(side=TOP, expand=True, fill="x")
+
+        self.bouton_sauvegarde = CTkButton(master=self.modele, text="sauvegarder la carte actuelle")
+        self.bouton_sauvegarde.pack(side=TOP, expand=True, fill="x")
+        self.bouton_sauvegarde.bind("<Button-1>", self.sauvegarde_carte)
 
 
         self.bouton_resize = CTkButton(master=self.modele, text="redimensionner le canvas")
-        self.bouton_resize.pack(side=TOP, expand=True)
+        self.bouton_resize.pack(side=TOP, expand=True, fill="x")
         self.bouton_resize.bind('<Button-1>', self.resize_func)
+
+        self.ajout_routes()
+    
+    def assure_existence_dossier_routes(self):
+        """
+        garanti que le dossier "../routes/" existe à la fin de cette fonction
+
+        input : rien
+        return : rien
+
+        effets secondaires : création du dossier routes
+        """
+        if "routes" not in os.listdir("../"):
+            os.mkdir("../routes")
+
+    def nom_fichier_valide(self,nom):
+        """
+        renvoie True si nom est un nom de fichier valide sans extension, False sinon
+
+        input : nom, str 
+        return : booléen
+        """
+        caracteres_interdits = [":", ".", "#", "/", "'\'", "\n"]
+        return not any(cara in nom for cara in caracteres_interdits)
+
+
+    def sauvegarde_carte(self, event=None):
+        """
+        gère la sauvegarde de la carte actuelle dans le fichier de nom donné par l'utilisateur dans l'Entry associé
+
+        input : event, inutilisé mais nécessaire pour l'utiliser comme callback
+        output : aucun
+
+        effets secondaires : changement du système de fichier et/ou mise à jour du texte dans le Entry
+        """
+        nom = self.entree_sauvegarde.get()
+        if self.nom_fichier_valide(nom):
+            carte = Carte(self.largeur_carte, self.hauteur_carte, self.grille_route)
+            self.assure_existence_dossier_routes()
+            carte.sauvegarder_carte(nom + ".json")
+        else:
+            self.entree_sauvegarde.delete(0, END)
+            self.entree_sauvegarde.insert(INSERT, "Nom invalide")
+
+    def charge_carte(self, event=None):
+        """
+        gère le chargement de la carte choisie par l'utilisateur
+
+        input : event, inutilisé mais nécessaire pour l'utiliser comme callback
+        output : aucun
+
+        effets secondaires : changement de la carte en cours d'édition et mise à jour de l'affichage
+        """
+        nom = self.nom_route_combox.get()
+        carte = Carte.charger_carte(nom)
+        if carte != None:
+            self.largeur_carte = carte.largeur
+            self.hauteur_carte = carte.hauteur
+            self.grille_route = carte.grille
+            self.affiche_carte_dans_canvas()
+
 
     def fonction_resize_canvas(self, event=None):
         """
@@ -173,6 +244,7 @@ class App(ctk.CTk):
         self.longueur_x_Label_affichees = CTkLabel(master=self.creation, text=f"{self.largeur_carte}", text_color="white")
         self.longueur_x_Label_affichees.pack(side=TOP, expand=True)
         self.largeur_x_scale = CTkSlider(master=self.creation, progress_color="white", from_=10, to=50, command=self.afficher_scale_creation)
+        self.largeur_x_scale.set(self.largeur_carte)
         self.largeur_x_scale.pack(side=TOP, expand=True)
 
 
@@ -181,6 +253,8 @@ class App(ctk.CTk):
         self.hauteur_y_Label_affichees = CTkLabel(master=self.creation, text=f"{self.hauteur_carte}", text_color="gold")
         self.hauteur_y_Label_affichees.pack(side=TOP, expand=True)
         self.hauteur_y_scale = CTkSlider(master=self.creation, progress_color="gold", from_=10, to=50, command=self.afficher_scale_creation)
+        
+        self.hauteur_y_scale.set(self.hauteur_carte)
         self.hauteur_y_scale.pack(side=TOP, expand=True)
 
         self.creer_route = CTkButton(master=self.creation, text="créer une route", fg_color="purple")
@@ -334,19 +408,21 @@ class App(ctk.CTk):
 
         self.nombre_voitures_Label = CTkLabel(master=self.parametres, text="nb voitures selectionnées")
         self.nombre_voitures_Label.pack(side=TOP, expand=True)
-        self.nombre_voitures_Label_affichees = CTkLabel(master=self.parametres, text="", text_color="purple")
+        self.nombre_voitures_Label_affichees = CTkLabel(master=self.parametres, text=f"{10}", text_color="purple")
         self.nombre_voitures_Label_affichees.pack(side=TOP, expand=True)
         self.nombre_voiture_scale = CTkSlider(master=self.parametres, progress_color="purple", from_=1, to=100, command=self.afficher_scale_voitures)
         self.nombre_voiture_scale.pack(side=TOP, expand=True)
+        self.nombre_voiture_scale.set(10)
 
 
         self.niveau_agressivite_Label = CTkLabel(master=self.parametres, text="niveau d'agressivité")
         self.niveau_agressivite_Label.pack(side=TOP, expand=True)
 
-        self.niveau_agressivite_Label_affichees = CTkLabel(master=self.parametres, text="", text_color="red")
+        self.niveau_agressivite_Label_affichees = CTkLabel(master=self.parametres, text=f"{10}", text_color="red")
         self.niveau_agressivite_Label_affichees.pack(side=TOP, expand=True)
 
         self.niveau_agressivite = CTkSlider(master=self.parametres, progress_color="red", from_=1, to=100, command=self.afficher_scale_voitures)
+        self.niveau_agressivite.set(10)
         self.niveau_agressivite.pack(side=TOP, expand=True)
 
         self.lance_simu_button = CTkButton(master=self.parametres, text="lancer simulation de test")
@@ -730,6 +806,9 @@ class App(ctk.CTk):
     def position_posable(self, xc:int, yc:int) -> bool:
         """
         revoie un booléen indiquant si il est possible de poser une route en (xc, yc)
+        
+        note : nom identique mais fonctionnement légèrement différent de position_posable de Carte, car il faut prendre en compte que l'utilisateur commence avec une carte vide
+        et que l'utilisateur peut mettre son curseur dans des cases non connectées au reste de la route
 
         input : 
             - xc : entier de coordonnée horizontale dans la carte actuelle
@@ -757,6 +836,8 @@ class App(ctk.CTk):
     def point_dans_grille_ou_0(self, xc:int, yc:int) -> int:
         """
         renvoie la valeur de la grille de route en (xc, yc) si elle est dans la carte ou 0 sinon
+
+        note : identique en fonctionnement à get_at_or_0 de Carte, mais sert ici pour moins polluer le code de parcours d'attributs (pas de self.carte.get_at_or_0(...))
 
         input : 
             - xc : entier de coordonnée horizontale

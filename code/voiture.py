@@ -1,5 +1,6 @@
-import random
 import math
+import random
+import time
 from arete import Arete
 from vecteur_2d import Vecteur2D
 from noeud import Noeud
@@ -9,7 +10,7 @@ from gestionnaire_vitesse import GestionnaireVitesse
 
 class Voiture:
 
-    size = Vecteur2D(4.5, 2.5) # m [longueur, largeur]
+    size = Vecteur2D(3.86, 2.14) # m [longueur, largeur]
     distance_marge_securite = size.x + size.y
 
     def __init__(self, id: int, agressivite: float, noeud_depart: Noeud, noeud_arrivee: Noeud, graphe: dict):
@@ -26,7 +27,6 @@ class Voiture:
         self.graphe = graphe
         
         self.vitesse = 0
-        self.gestionnaire_vitesse = GestionnaireVitesse(self)
 
         self.agressivite = agressivite # compris entre 0 et 1
         
@@ -44,13 +44,16 @@ class Voiture:
 
         self.chemin: list[Noeud] = [None]+self.recherche_chemin(noeud_depart)
 
-        self.arete_actuelle: Arete = self.trouver_arete(self.chemin[1], self.chemin[2])
+        self.arete_actuelle: Arete = self.trouver_arete_entre_noeuds(self.chemin[1], self.chemin[2])
 
         if self.chemin[2] != Noeud.ENTREE_SORTIE:
-            self.prochaine_arete: Arete = self.trouver_arete(self.chemin[2], self.chemin[3])
+            self.prochaine_arete: Arete = self.trouver_arete_entre_noeuds(self.chemin[2], self.chemin[3])
         else:
             self.prochaine_arete = None
         self.ancienne_arete: Arete = None
+
+        self.gestionnaire_vitesse = GestionnaireVitesse(self)
+
         self.update_orientation()
         self.update_orientation_prochain_chemin()
 
@@ -60,10 +63,32 @@ class Voiture:
 
         self.etat = GestionnaireVitesse.ACCELERATION
 
+        self.time = time.time()
+
     def reassign(self, agressivite: float, noeud_depart: Noeud, noeud_arrivee: Noeud):
 
+        # TODO : revoir les differences avec init pour voir si on a pas oublier des choses
+        """
+        Initialise de nouveau un objet Voiture.
+
+        Cette méthode est utilisée pour remettre en fonctionnement une voiture qui a terminé un trajet.
+
+        Inputs:
+            agressivite (float): Le niveau d'agressivité de la voiture, compris entre 0 et 1.
+            noeud_depart (Noeud): Le nouveau noeud de départ de la voiture.
+            noeud_arrivee (Noeud): Le nouveau noeud d'arrivée de la voiture.
+
+        Returns:
+            None
+
+        Effets secondaires:
+            Cette méthode initialise plusieurs attributs de la voiture, notamment son identifiant, sa position, sa direction,
+            sa vitesse, son agressivité, etc. Elle génère également une couleur pour la voiture et calcule la distance de sécurité.
+            La méthode détermine le chemin à suivre par la voiture, ainsi que les arêtes actuelle, prochaine et ancienne sur lesquelles elle se trouve.
+            Enfin, elle met à jour l'orientation de la voiture et initialise son état de vitesse.
+        """
         self.position = noeud_depart.position        
-        self.affiche = False
+        self.affiche = True
         
         self.noeud_depart: Noeud = noeud_depart
         self.noeud_arrivee: Noeud = noeud_arrivee
@@ -83,8 +108,8 @@ class Voiture:
 
         self.chemin: list[Noeud] = [None]+self.recherche_chemin(noeud_depart)
 
-        self.arete_actuelle: Arete = self.trouver_arete(self.chemin[1], self.chemin[2])
-        self.prochaine_arete: Arete = self.trouver_arete(self.chemin[2], self.chemin[3])
+        self.arete_actuelle: Arete = self.trouver_arete_entre_noeuds(self.chemin[1], self.chemin[2])
+        self.prochaine_arete: Arete = self.trouver_arete_entre_noeuds(self.chemin[2], self.chemin[3])
         self.ancienne_arete: Arete = None
         self.update_orientation()
         self.update_orientation_prochain_chemin()
@@ -97,12 +122,12 @@ class Voiture:
 
         self.etat = GestionnaireVitesse.ACCELERATION
 
-    def update(self, fps: int):
-        if fps == 0:
-            return
-        self.update_position(1/fps)
+        self.time = time.time()
+
+    def update(self):
         self.update_position_graphe()
         self.update_vitesse()
+        self.update_position()
 
     def update_vitesse(self):
         # identification des obstacles dans ma zone de sécurité
@@ -142,33 +167,36 @@ class Voiture:
             for i in range(len(noeuds_obstacles)):
                 # si c'est le premier noeud et que c'est une intersection
                 if i == 0 and noeuds_obstacles[0].type in (Noeud.INTERSECTION_T, Noeud.INTERSECTION_X):
-                    if not noeuds_obstacles[0].est_un_usager(self):
-                        # si je suis dans la zone de ping
-                        if self.distance_a_entite(noeuds_obstacles[0].position) < noeuds_obstacles[0].distance_securite:
-                            
-                            # je demande si je peux passer
-                            # ceci est optimise pour ne pas faire de calcul inutile
-                            est_empruntee = noeuds_obstacles[0].est_empruntee()
-                            usagers_differents = self.ancient_usagers != noeuds_obstacles[0].get_usagers()
-                            voie_est_libre = usagers_differents and noeuds_obstacles[0].voie_est_libre(self)
-                            
-                            #voie pas empruntée ou voie libre
-                            if (not est_empruntee) or (voie_est_libre):
-                               
-                                # TODO : de quel courbe d'arret on parle il y en a plusieurs
-                                self.gestionnaire_vitesse.desactiver_courbes([GestionnaireVitesse.ARRET], position_finale=noeuds_obstacles[0].position)
-                                self.ancient_usagers = {}
-                            else:
-                                #voie empruntée et voie pas libre
-                                self.gestionnaire_vitesse.genere_courbe_arret()
-                            
-                            # voie pas libre
-                            if not voie_est_libre:
-                                self.ancient_usagers = noeuds_obstacles[0].get_usagers().copy()
-                else:
                     # si je suis dans la zone de ping
-                    if self.distance_a_entite(noeuds_obstacles[i].position) < noeuds_obstacles[i].distance_securite:
-                        self.gestionnaire_vitesse.genere_courbe_freinage()
+                    if self.distance_a_entite(noeuds_obstacles[0].position) < noeuds_obstacles[0].distance_securite and not noeuds_obstacles[0].est_un_usager(self):
+                        
+                        # je demande si je peux passer
+                        # ceci est optimise pour ne pas faire de calcul inutile
+                        est_empruntee = noeuds_obstacles[0].est_empruntee()
+                        usagers_differents = self.ancient_usagers != noeuds_obstacles[0].get_usagers()
+                        voie_est_libre = usagers_differents and noeuds_obstacles[0].voie_est_libre(self)
+                        
+                        #voie pas empruntée ou voie libre
+                        if (not est_empruntee) or (voie_est_libre):
+                        
+                            self.gestionnaire_vitesse.desactiver_courbes([GestionnaireVitesse.ARRET], position_finale=noeuds_obstacles[0].position)
+                            self.ancient_usagers = {}
+                            self.gestionnaire_vitesse.genere_courbe_acceleration_noeud(noeuds_obstacles)
+                        else:
+                            #voie empruntée et voie pas libre
+                            self.gestionnaire_vitesse.genere_courbe_arret_noeud(noeuds_obstacles)
+                            self.ancient_usagers = noeuds_obstacles[0].get_usagers().copy()
+                    else:
+                        # le noeud est dans ma zone de sécurité
+                        if not self.gestionnaire_vitesse.courbe_est_active(self.gestionnaire_vitesse.FREINAGE):
+                            self.gestionnaire_vitesse.genere_courbe_freinage_noeud(noeuds_obstacles[0])
+                # ce n'est pas le premier noeud
+                else:
+                    # si je suis dans la zone de ping et que ma distance d'arret est superieure ou egale à ma distance de sécurité
+                    if self.distance_a_entite(noeuds_obstacles[i].position) < noeuds_obstacles[i].distance_securite and self.distance_arret() <= self.distance_a_entite(noeuds_obstacles[i].position):
+                        self.gestionnaire_vitesse.genere_courbe_freinage_noeud(noeuds_obstacles[i])
+            
+            # si il n'y a pas d'obstacle noeud
             else:
                 desactiver_courbes = [GestionnaireVitesse.FREINAGE,
                                     GestionnaireVitesse.ARRET]
@@ -198,11 +226,11 @@ class Voiture:
                 self.recherche_chemin(noeud_depasse)
                 # update les variables de position sur le graphes
                 self.ancienne_arete = self.arete_actuelle
-                self.arete_actuelle = self.trouver_arete(self.chemin[0], self.chemin[1])
+                self.arete_actuelle = self.trouver_arete_entre_noeuds(self.chemin[0], self.chemin[1])
                 self.update_orientation()
                 # si le prochain noeud n'est pas une entré-sortie
                 if self.chemin[1].type != Noeud.ENTREE_SORTIE:
-                    self.prochaine_arete = self.trouver_arete(self.chemin[1], self.chemin[2])
+                    self.prochaine_arete = self.trouver_arete_entre_noeuds(self.chemin[1], self.chemin[2])
                     self.update_orientation_prochain_chemin()
                 else:
                     self.prochaine_arete = None
@@ -211,19 +239,26 @@ class Voiture:
                 self.arete_actuelle.push_voiture(self)
                 self.ancienne_arete.voitures.remove(self)
 
+    def update_position(self):
+        self.vitesse, self.etat = self.gestionnaire_vitesse.recuperer_vitesse_etat()
+        delta_t = time.time() - self.time
+        self.position = self.position + self.vitesse * self.direction
+        self.time = time.time()
+
     def depasse_noeud(self):
         # selon de la voiture renvoie si elle a dépassé le prochain point sur le chemin
+        # TODO : verifier que c'est bien self.direction_prochain_chemin
         prochain_noeud = self.chemin[1]
-        if self.direction == (1, 0):
+        if self.direction_prochain_chemin == Vecteur2D(1, 0):
             if self.position.x > prochain_noeud.position.x + prochain_noeud.size.x:
                 return True
-        elif self.direction == (-1, 0):
+        elif self.direction_prochain_chemin == Vecteur2D(-1, 0):
             if self.position.x < prochain_noeud.position.x - prochain_noeud.size.x:
                 return True
-        elif self.direction == (0, 1):
+        elif self.direction_prochain_chemin == Vecteur2D(0, 1):
             if self.position.y > prochain_noeud.position.y + prochain_noeud.size.y:
                 return True
-        elif self.direction == (0, -1):
+        elif self.direction_prochain_chemin == Vecteur2D(0, -1):
             if self.position.y < prochain_noeud.position.y - prochain_noeud.size.y:
                 return True
 
@@ -253,11 +288,11 @@ class Voiture:
 
     def distance_deceleration(self, vitesse_initiale, vitesse_finale) -> float:
         temps_deceleration = abs(vitesse_initiale/3.6 - vitesse_finale/3.6) / self.deceleration
-        distance = 1/2 * self.deceleration * temps_deceleration**2
+        distance = 1/2 * self.deceleration * temps_deceleration**2 
         return distance
     
-    def distance_freinage_complet(self):
-        return self.distance_deceleration(self.vitesse, 0)
+    def distance_arret(self):
+        return self.distance_deceleration(self.vitesse, 0) + self.distance_marge_securite
         
     def distance_acceleration(self, vitesse_initiale, vitesse_finale) -> float:
         temps_acceleration = abs(vitesse_finale/3.6 - vitesse_initiale/3.6) / self.acceleration
@@ -266,28 +301,9 @@ class Voiture:
 
     def intention(self):
         return self.direction, self.direction_prochain_chemin
-    
-    def trouver_arete(self, noeud_depart: Noeud, noeud_arrivee: Noeud):
-        for arete in noeud_depart.aretes:
-            if arete == [noeud_depart, noeud_arrivee]:
-                return arete
-        return None
             
     def update_orientation(self):
         self.direction = (self.arete_actuelle.position_arrivee - self.arete_actuelle.position_depart) / (self.arete_actuelle.position_arrivee - self.arete_actuelle.position_depart).norme()
-
-    def genere_couleur(self):
-        couleurs = ['red', 'blue', 'green', 'yellow', 'orange', 'purple', 'pink', 'brown', 'cyan', 'magenta']
-        return random.choice(couleurs)
-
-    def update_position(self, time_elapsed):
-        # TODO: utiliser le gestionnaire de vitesse pour recuperer la vitesse et mettre à jour la position
-        # suivre la courbe sauf si :
-        # - la vitesse est nulle
-        # - la position est celle de depart (coup de pouce recursif)
-
-        self.position.x += self.vitesse * math.cos(self.direction) * time_elapsed
-        self.position.y += self.vitesse * math.sin(self.direction) * time_elapsed
 
     def update_orientation_prochain_chemin(self):
         if self.prochaine_arete is not None:
@@ -340,5 +356,15 @@ class Voiture:
                     return noeuds
         return noeuds
 
+    def genere_couleur(self):
+        couleurs = ['red', 'blue', 'green', 'yellow', 'orange', 'purple', 'pink', 'brown', 'cyan', 'magenta']
+        return random.choice(couleurs)
+
     def __eq__(self, voiture) -> bool:
         return self.id == voiture.id
+
+    def recuperer_position(self):
+        angle = -math.atan2(self.orientation.y, self.orientation.x)
+        x = self.position.get_x()+Noeud.size.get_x/4*math.sin(angle)
+        y = self.position.get_y()+Noeud.size.get_x/4*math.cos(angle)
+        return (Vecteur2D(x,y), angle)

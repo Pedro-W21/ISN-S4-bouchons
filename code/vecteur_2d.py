@@ -23,6 +23,18 @@ class Vecteur2D:
 
     def norme_manathan(self):
         return abs(self.x) + abs(self.y)
+    
+    def unitaire(self):
+        return self/self.norme()
+
+    def projection(self, vect):
+        # projection uniquement sur +-x ou +-y je crois
+        if type(vect) == Vecteur2D:
+            vect = vect.unitaire()
+            return Vecteur2D(vect.x * self.x, vect.y * self.y)
+        else:
+            raise TypeError("GROSSE ERREUR DE TYPE ICI AUSSI")
+
 
     def __mul__(self, rhs):
         if type(rhs) == Vecteur2D:
@@ -44,3 +56,6 @@ class Vecteur2D:
     
     def __eq__(self, rhs):
         return self.x == rhs.x and self.y == rhs.y
+    
+    def __abs__(self):
+        return Vecteur2D(abs(self.x), abs(self.y))

@@ -283,8 +283,8 @@ class Carte:
                     dirs_depuis[(xc, yc)] = ens
             for enlev in a_enlever:
                 cases_avec_dirs.remove(enlev)
-            nb = randint(3, 10)
-            while len(cases_avec_dirs) > nb and randint(0, 10) > -1:
+            nb = randint(8, 10)
+            while len(cases_avec_dirs) > nb and randint(0, 10) > 2:
                 cases_avec_dirs.remove(choice(list(cases_avec_dirs)))
         carte.filtre_correction_carte()
         return carte

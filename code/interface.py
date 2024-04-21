@@ -603,18 +603,17 @@ class App(ctk.CTk):
             ret = "hidden"
         return ret
 
-    def get_transformed_car_coords(self, tx:int, ty:int, voiture:Voiture) -> tuple[int, int]:
+    def get_transformed_car_coords(self, tx:int, ty:int, angle:float) -> tuple[int, int]:
         """
         renvoie les décalages x et y en pixel d'affichage autour du centre de la voiture correspondant à l'orientation de la voiture
 
         input : 
             - tx, ty, les décalages entiers calculés à partir de la taille standard orienté horizontalement de la voiture
-            - voiture de type Voiture, la voiture pour laquelle il faut calculer le décalage
+            - angle : flottant représentant l'orientation par rapport à l'horizontale de la voiture, l'angle doit être en radians
         return : tuple (rtx, rty) d'entiers représentant les décalages transformés (la transformation peut être nulle)
         """
-        orient = "N"
         ret = (tx, ty)
-        if orient == "N" or orient == "S":
+        if abs(math.sin(angle)) > 0.9:
             ret = (ty, tx)
         return ret
 
@@ -639,15 +638,17 @@ class App(ctk.CTk):
             self.canvas_affichage.delete(self.voitures_canvas)
             self.voitures_canvas = []
             for voiture in self.voitures:
-                xv, yv = voiture.position.get_x() / sx, voiture.position.get_y() / sy
+                pos, angle = voiture.recuperer_position()
+                xv, yv = pos.get_x() / sx, pos.get_y() / sy
                 x_aff, y_aff = self.grille_to_canvas_pos(xv, yv)
-                rtx, rty = self.get_transformed_car_coords(tx, ty, voiture)
+                rtx, rty = self.get_transformed_car_coords(tx, ty, angle)
                 self.voitures_canvas.append(self.canvas_affichage.create_rectangle(x_aff - rtx, y_aff - rty, x_aff + rtx, y_aff + rty, fill=voiture.couleur, state=self.aff_to_state_voiture(voiture)))
         elif len(self.voitures_canvas) == len(self.voitures):
             for (i, voiture) in enumerate(self.voitures):
-                xv, yv = voiture.position.get_x() / sx, voiture.position.get_y() / sy
+                pos, angle = voiture.recuperer_position()
+                xv, yv = pos.get_x() / sx, pos.get_y() / sy
                 x_aff, y_aff = self.grille_to_canvas_pos(xv, yv)
-                rtx, rty = self.get_transformed_car_coords(tx, ty, voiture)
+                rtx, rty = self.get_transformed_car_coords(tx, ty, angle)
                 self.canvas_affichage.coords(self.voitures_canvas[i], x_aff - rtx, y_aff - rty, x_aff + rtx, y_aff + rty)
                 self.canvas_affichage.itemconfigure(self.voitures_canvas[i], fill=voiture.couleur, state=self.aff_to_state_voiture(voiture))
 

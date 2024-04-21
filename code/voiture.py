@@ -365,6 +365,6 @@ class Voiture:
 
     def recuperer_position(self):
         angle = -math.atan2(self.orientation.y, self.orientation.x)
-        x = self.position.get_x()+Noeud.size.get_x/4*math.sin(angle)
-        y = self.position.get_y()+Noeud.size.get_x/4*math.cos(angle)
+        x = self.position.get_x()+Noeud.size.get_x()/4*math.sin(angle)
+        y = self.position.get_y()+Noeud.size.get_x()/4*math.cos(angle)
         return (Vecteur2D(x,y), angle)

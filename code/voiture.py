@@ -40,14 +40,13 @@ class Voiture:
 
         #Variables primaires (ne changeront plus)
         self.couleur = self.genere_couleur()
-        self.distance_securite()
-
+        
         self.chemin: list[Noeud] = [None]+self.recherche_chemin(noeud_depart)
 
-        self.arete_actuelle: Arete = self.trouver_arrete_entre_noeuds(self.chemin[1], self.chemin[2])
+        self.arete_actuelle: Arete = self.trouver_arete_entre_noeuds(self.chemin[1], self.chemin[2])
 
         if self.chemin[2] != Noeud.ENTREE_SORTIE:
-            self.prochaine_arete: Arete = self.trouver_arrete_entre_noeuds(self.chemin[2], self.chemin[3])
+            self.prochaine_arete: Arete = self.trouver_arete_entre_noeuds(self.chemin[2], self.chemin[3])
         else:
             self.prochaine_arete = None
         self.ancienne_arete: Arete = None
@@ -104,12 +103,11 @@ class Voiture:
 
         #Variables primaires (ne changeront plus)
         self.genere_couleur()
-        self.distance_securite()
 
         self.chemin: list[Noeud] = [None]+self.recherche_chemin(noeud_depart)
 
-        self.arete_actuelle: Arete = self.trouver_arrete_entre_noeuds(self.chemin[1], self.chemin[2])
-        self.prochaine_arete: Arete = self.trouver_arrete_entre_noeuds(self.chemin[2], self.chemin[3])
+        self.arete_actuelle: Arete = self.trouver_arete_entre_noeuds(self.chemin[1], self.chemin[2])
+        self.prochaine_arete: Arete = self.trouver_arete_entre_noeuds(self.chemin[2], self.chemin[3])
         self.ancienne_arete: Arete = None
         self.update_orientation()
         self.update_orientation_prochain_chemin()
@@ -232,11 +230,11 @@ class Voiture:
                 self.recherche_chemin(noeud_depasse)
                 # update les variables de position sur le graphes
                 self.ancienne_arete = self.arete_actuelle
-                self.arete_actuelle = self.trouver_arrete_entre_noeuds(self.chemin[0], self.chemin[1])
+                self.arete_actuelle = self.trouver_arete_entre_noeuds(self.chemin[0], self.chemin[1])
                 self.update_orientation()
                 # si le prochain noeud n'est pas une entré-sortie
                 if self.chemin[1].type != Noeud.ENTREE_SORTIE:
-                    self.prochaine_arete = self.trouver_arrete_entre_noeuds(self.chemin[1], self.chemin[2])
+                    self.prochaine_arete = self.trouver_arete_entre_noeuds(self.chemin[1], self.chemin[2])
                     self.update_orientation_prochain_chemin()
                 else:
                     self.prochaine_arete = None
@@ -295,7 +293,7 @@ class Voiture:
             dist, noeud = queue.pop(0)
             if chemin[noeud] < dist:
                 continue
-            for (noeud_arrivee, arete) in self.graphe[noeud].values():
+            for (noeud_arrivee, arete) in self.graphe[noeud]:
                 new_distance = chemin[noeud] + arete.get_poids()
                 if new_distance < chemin[noeud_arrivee]:
                     chemin[noeud_arrivee] = new_distance
@@ -331,7 +329,7 @@ class Voiture:
             self.direction_prochain_chemin = None
 
     
-    def trouver_arrete_entre_noeuds(self, noeud_depart: Noeud, noeud_arrivee: Noeud) -> Arete:
+    def trouver_arete_entre_noeuds(self, noeud_depart: Noeud, noeud_arrivee: Noeud) -> Arete:
         """
         Renvoie l'arête commune entre deux noeuds.
         Paramètres: noeud_depart (Noeud), noeud_arrivee (Noeud)
@@ -346,14 +344,14 @@ class Voiture:
         return (position_entite - self.position).norme_manathan()
 
     def est_dans_zone_securite(self, position_entite: Vecteur2D) -> bool:
-        return self.distance_a_entite(position_entite) < self.distance_securite()
+        return self.distance_a_entite(position_entite) < self.distance_securite(self.vitesse)
 
     def trouver_voiture_sur_mon_chemin(self):
         # renvoie ou pas une voiture qui est dans ma distance de securite et sur mon chemin
         for i in range(len(self.chemin)-1):
             noeud_depart = self.chemin[i]
             noeud_arrivee = self.chemin[i+1]
-            arete = self.trouver_arrete_entre_noeuds(noeud_depart, noeud_arrivee)
+            arete = self.trouver_arete_entre_noeuds(noeud_depart, noeud_arrivee)
             if i != 0:
                 if self.est_dans_zone_securite(noeud_depart.position):
                     if arete.a_des_voitures():

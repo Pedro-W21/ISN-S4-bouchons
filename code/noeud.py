@@ -175,7 +175,7 @@ class EntreeSortie(Noeud):
         super().__init__(position, aretes)
         self.type=self.ENTREE_SORTIE
 
-    def voie_est_libre(self, voiture):
+    def voie_est_libre(self):
         if self.usagers:
             return False
         else: 

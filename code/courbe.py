@@ -43,7 +43,6 @@ class Courbe:
         position = position_normalise * self.plage_position + self.position_initiale
         return position
     
-
     def result_lineaire(self, t: float):
         temps_normalise = (t - self.t0) / self.plage_t
         if temps_normalise > 1.2:

@@ -20,7 +20,7 @@ class Simulation:
 
     def __init__(self, carte: Carte, nombre_voiture: float, agressivite: float) -> None:
         
-        self.noeuds: list[Noeud] = carte.into_aretes_noeuds() 
+        self.noeuds: list[Noeud] = carte.into_aretes_noeuds()
         self.aretes: list[Arete] = []
         for noeud in self.noeuds:
             for arete in noeud.aretes:
@@ -43,8 +43,6 @@ class Simulation:
         entrees_libres = self.trouver_entrees_libres()
         entrees_libres_restantes = entrees_libres.copy()
         entree_prise = []
-        sorties = self.entrees_sorties.copy()
-
         #Si on a besoin de créer de nouvelles voitures
         for i in range(max(0,self.nombre_voiture-len(self.voitures))):
             if len(entrees_libres_restantes) == 0:
@@ -53,7 +51,8 @@ class Simulation:
                 entree = choice(entrees_libres_restantes)
                 entrees_libres_restantes.remove(entree)
             entree_prise.append(entree)
-            sorties = self.entrees_sorties.copy().remove(entree)
+            sorties = self.entrees_sorties.copy()
+            sorties.remove(entree)
             sortie = choice(sorties)
             
             nouvelle_voiture = Voiture(self.genere_id(), self.genere_agressivite(), entree, sortie, self.graphe)
@@ -132,13 +131,14 @@ class Simulation:
     def genere_graphe(self):
         for noeud_courant in self.noeuds:
             self.graphe[noeud_courant] = []
+            aretes_communes = []
             for noeud_arrivee in self.noeuds:
                 if noeud_arrivee.position != noeud_courant.position:
-                    # trouve l'arete commune entre les deux noeuds
-                    arete = next((arete for arete in noeud_arrivee.aretes if arete in noeud_courant.aretes), None)
-                    # Si une arête commune est trouvée, l'ajouter au graphe
-                    if arete:
-                        self.graphe[noeud_courant].append((noeud_arrivee, arete))
+                    for arete1 in noeud_courant.aretes:
+                        for arete2 in noeud_arrivee.aretes:
+                            if arete1 == arete2:
+                                aretes_communes.append(arete1)
+            self.graphe[noeud_courant].append((noeud_arrivee, aretes_communes[0]))
           
     def update(self):
         #Si on veut générer + de voitures
@@ -149,6 +149,9 @@ class Simulation:
         for voiture in voitures_actives:
             voiture.update()
 
+    def update(self):
+        pass
+    
     def mettre_a_jour_agressivite(self, agressivite: float):
         # agressivite de 0 à 1
         self.moyenne_agressivite = min(max(0.0,agressivite),1.0)

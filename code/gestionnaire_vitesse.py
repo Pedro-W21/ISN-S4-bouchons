@@ -8,7 +8,7 @@ class RangeError(Exception):
     def __init__(self, *args: object) -> None:
         super().__init__(*args)
 
-class GestionnaireVitesse:
+class Gestionnaireposition:
 
     # sert à savoir l'etat d'une voiture notamment pour les voitures de derrière
     ACCELERATION = "ACCELERATION"
@@ -41,55 +41,55 @@ class GestionnaireVitesse:
 
     # vu
     def genere_courbe_suivie_voiture(self, voiture_obstacle):
-        courbe_voiture_obstacle = voiture_obstacle.gestionnaire_vitesse.courbe_courante
-        distance_securite_finale = self.voiture.distance_securite(courbe_voiture_obstacle.vitesse_finale)
-        courbe = Courbe(self.voiture.position, courbe_voiture_obstacle.position_arrivee - distance_securite_finale, self.voiture.vitesse, courbe_voiture_obstacle.vitesse_finale)
+        courbe_voiture_obstacle = voiture_obstacle.gestionnaire_position.courbe_courante
+        distance_securite_finale = self.voiture.distance_securite(courbe_voiture_obstacle.position_finale)
+        courbe = Courbe(self.voiture.position, courbe_voiture_obstacle.position_arrivee - distance_securite_finale, self.voiture.position, courbe_voiture_obstacle.position_finale)
         self.courbes[self.SUIVRE_VOITURE].append(courbe)
 
     # vu
-    def cree_courbe(self, position_depart: Vecteur2D, position_arrivee: Vecteur2D, vitesse_initiale: float, vitesse_finale: float):
+    def cree_courbe(self, position_depart: Vecteur2D, position_arrivee: Vecteur2D, position_initiale: float, position_finale: float):
         position_depart_float = position_depart.scalaire(abs(self.voiture.direction))
         position_arrivee_float = position_arrivee.scalaire(abs(self.voiture.direction))
-        return Courbe(position_depart_float, position_arrivee_float, vitesse_initiale, vitesse_finale)
+        return Courbe(position_depart_float, position_arrivee_float, position_initiale, position_finale)
     
     # vu
-    def genere_courbe_freinage(self, position_finale: float, vitesse_finale: float):
-        courbe = Courbe(self.voiture.position, position_finale, self.voiture.vitesse, vitesse_finale)
+    def genere_courbe_freinage(self, position_finale: float, position_finale: float):
+        courbe = Courbe(self.voiture.position, position_finale, self.voiture.position, position_finale)
         self.courbes[self.FREINAGE].append(courbe)
     
     # vu
     def genere_courbe_freinage_noeud(self, noeud_obstacle: Noeud):
-        self.genere_courbe_freinage(noeud_obstacle.position - noeud_obstacle.distance_securite, noeud_obstacle.vitesse_max)
+        self.genere_courbe_freinage(noeud_obstacle.position - noeud_obstacle.distance_securite, noeud_obstacle.position_max)
 
     # vu
-    def genere_courbe_acceleration(self, vitesse_finale: float):
-        courbe = Courbe(self.voiture.position, self.voiture.distance_acceleration(self.voiture.vitesse, vitesse_finale), self.voiture.vitesse, vitesse_finale)
+    def genere_courbe_acceleration(self, position_finale: float):
+        courbe = Courbe(self.voiture.position, self.voiture.distance_acceleration(self.voiture.position, position_finale), self.voiture.position, position_finale)
         self.courbes[self.ACCELERATION].append(courbe)
     
     # vu
-    def genere_courbe_acceleration_arrete(self, arete: Arete):
-        self.genere_courbe_acceleration(arete.vitesse_max)
+    def genere_courbe_acceleration_arete(self, arete: Arete):
+        self.genere_courbe_acceleration(arete.position_max)
     
     # vu
     def genere_courbe_acceleration_noeud(self, noeud: Noeud):
-        self.genere_courbe_acceleration(noeud.vitesse_max)
+        self.genere_courbe_acceleration(noeud.position_max)
 
     # vu
-    def genere_courbe_roule_vitesse_max(self, position_finale: Vecteur2D, vitesse_max: float):
-        courbe = self.cree_courbe(self.voiture.position, position_finale, vitesse_max, vitesse_max)
+    def genere_courbe_roule_position_max(self, position_finale: Vecteur2D, position_max: float):
+        courbe = self.cree_courbe(self.voiture.position, position_finale, position_max, position_max)
         self.courbes[self.ROULE].append(courbe)
 
     # vu
     def genere_courbe_roule_arete(self, arete: Arete):
-        self.genere_courbe_roule_vitesse_max(arete.position_arrivee, arete.vitesse_max)
+        self.genere_courbe_roule_position_max(arete.position_arrivee, arete.position_max)
     
     # vu
-    def genere_courbe_roule_arete(self, noeud: Noeud):
-        self.genere_courbe_roule_vitesse_max(noeud.position_arrivee, noeud.vitesse_max)
+    def genere_courbe_roule_noeud(self, noeud: Noeud):
+        self.genere_courbe_roule_position_max(noeud.position_arrivee, noeud.position_max)
     
     # vu
     def genere_courbe_arret(self, position_finale: Vecteur2D):
-        courbe = self.cree_courbe(self.voiture.position, position_finale, self.voiture.vitesse, 0)
+        courbe = self.cree_courbe(self.voiture.position, position_finale, self.voiture.position, 0)
         self.courbes[self.ARRET].append(courbe)
 
     # vu
@@ -101,26 +101,26 @@ class GestionnaireVitesse:
             if courbe in courbes:
                 return etat
 
-    def recuperer_vitesse_etat(self):
-        vitesses: dict[float: Courbe] = {}
+    def recuperer_position_etat(self):
+        positions: dict[float: Courbe] = {}
         list_courbes: list[Courbe] = []
         for courbes in self.courbes.values():
             list_courbes += courbes
 
         for courbe in list_courbes:
-            vitesse = courbe.result(self.voiture.position.scalaire(abs(self.voiture.direction)))
-            vitesses[vitesse] = courbe
+            position = courbe.result(self.voiture.position.scalaire(abs(self.voiture.direction)))
+            positions[position] = courbe
 
-        vitesse = min(vitesses.keys())
+        position = min(positions.keys())
 
-        self.courbe_courante = vitesses[vitesse]
+        self.courbe_courante = positions[position]
 
         desactiver_courbes = [self.ACCELERATION, self.FREINAGE, self.SUIVRE_VOITURE, self.ARRET, self.ROULE]
         desactiver_courbes.remove(self.voiture.etat)
 
         self.desactiver_courbes(desactiver_courbes)
 
-        return vitesse, self.trouver_etat_par_courbe(vitesses[vitesse])
+        return position, self.trouver_etat_par_courbe(positions[position])
 
     def courbe_est_active(self, nom_courbe: str) -> bool:
         return bool(self.courbes[nom_courbe])

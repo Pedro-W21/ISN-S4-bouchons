@@ -59,7 +59,7 @@ if __name__ == "__main__":
         for frame in frames:
             t = time.time()
             try:
-                vitesse = courbe.result_e(t)
+                vitesse = courbe.result_lineaire(t)
 
             except ValueError:
                 print("Erreur")

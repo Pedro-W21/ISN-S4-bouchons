@@ -149,9 +149,6 @@ class Simulation:
         for voiture in voitures_actives:
             voiture.update()
 
-    def update(self):
-        pass
-
     def mettre_a_jour_agressivite(self, agressivite: float):
         # agressivite de 0 à 1
         self.moyenne_agressivite = min(max(0.0,agressivite),1.0)

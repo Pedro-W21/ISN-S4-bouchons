@@ -44,10 +44,10 @@ class Voiture:
 
         self.chemin: list[Noeud] = [None]+self.recherche_chemin(noeud_depart)
 
-        self.arete_actuelle: Arete = self.trouver_arete_entre_noeuds(self.chemin[1], self.chemin[2])
+        self.arete_actuelle: Arete = self.trouver_arrete_entre_noeuds(self.chemin[1], self.chemin[2])
 
         if self.chemin[2] != Noeud.ENTREE_SORTIE:
-            self.prochaine_arete: Arete = self.trouver_arete_entre_noeuds(self.chemin[2], self.chemin[3])
+            self.prochaine_arete: Arete = self.trouver_arrete_entre_noeuds(self.chemin[2], self.chemin[3])
         else:
             self.prochaine_arete = None
         self.ancienne_arete: Arete = None
@@ -108,8 +108,8 @@ class Voiture:
 
         self.chemin: list[Noeud] = [None]+self.recherche_chemin(noeud_depart)
 
-        self.arete_actuelle: Arete = self.trouver_arete_entre_noeuds(self.chemin[1], self.chemin[2])
-        self.prochaine_arete: Arete = self.trouver_arete_entre_noeuds(self.chemin[2], self.chemin[3])
+        self.arete_actuelle: Arete = self.trouver_arrete_entre_noeuds(self.chemin[1], self.chemin[2])
+        self.prochaine_arete: Arete = self.trouver_arrete_entre_noeuds(self.chemin[2], self.chemin[3])
         self.ancienne_arete: Arete = None
         self.update_orientation()
         self.update_orientation_prochain_chemin()
@@ -146,9 +146,9 @@ class Voiture:
             # si on est pas à la vitesse max
             if self.vitesse < self.arete_actuelle.vitesse_max:
                 if not self.gestionnaire_vitesse.courbe_est_active(GestionnaireVitesse.ACCELERATION):
-                    self.gestionnaire_vitesse.genere_courbe_acceleration_arete()   
+                    self.gestionnaire_vitesse.genere_courbe_acceleration_arete(self.arete_actuelle)   
             elif not self.gestionnaire_vitesse.courbe_est_active(GestionnaireVitesse.ROULE):
-                self.gestionnaire_vitesse.genere_courbe_par_defaut()
+                self.gestionnaire_vitesse.genere_courbe_roule_arete(self.arete_actuelle)
         
         else:
             desactiver_courbes = [GestionnaireVitesse.ROULE,
@@ -158,7 +158,7 @@ class Voiture:
 
             if voiture_obstacle is not None:
                 if not self.gestionnaire_vitesse.courbe_est_active(GestionnaireVitesse.SUIVRE_VOITURE):
-                    self.gestionnaire_vitesse.genere_courbe_suivre_voiture(voiture_obstacle)
+                    self.gestionnaire_vitesse.genere_courbe_suivie_voiture(voiture_obstacle)
             else:
                 self.gestionnaire_vitesse.desactiver_courbes([GestionnaireVitesse.SUIVRE_VOITURE])
 
@@ -180,10 +180,16 @@ class Voiture:
                         if (not est_empruntee) or (voie_est_libre):
                         
                             self.gestionnaire_vitesse.desactiver_courbes([GestionnaireVitesse.ARRET], position_finale=noeuds_obstacles[0].position)
+
                             self.ancient_usagers = {}
-                            self.gestionnaire_vitesse.genere_courbe_acceleration_noeud(noeuds_obstacles)
+
+                            if self.vitesse < noeuds_obstacles[0].vitesse_max:
+                                if not self.gestionnaire_vitesse.courbe_est_active(GestionnaireVitesse.ACCELERATION):
+                                    self.gestionnaire_vitesse.genere_courbe_acceleration_noeud(noeuds_obstacles[0])   
+                            elif not self.gestionnaire_vitesse.courbe_est_active(GestionnaireVitesse.ROULE):
+                                self.gestionnaire_vitesse.genere_courbe_roule_noeud(noeuds_obstacles[0])
                         else:
-                            #voie empruntée et voie pas libre
+                            #voie empruntée et/ou voie pas libre
                             self.gestionnaire_vitesse.genere_courbe_arret_noeud(noeuds_obstacles)
                             self.ancient_usagers = noeuds_obstacles[0].get_usagers().copy()
                     else:
@@ -226,11 +232,11 @@ class Voiture:
                 self.recherche_chemin(noeud_depasse)
                 # update les variables de position sur le graphes
                 self.ancienne_arete = self.arete_actuelle
-                self.arete_actuelle = self.trouver_arete_entre_noeuds(self.chemin[0], self.chemin[1])
+                self.arete_actuelle = self.trouver_arrete_entre_noeuds(self.chemin[0], self.chemin[1])
                 self.update_orientation()
                 # si le prochain noeud n'est pas une entré-sortie
                 if self.chemin[1].type != Noeud.ENTREE_SORTIE:
-                    self.prochaine_arete = self.trouver_arete_entre_noeuds(self.chemin[1], self.chemin[2])
+                    self.prochaine_arete = self.trouver_arrete_entre_noeuds(self.chemin[1], self.chemin[2])
                     self.update_orientation_prochain_chemin()
                 else:
                     self.prochaine_arete = None
@@ -240,9 +246,22 @@ class Voiture:
                 self.ancienne_arete.voitures.remove(self)
 
     def update_position(self):
-        self.vitesse, self.etat = self.gestionnaire_vitesse.recuperer_vitesse_etat()
+        distance_parcourue, self.etat = self.gestionnaire_vitesse.recuperer_position_etat()
+
         delta_t = time.time() - self.time
-        self.position = self.position + self.vitesse * self.direction
+        reste_distance = 0
+        if self.direction.projection(abs(self.direction)) >= 0:
+            if self.direction*distance_parcourue+self.position > self.arete_actuelle.position_arrivee.projection(self.direction):
+                reste_distance = distance_parcourue - (self.arete_actuelle.position_arrivee - self.position).projection(self.direction)
+        else:
+            if self.direction*distance_parcourue+self.position < self.arete_actuelle.position_arrivee.projection(abs(self.direction)):
+                reste_distance = distance_parcourue - (self.arete_actuelle.position_arrivee - self.position).projection(self.direction)
+
+        self.position = (
+            self.position + (
+            (distance_parcourue-reste_distance)*self.direction()
+            )+ (reste_distance*(self.prochaine_arete.position_arrivee-self.prochaine_arete.position_depart).unitaire())
+        )
         self.time = time.time()
 
     def depasse_noeud(self):
@@ -288,7 +307,7 @@ class Voiture:
 
     def distance_deceleration(self, vitesse_initiale, vitesse_finale) -> float:
         temps_deceleration = abs(vitesse_initiale/3.6 - vitesse_finale/3.6) / self.deceleration
-        distance = 1/2 * self.deceleration * temps_deceleration**2 
+        distance = 1/2 * self.deceleration * temps_deceleration**2 + vitesse_initiale * temps_deceleration
         return distance
     
     def distance_arret(self):
@@ -296,7 +315,7 @@ class Voiture:
         
     def distance_acceleration(self, vitesse_initiale, vitesse_finale) -> float:
         temps_acceleration = abs(vitesse_finale/3.6 - vitesse_initiale/3.6) / self.acceleration
-        distance = 1/2 * self.acceleration * temps_acceleration**2
+        distance = 1/2 * self.acceleration * temps_acceleration**2 + vitesse_initiale * temps_acceleration
         return distance
 
     def intention(self):
@@ -311,7 +330,14 @@ class Voiture:
         else:
             self.direction_prochain_chemin = None
 
-    def trouver_arete_entre_noeuds(self, noeud_depart: Noeud, noeud_arrivee: Noeud) -> Arete:
+    
+    def trouver_arrete_entre_noeuds(self, noeud_depart: Noeud, noeud_arrivee: Noeud) -> Arete:
+        """
+        Renvoie l'arête commune entre deux noeuds.
+        Paramètres: noeud_depart (Noeud), noeud_arrivee (Noeud)
+        Renvoie: arete (Arete)
+        """
+
         for arete in noeud_depart.aretes:
             if arete in noeud_arrivee.aretes:
                 return arete
@@ -327,7 +353,7 @@ class Voiture:
         for i in range(len(self.chemin)-1):
             noeud_depart = self.chemin[i]
             noeud_arrivee = self.chemin[i+1]
-            arete = self.trouver_arete_entre_noeuds(noeud_depart, noeud_arrivee)
+            arete = self.trouver_arrete_entre_noeuds(noeud_depart, noeud_arrivee)
             if i != 0:
                 if self.est_dans_zone_securite(noeud_depart.position):
                     if arete.a_des_voitures():

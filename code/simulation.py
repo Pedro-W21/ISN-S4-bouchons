@@ -26,7 +26,12 @@ class Simulation:
             for arete in noeud.aretes:
                 if arete not in self.aretes:
                     self.aretes.append(arete)
-
+        print("Tous mes noeuds")
+        for noeud in self.noeuds:
+            print(noeud)
+        print("Toutes mes arêtes")
+        for arete in self.aretes:
+            print(arete)
         self.entrees_sorties: list[EntreeSortie] = [noeud for noeud in self.noeuds if noeud.type == self.ENTREE_SORTIE]
 
         self.graphe: dict[Noeud: list[Noeud, Arete]] = {}
@@ -129,28 +134,31 @@ class Simulation:
                 self.noeuds.append(Intersection_T(Vecteur2D(intersection[0], intersection[1]), aretes_reliee))
 
     def genere_graphe(self):
+        print("Genere graphe", self.noeuds)
+        print("Aretes", self.aretes)
         for noeud_courant in self.noeuds:
             self.graphe[noeud_courant] = []
-            aretes_communes = []
+            aretes_connectees = []
             for noeud_arrivee in self.noeuds:
-                if noeud_arrivee.position != noeud_courant.position:
+                if noeud_arrivee != noeud_courant:
                     for arete1 in noeud_courant.aretes:
                         for arete2 in noeud_arrivee.aretes:
-                            if arete1 == arete2:
-                                aretes_communes.append(arete1)
-            self.graphe[noeud_courant].append((noeud_arrivee, aretes_communes[0]))
+                            if arete1.is_equal(arete2, inverted=True):
+                                aretes_connectees.append((noeud_arrivee, arete1))
+            self.graphe[noeud_courant] = aretes_connectees
+        print("Graphe fourni, ", self.graphe)
           
-    def update(self):
+    def update(self, environnement_actif = False):
         #Si on veut générer + de voitures
-        if self.nombre_voiture > len(self.voitures):
-            self.activer_voitures()
-        
-        voitures_actives = self.recuperer_voitures()
-        for voiture in voitures_actives:
-            voiture.update()
-
-    def update(self):
-        pass
+        if environnement_actif:
+            if self.nombre_voiture > len(self.voitures):
+                self.activer_voitures()
+            
+            voitures_actives = self.recuperer_voitures()
+            for voiture in voitures_actives:
+                voiture.update()
+        else:
+            pass
     
     def mettre_a_jour_agressivite(self, agressivite: float):
         # agressivite de 0 à 1

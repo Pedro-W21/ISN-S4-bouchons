@@ -40,12 +40,12 @@ class Voiture:
 
         #Variables primaires (ne changeront plus)
         self.couleur = self.genere_couleur()
-        
+
         self.chemin: list[Noeud] = [None]+self.recherche_chemin(noeud_depart)
 
         self.arete_actuelle: Arete = self.trouver_arete_entre_noeuds(self.chemin[1], self.chemin[2])
 
-        if self.chemin[2] != Noeud.ENTREE_SORTIE:
+        if not isinstance(self.chemin[2].type, type(Noeud.ENTREE_SORTIE)):
             self.prochaine_arete: Arete = self.trouver_arete_entre_noeuds(self.chemin[2], self.chemin[3])
         else:
             self.prochaine_arete = None
@@ -283,22 +283,44 @@ class Voiture:
 
     def recherche_chemin(self, noeud_depart: Noeud):
         # Recherche chemin à partir de dernier point passé
-
+        	
         chemin = {noeud: float('inf') for noeud in self.graphe}
+        noeud_parent = {noeud: None for noeud in self.graphe}
         chemin[noeud_depart] = 0
-
         queue = [(0, noeud_depart)]
-
+        print("Chemin :", chemin, "\nQueue :", queue)
         while queue:
             dist, noeud = queue.pop(0)
+
+            print(dist, noeud)
+
             if chemin[noeud] < dist:
+                print("On passe, car chemin[noeud]<dist : ", chemin[noeud], "<", dist)
                 continue
+            print("Voici le contenu de notre point ",noeud, "\n",self.graphe[noeud])
             for (noeud_arrivee, arete) in self.graphe[noeud]:
+                print("Examine : ", noeud_arrivee, arete)
                 new_distance = chemin[noeud] + arete.get_poids()
                 if new_distance < chemin[noeud_arrivee]:
+                    print("On a trouvé un chemin plus court")
                     chemin[noeud_arrivee] = new_distance
+                    print("New chemin :", chemin)
                     queue.append((new_distance, noeud_arrivee))
-        self.chemin = chemin
+                    print("New queue :", queue)
+                    noeud_parent[noeud_arrivee] = noeud
+                    print("Noeuds parents :", noeud_parent)
+            print("next point")
+        print(chemin)
+
+        parcours = []
+        noeud = self.noeud_arrivee
+        while noeud != noeud_depart:
+            parcours.append(noeud)
+            noeud = noeud_parent[noeud]
+ 
+    # Add the start node manually
+        parcours.append(noeud_depart)
+        return parcours
 
     def distance_securite(self, vitesse: float) -> float:
         return self.distance_deceleration(vitesse, 0) + self.distance_marge_securite

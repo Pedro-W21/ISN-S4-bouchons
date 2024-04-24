@@ -16,6 +16,7 @@ class Arete:
     
     def __str__(self):
         return f"Arete : {self.position_depart} -> {self.position_arrivee}"
+    
     def __eq__(self, other, inverted = False):
         is_the_same = self.position_depart == other.position_depart and self.position_arrivee == other.position_arrivee
         is_inverted = self.position_depart == other.position_arrivee and self.position_arrivee == other.position_depart

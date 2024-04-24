@@ -3,7 +3,7 @@ import random
 import time
 from arete import Arete
 from vecteur_2d import Vecteur2D
-from noeud import Noeud
+from noeud import Noeud, Virage, Intersection_T, Intersection_X, EntreeSortie
 from gestionnaire_vitesse import GestionnaireVitesse
 
 
@@ -45,7 +45,7 @@ class Voiture:
 
         self.arete_actuelle: Arete = self.trouver_arete_entre_noeuds(self.chemin[1], self.chemin[2])
 
-        if not isinstance(self.chemin[2].type, type(Noeud.ENTREE_SORTIE)):
+        if not type(self.chemin[2]) == EntreeSortie:
             self.prochaine_arete: Arete = self.trouver_arete_entre_noeuds(self.chemin[2], self.chemin[3])
         else:
             self.prochaine_arete = None
@@ -164,7 +164,7 @@ class Voiture:
             
             for i in range(len(noeuds_obstacles)):
                 # si c'est le premier noeud et que c'est une intersection
-                if i == 0 and noeuds_obstacles[0].type in (Noeud.INTERSECTION_T, Noeud.INTERSECTION_X):
+                if i == 0 and type(noeuds_obstacles[0]) in (Intersection_X, Intersection_T):
                     # si je suis dans la zone de ping
                     if self.distance_a_entite(noeuds_obstacles[0].position) < noeuds_obstacles[0].distance_securite and not noeuds_obstacles[0].est_un_usager(self):
                         
@@ -223,7 +223,7 @@ class Voiture:
 
             else:
                 # si le noeud est une intersection
-                if noeud_depasse.type in (Noeud.INTERSECTION_T, Noeud.INTERSECTION_X):
+                if type(noeud_depasse) in (Intersection_X, Intersection_T):
                 # si le noeud est une intersection
                     noeud_depasse.retirer_usager(self)
                 # recherche le chemin depuis le noeud depasse
@@ -233,7 +233,7 @@ class Voiture:
                 self.arete_actuelle = self.trouver_arete_entre_noeuds(self.chemin[0], self.chemin[1])
                 self.update_orientation()
                 # si le prochain noeud n'est pas une entré-sortie
-                if self.chemin[1].type != Noeud.ENTREE_SORTIE:
+                if type(self.chemin[1]) != EntreeSortie:
                     self.prochaine_arete = self.trouver_arete_entre_noeuds(self.chemin[1], self.chemin[2])
                     self.update_orientation_prochain_chemin()
                 else:
@@ -370,6 +370,7 @@ class Voiture:
 
     def trouver_voiture_sur_mon_chemin(self):
         # renvoie ou pas une voiture qui est dans ma distance de securite et sur mon chemin
+        # TODO: revoir la fonction pour qu'elle prenne en compte les distances des arretes
         for i in range(len(self.chemin)-1):
             noeud_depart = self.chemin[i]
             noeud_arrivee = self.chemin[i+1]
@@ -390,8 +391,10 @@ class Voiture:
         return None
 
     def trouver_noeuds_sur_mon_chemin(self):
+        # TODO: revoir la fonction pour qu'elle prenne en compte les distances des arretes
         # renvoie ou pas tous les noeuds qui sont dans ma distance de securite et sur mon chemin
         noeuds: Noeud = []
+        
         for i in range(len(self.chemin)):
             if i != 0:
                 noeud_devant = self.chemin[i]

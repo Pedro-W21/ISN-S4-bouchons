@@ -28,7 +28,9 @@ class GestionnaireVitesse:
         }
 
         self.voiture = voiture
+        self.position_depart_courante: Vecteur2D = self.voiture.position
         self.courbe_courante = self.genere_courbe_acceleration_arete(self.voiture.arete_actuelle)
+        
 
     def desactiver_courbes(self, nom_courbes: list[str], position_finale: Vecteur2D=None):
         for nom_courbe in nom_courbes:
@@ -45,16 +47,15 @@ class GestionnaireVitesse:
         courbe = Courbe(self.voiture.position, courbe_voiture_obstacle.position_arrivee - distance_securite_finale, self.voiture.position, courbe_voiture_obstacle.position_finale)
         self.courbes[self.SUIVRE_VOITURE].append(courbe)
 
-    def cree_courbe(self, position_depart: Vecteur2D, position_arrivee: Vecteur2D, position_initiale: float, position_finale: float):
-        position_depart_float = position_depart.scalaire(abs(self.voiture.direction))
-        position_arrivee_float = position_arrivee.scalaire(abs(self.voiture.direction))
+    def cree_courbe(self, position_depart: Vecteur2D, position_arrivee: Vecteur2D, position_initiale: float, position_finale: float, acceleration: float = 8):
+        # TODO : calcul de parcours de chemin entre la position de depart et d'arrivee sur plusieurs aretes
+        position_depart_float = 0
+        position_arrivee_float = (position_arrivee - position_depart).norme_manathan()
         return Courbe(position_depart_float, position_arrivee_float, position_initiale, position_finale)
     
     def genere_courbe_freinage(self, position_finale: float):
-    def genere_courbe_freinage(self, position_finale: float, position_depart: float):
         courbe = Courbe(self.voiture.position, position_finale, self.voiture.position, position_finale)
         self.courbes[self.FREINAGE].append(courbe)
-
     
     def genere_courbe_freinage_noeud(self, noeud_obstacle: Noeud):
         self.genere_courbe_freinage(noeud_obstacle.position - noeud_obstacle.distance_securite, noeud_obstacle.position_max)
@@ -65,13 +66,13 @@ class GestionnaireVitesse:
 
     
     def genere_courbe_acceleration_arete(self, arete: Arete):
-        self.genere_courbe_acceleration(arete.position_max)
+        self.genere_courbe_acceleration(arete.vitesse_max)
 
     
     def genere_courbe_acceleration_noeud(self, noeud: Noeud):
         self.genere_courbe_acceleration(noeud.position_max)
 
-    def genere_courbe_roule_position_max(self, position_finale: Vecteur2D, position_max: float):
+    def genere_courbe_roule_vitesse_max(self, position_finale: Vecteur2D, position_max: float):
         courbe = self.cree_courbe(self.voiture.position, position_finale, position_max, position_max)
         self.courbes[self.ROULE].append(courbe)
 

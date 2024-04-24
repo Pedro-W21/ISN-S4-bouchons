@@ -25,11 +25,12 @@ def fonction_position_lineaire(t):
 
 class Courbe:
 
-    def __init__(self, vitesse_initiale: float, vitesse_finale: float, position_initiale, acceleration: float = 8) -> None:
+    def __init__(self, vitesse_initiale: float, vitesse_finale: float, position_initiale: float, position_finale: float, acceleration: float = 8) -> None:
         self.vitesse_initiale = vitesse_initiale
         self.vitesse_finale = vitesse_finale
 
         self.position_initiale = position_initiale
+        self.position_finale = position_finale
 
         self.t0 = time.time()
         self.tf = ((vitesse_finale - vitesse_initiale) / acceleration) + self.t0

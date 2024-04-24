@@ -3,11 +3,16 @@ import time
 from courbe import Courbe
 import numpy as np
 import matplotlib.pyplot as plt
-
+import courbe
 # NE PAS MODIFIER
 
 if __name__ == "__main__":
-    test = "test2"
+    test = "test4"
+    a = 2
+    b = -1
+    c = 2*np.exp(-1)
+    d = 1/2
+
     if test == "test1":
         position_depart = 0
         position_arrivee = 50
@@ -43,8 +48,8 @@ if __name__ == "__main__":
 
         
         courbe = Courbe(vitesse_initiale, vitesse_finale, 8)
-        print("courbe.t0", "courbe.tf", "courbe.plage_t", "courbe.plage_vitesse")
-        print(courbe.t0, courbe.tf, courbe.plage_t, courbe.plage_vitesse)
+        print("courbe.t0", "courbe.tf", "courbe.plage_t")
+        print(courbe.t0, courbe.tf, courbe.plage_t)
 
         frames = np.arange(1, 3600, 1)
         
@@ -59,7 +64,7 @@ if __name__ == "__main__":
         for frame in frames:
             t = time.time()
             try:
-                vitesse = courbe.result_lineaire(t)
+                vitesse = courbe.result_e(t)
 
             except ValueError:
                 print("Erreur")
@@ -87,6 +92,60 @@ if __name__ == "__main__":
         plt.legend()
         plt.grid(True)
         plt.show()
-            
+    
+    elif test == "test3":
 
+        t = np.linspace(0, 1, 100)
+        t = 0
+        position = 1/(2*a*c) * ((a*c*d*t + np.exp(b+a*t)*(-1+b+a*t)) * (1 - np.sign(b + a*t)) + (a*c*d*t - np.exp(-b-a*t)* (1+b+a*t)) * (1 + np.sign(b + a*t))) + 1/2
+        vitesse = (a*t+b)*np.exp(-np.abs(a*t+b)) / c + d
+
+        plt.plot(t, position, label='Position')
+        plt.plot(t, vitesse, label='Vitesse')
+        plt.xlabel('t')
+        plt.ylabel('position / vitesse')
+        plt.title('Évolution de la position et de la vitesse')
+        plt.legend()
+        plt.grid(True)
+        plt.show()
+
+    elif test == "test4":
+        
+        courbe = Courbe(0, 50/3.6, 0, 40, 8)
+        t = time.time()
+
+
+        positions = []
+        vitesses = []
+        temps = []
+
+
+        while True:
             
+        
+            try:
+                
+                vitesse, position = courbe.result_e(t)
+                
+                temps.append(t)
+                positions.append(position)
+                vitesses.append(vitesse)
+
+                time.sleep(1/60)
+
+                t = time.time()
+                
+
+            except ValueError:
+                print("Erreur")
+                break
+
+        
+        plt.plot(temps, vitesses, label='Vitesse')
+        plt.plot(temps, positions, label='Position')
+        plt.xlabel('t')
+        plt.ylabel('position / vitesse')
+        plt.title('Évolution de la position et de la vitesse')
+        plt.legend()
+        plt.grid(True)
+        plt.show()

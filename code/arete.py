@@ -14,6 +14,18 @@ class Arete:
         self.vitesse_moyenne = 0
         self.vitesse_max = 80
     
+    def __str__(self):
+        return f"Arete : {self.position_depart} -> {self.position_arrivee}"
+    def __eq__(self, other, inverted = False):
+        is_the_same = self.position_depart == other.position_depart and self.position_arrivee == other.position_arrivee
+        is_inverted = self.position_depart == other.position_arrivee and self.position_arrivee == other.position_depart
+        return is_the_same or (is_inverted and inverted)
+    
+    def is_equal(self, other, inverted = False):
+        is_the_same = self.position_depart == other.position_depart and self.position_arrivee == other.position_arrivee
+        is_inverted = self.position_depart == other.position_arrivee and self.position_arrivee == other.position_depart
+        return is_the_same or (is_inverted and inverted)
+    
     def a_des_voitures(self):
         return len(self.voitures) > 0
     
@@ -32,7 +44,7 @@ class Arete:
         else:
             # TODO : fix ca pour être sur que ca n'arrive pas
             # lors des trys
-            print("tente d'ajouter une voiture deja sur l'arrete bug ?")
+            print("tente d'ajouter une voiture deja sur l'arete bug ?")
 
     def get_poids(self):
         return self.longueur / self.get_vitesse_moyenne()

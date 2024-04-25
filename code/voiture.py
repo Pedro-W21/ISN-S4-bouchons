@@ -44,7 +44,9 @@ class Voiture:
         self.chemin: list[Noeud] = [None] + chemin
         self.distances = distances
 
+        print(self.chemin[1], self.chemin[2])
         self.arete_actuelle: Arete = self.trouver_arete_entre_noeuds(self.chemin[1], self.chemin[2])
+        print(self.arete_actuelle, "ici fils de pute")
 
         if not type(self.chemin[2]) == EntreeSortie:
             self.prochaine_arete: Arete = self.trouver_arete_entre_noeuds(self.chemin[2], self.chemin[3])
@@ -62,8 +64,6 @@ class Voiture:
         self.ancient_usagers = {}
 
         self.etat = GestionnaireVitesse.ACCELERATION
-
-        self.time = time.time()
 
     def reassign(self, agressivite: float, noeud_depart: Noeud, noeud_arrivee: Noeud):
 
@@ -122,8 +122,6 @@ class Voiture:
         self.ancient_usagers = {}
 
         self.etat = GestionnaireVitesse.ACCELERATION
-
-        self.time = time.time()
 
     def update(self):
         self.update_vitesse()
@@ -288,9 +286,8 @@ class Voiture:
                 self.ancienne_arete.voitures.remove(self)
 
     def update_position(self):
-        distance_parcourue, self.etat = self.gestionnaire_vitesse.recuperer_position_etat()
+        distance_parcourue, self.vitesse, self.etat = self.gestionnaire_vitesse.recuperer_position_etat()
 
-        delta_t = time.time() - self.time
         reste_distance = 0
         if self.direction.projection(abs(self.direction)) >= 0:
             if self.direction*distance_parcourue+self.position > self.arete_actuelle.position_arrivee.projection(self.direction):
@@ -299,18 +296,15 @@ class Voiture:
             if self.direction*distance_parcourue+self.position < self.arete_actuelle.position_arrivee.projection(abs(self.direction)):
                 reste_distance = distance_parcourue - (self.arete_actuelle.position_arrivee - self.position).projection(self.direction)
 
-        self.position = (
-            self.position + (
+        self.position = (self.position + (
             (distance_parcourue-reste_distance)*self.direction()
-            )+ (reste_distance*(self.prochaine_arete.position_arrivee-self.prochaine_arete.position_depart).unitaire())
-        )
-        self.time = time.time()
+            )+ (reste_distance*(self.direction_prochain_chemin)))
 
     def depasse_noeud(self):
         # selon de la voiture renvoie si elle a dépassé le prochain point sur le chemin
         prochain_noeud = self.chemin[1]
         if self.direction_prochain_chemin == Vecteur2D(1, 0):
-            if self.position.x > prochain_noeud.position.x + prochain_noeud.size.x:
+            if self.position.x >= prochain_noeud.position.x + prochain_noeud.size.x:
                 return True
         elif self.direction_prochain_chemin == Vecteur2D(-1, 0):
             if self.position.x < prochain_noeud.position.x - prochain_noeud.size.x:
@@ -321,7 +315,6 @@ class Voiture:
         elif self.direction_prochain_chemin == Vecteur2D(0, -1):
             if self.position.y < prochain_noeud.position.y - prochain_noeud.size.y:
                 return True
-
         return False
 
     def recherche_chemin(self, noeud_depart: Noeud):
@@ -403,10 +396,10 @@ class Voiture:
         Paramètres: noeud_depart (Noeud), noeud_arrivee (Noeud)
         Renvoie: arete (Arete)
         """
-
         for arete in noeud_depart.aretes:
-            if arete in noeud_arrivee.aretes:
-                return arete
+            for arete2 in noeud_arrivee.aretes:
+                if arete.is_equal(arete2, inverted=True):
+                    return arete
 
     def distance_entite(self, position_entite: Vecteur2D):
         return (position_entite - self.position).norme_manathan()

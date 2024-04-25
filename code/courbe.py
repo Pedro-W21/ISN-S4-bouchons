@@ -33,6 +33,7 @@ class Courbe:
         self.position_finale = position_finale
 
         self.t0 = time.time()
+        print(f"(({vitesse_finale} - {vitesse_initiale}) / {acceleration}) + {self.t0}")
         self.tf = ((vitesse_finale - vitesse_initiale) / acceleration) + self.t0
 
 

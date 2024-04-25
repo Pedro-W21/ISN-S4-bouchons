@@ -31,6 +31,7 @@ class GestionnaireVitesse:
 
         self.voiture = voiture
         self.position_depart_courante: Vecteur2D = self.voiture.position
+        print(self.voiture.arete_actuelle)
         self.courbe_courante = self.genere_courbe_acceleration_arete(self.voiture.arete_actuelle)
         
 
@@ -69,7 +70,6 @@ class GestionnaireVitesse:
 
     def genere_courbe_acceleration(self, vitesse_finale: float, nom_courbe = ACCELERATION):
         courbe = self.cree_courbe(self.voiture.distance_acceleration(self.voiture.vitesse, vitesse_finale), self.voiture.vitesse, vitesse_finale, self.voiture.acceleration)
-        courbe = Courbe(self.voiture.position, self.voiture.distance_acceleration(self.voiture.vitesse, vitesse_finale), self.voiture.vitesse, vitesse_finale)
         self.courbes[nom_courbe].append(courbe)
     
     def genere_courbe_acceleration_arete(self, arete: Arete):
@@ -101,25 +101,20 @@ class GestionnaireVitesse:
                 return etat
 
     def recuperer_position_etat(self):
-        positions: dict[float: Courbe] = {}
+        vitesses: dict[float: Courbe] = {}
         list_courbes: list[Courbe] = []
         for courbes in self.courbes.values():
             list_courbes += courbes
 
         for courbe in list_courbes:
-            position = courbe.result(self.voiture.position.scalaire(abs(self.voiture.direction)))
-            positions[position] = courbe
+            vitesse, position = courbe.result_e(time.time())
+            vitesses[vitesse] = courbe, position
 
-        position = min(positions.keys())
+        vitesse = min(list(vitesses.keys()))
 
-        self.courbe_courante = positions[position]
+        self.courbe_courante, position = vitesses[position]
 
-        desactiver_courbes = [self.ACCELERATION, self.FREINAGE, self.SUIVRE_VOITURE, self.ARRET, self.ROULE]
-        desactiver_courbes.remove(self.voiture.etat)
-
-        self.desactiver_courbes(desactiver_courbes)
-
-        return position, self.trouver_etat_par_courbe(positions[position])
+        return vitesse, position, self.trouver_etat_par_courbe(vitesses[vitesse])
     
     def courbe_est_active(self, nom_courbe: str) -> bool:
         return self.courbes.get(nom_courbe, False)

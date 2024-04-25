@@ -22,7 +22,7 @@ class Noeud:
         self.aretes = aretes
 
     def __str__(self) -> str:
-        return f"Position: {self.position}"
+        return f"Noeud: {self.position}"
     
     def retirer_usager(self, voiture):
         del self.usagers[voiture]

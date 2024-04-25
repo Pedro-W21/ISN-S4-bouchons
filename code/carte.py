@@ -36,7 +36,7 @@ class Carte:
                     fxc += dx
                     fyc += dy
                 if not (fxc == xc and fyc == yc):
-                    aretes.append(Arete(Vecteur2D(xc * sx, yc * sy), Vecteur2D(fxc * sx, fyc * sy), abs(fxc - xc)  * sx + abs(fyc - yc) * sy ))
+                    aretes.append(Arete(Vecteur2D(xc * sx, yc * sy), Vecteur2D(fxc * sx, fyc * sy)))
         return [self.cree_noeud(xc, yc, aretes) for ((xc, yc), aretes) in noeuds_dict.items()]
 
     def cree_noeud(self, xc, yc, aretes) -> Noeud:
@@ -430,11 +430,10 @@ class Carte:
                         point1, point2 = arete
                         point1 = Vecteur2D(point1[0], point1[1])
                         point2 = Vecteur2D(point2[0], point2[1])
-                        longueur = (point1 - point2).norme()
                         
                         # TODO: ajout de l'aller-retour ?
-                        aretes_decodees.append(Arete(longueur, point1, point2))
-                        aretes_decodees.append(Arete(longueur, point2, point1))
+                        aretes_decodees.append(Arete(point1, point2))
+                        aretes_decodees.append(Arete(point2, point1))
 
                         max_x = max(max_x, point1.get_x(), point2.get_x())
                         max_y = max(max_y, point1.get_y(), point2.get_y())

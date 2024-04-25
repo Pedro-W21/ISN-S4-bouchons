@@ -5,7 +5,7 @@ class Arete:
     
     size = Vecteur2D(6, 6) # m [longueur, largeur]
     
-    def __init__(self, position_depart: Vecteur2D, position_arrivee: Vecteur2D, longueur) -> None:
+    def __init__(self, position_depart: Vecteur2D, position_arrivee: Vecteur2D) -> None:
         self.voitures = []
         vecteur = position_arrivee - position_depart
         self.longueur = vecteur.norme_manathan()

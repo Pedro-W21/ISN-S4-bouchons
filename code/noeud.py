@@ -13,6 +13,7 @@ class Noeud:
         #Implémentation données pour affichage
         self.position = position
         self.usagers = {}
+        self.nom = f"{position.get_x()},{position.get_y()}"
         # self.usagers: dict[Voiture : list[Vecteur2D, Vecteur2D]] = {}
         #                 {voiture : [orientation, direction_prochaine]}
         self.vitesse_max = 40

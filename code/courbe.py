@@ -40,6 +40,8 @@ class Courbe:
         self.plage_vitesse = (vitesse_finale - vitesse_initiale)
 
         self.active = True
+
+        self.last_position = position_initiale
     
     def result_e(self, t: float) -> tuple[float, float]:
         temps_normalise = (t - self.t0) / self.plage_t
@@ -50,6 +52,9 @@ class Courbe:
 
         vitesse = vitesse_normalise * self.plage_vitesse + self.vitesse_initiale
         position = position_normalise * self.plage_vitesse + self.position_initiale
+
+        self.last_position = position
+
         return vitesse, position
     
     def result_lineaire(self, t: float):
@@ -62,6 +67,9 @@ class Courbe:
         position_normalise = fonction_position_lineaire(temps_normalise)
         vitesse = vitesse_normalise * self.plage_vitesse + self.vitesse_initiale
         position = position_normalise * self.plage_vitesse + self.position_initiale
+
+        self.last_position = position
+
         return vitesse, position
 
     def __eq__(self, courbe) -> bool:

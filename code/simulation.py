@@ -1,6 +1,4 @@
 import json
-import random
-
 from arete import Arete
 from voiture import Voiture
 from noeud import Intersection_T, Intersection_X, Virage, Noeud, EntreeSortie
@@ -8,8 +6,6 @@ from vecteur_2d import Vecteur2D
 import numpy as np
 from carte import Carte
 from random import choice, shuffle
-
-#TODO : ADAPTER les listes de voitures pour joindre toutes les voitures à afficher et pas à afficher
 
 class Simulation:
 
@@ -108,7 +104,6 @@ class Simulation:
                 point2 = Vecteur2D(point2[0], point2[1])
                 longueur = (point1 - point2).norme()
                 
-                #TODO: ajout de l'aller-retour ?
                 self.aretes.append(arete(longueur, point1, point2))
                 self.aretes.append(arete(longueur, point2, point1))
             

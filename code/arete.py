@@ -43,9 +43,7 @@ class Arete:
         if voiture not in self.voitures:
             self.voitures.append(voiture)
         else:
-            # TODO : fix ca pour être sur que ca n'arrive pas
-            # lors des trys
-            print("tente d'ajouter une voiture deja sur l'arete bug ?")
+            raise ValueError("tente d'ajouter une voiture deja sur l'arete bug ?")
 
     def get_poids(self):
         return self.longueur / self.get_vitesse_moyenne()

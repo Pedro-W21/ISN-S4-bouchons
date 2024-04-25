@@ -431,7 +431,6 @@ class Carte:
                         point1 = Vecteur2D(point1[0], point1[1])
                         point2 = Vecteur2D(point2[0], point2[1])
                         
-                        # TODO: ajout de l'aller-retour ?
                         aretes_decodees.append(Arete(point1, point2))
                         aretes_decodees.append(Arete(point2, point1))
 

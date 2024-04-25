@@ -169,7 +169,7 @@ class Voiture:
 
 
             if voiture_obstacle:
-                # TODO : implementer un meilleur check vérifier l'id de la voiture
+                # TODO : implementer un meilleur check vérifier l'id de la voiture (pour plus tard non essentiel)
                 if not self.gestionnaire_vitesse.courbe_est_active(GestionnaireVitesse.SUIVRE_VOITURE):
                     self.gestionnaire_vitesse.genere_courbe_suivie_voiture(voiture_obstacle)
             else:
@@ -194,52 +194,52 @@ class Voiture:
                         #voie pas empruntée ou voie libre
                         if (not est_empruntee) or (voie_est_libre):
                         
-                            self.gestionnaire_vitesse.desactiver_courbes([GestionnaireVitesse.ARRET], position_finale=noeud_obstacle.position)
+                            self.gestionnaire_vitesse.desactiver_courbes([GestionnaireVitesse.ARRET])
 
                             self.ancient_usagers = {}
 
                             if self.vitesse < noeud_obstacle.vitesse_max:
-                                if not self.gestionnaire_vitesse.courbe_est_active(self.gestionnaire_vitesse.ACCELERATION):
+                                if not self.gestionnaire_vitesse.courbe_est_active(self.gestionnaire_vitesse.ACCELERATION+self.id_noeud(noeud_obstacle)):
                                     self.gestionnaire_vitesse.genere_courbe_acceleration_noeud(noeud_obstacle)
                             elif self.vitesse == noeud_obstacle.vitesse_max:
-                                if not self.gestionnaire_vitesse.courbe_est_active(self.gestionnaire_vitesse.ROULE):
+                                if not self.gestionnaire_vitesse.courbe_est_active(self.gestionnaire_vitesse.ROULE+self.id_noeud(noeud_obstacle)):
                                     self.gestionnaire_vitesse.genere_courbe_roule_noeud(noeud_obstacle)
                             else:
-                                if not self.gestionnaire_vitesse.courbe_est_active(self.gestionnaire_vitesse.FREINAGE):
+                                if not self.gestionnaire_vitesse.courbe_est_active(self.gestionnaire_vitesse.FREINAGE+self.id_noeud(noeud_obstacle)):
                                     self.gestionnaire_vitesse.genere_courbe_freinage_noeud(noeud_obstacle)
 
                         else:
                             #voie empruntée et/ou voie pas libre
-                            self.gestionnaire_vitesse.genere_courbe_arret_noeud(distance_noeud_obstacle)
+                            if not self.gestionnaire_vitesse.courbe_est_active(self.gestionnaire_vitesse.ARRET+self.id_noeud(noeud_obstacle)):
+                                self.gestionnaire_vitesse.genere_courbe_arret_noeud(distance_noeud_obstacle, noeud_obstacle.nom)
                             self.ancient_usagers = noeuds_obstacles_longueur[0].get_usagers().copy()
                     
                     else:
                         if self.vitesse < noeud_obstacle.vitesse_max:
-                            if not self.gestionnaire_vitesse.courbe_est_active(self.gestionnaire_vitesse.ACCELERATION):
+                            if not self.gestionnaire_vitesse.courbe_est_active(self.gestionnaire_vitesse.ACCELERATION+self.id_noeud(noeud_obstacle)):
                                 self.gestionnaire_vitesse.genere_courbe_acceleration_noeud(noeud_obstacle)
                         elif self.vitesse == noeud_obstacle.vitesse_max:
-                            if not self.gestionnaire_vitesse.courbe_est_active(self.gestionnaire_vitesse.ROULE):
+                            if not self.gestionnaire_vitesse.courbe_est_active(self.gestionnaire_vitesse.ROULE+self.id_noeud(noeud_obstacle)):
                                 self.gestionnaire_vitesse.genere_courbe_roule_noeud(noeud_obstacle)
                         else:
-                            if not self.gestionnaire_vitesse.courbe_est_active(self.gestionnaire_vitesse.FREINAGE):
+                            if not self.gestionnaire_vitesse.courbe_est_active(self.gestionnaire_vitesse.FREINAGE+self.id_noeud(noeud_obstacle)):
                                 self.gestionnaire_vitesse.genere_courbe_freinage_noeud(noeud_obstacle)
 
 
                 # ce n'est pas le premier noeud
                 else:
-                    # TODO FAIRE LES MODFICATIONS DES FONCTIOns TROUVER NOEUDS ET VOITURE SUR MON CHEMIN 
-                    # RECHECK tOUT LE CODE 
+                    
                     # si je suis dans la zone de ping et que ma distance d'arret est superieure ou egale à ma distance de sécurité
                     if distance_noeud_obstacle < noeud_obstacle.distance_securite and self.distance_arret() <= distance_noeud_obstacle:
                         
                         if self.vitesse < noeud_obstacle.vitesse_max:
-                            if not self.gestionnaire_vitesse.courbe_est_active(self.gestionnaire_vitesse.ACCELERATION):
+                            if not self.gestionnaire_vitesse.courbe_est_active(self.gestionnaire_vitesse.ACCELERATION+self.id_noeud(noeud_obstacle)):
                                 self.gestionnaire_vitesse.genere_courbe_acceleration_noeud(noeud_obstacle)
                         elif self.vitesse == noeud_obstacle.vitesse_max:
-                            if not self.gestionnaire_vitesse.courbe_est_active(self.gestionnaire_vitesse.ROULE):
+                            if not self.gestionnaire_vitesse.courbe_est_active(self.gestionnaire_vitesse.ROULE+self.id_noeud(noeud_obstacle)):
                                 self.gestionnaire_vitesse.genere_courbe_roule_noeud(noeud_obstacle)
                         else:
-                            if not self.gestionnaire_vitesse.courbe_est_active(self.gestionnaire_vitesse.FREINAGE):
+                            if not self.gestionnaire_vitesse.courbe_est_active(self.gestionnaire_vitesse.FREINAGE+self.id_noeud(noeud_obstacle)):
                                 self.gestionnaire_vitesse.genere_courbe_freinage_noeud(noeud_obstacle)
             
             # si il n'y a pas d'obstacle noeud
@@ -248,20 +248,20 @@ class Voiture:
                                     GestionnaireVitesse.ARRET]
                 self.gestionnaire_vitesse.desactiver_courbes(desactiver_courbes)
     
+    def id_noeud(self, noeud: Noeud):
+        return self.gestionnaire_vitesse.NOEUD+noeud.nom
+        
     def update_position_graphe(self):
         noeud_depasse: Noeud = self.depasse_noeud()
         # si on depasse un noeud
         if noeud_depasse:
             
             if noeud_depasse == self.noeud_depart:
-                    self.noeud_depasse.retirer_usager(self)
+                self.noeud_depasse.retirer_usager(self)
             elif noeud_depasse == self.noeud_arrivee:
                 # desactive la voiture
                 self.affiche = False
                 self.arete_actuelle.voitures.remove(self)
-                # TODO: faire dispawn la voiture
-                # TODO: Réponse : Devrait suffir car simulation prend le relai lorsque affiche = False
-                ## Par contre il faut fixe, prochaine_arete = None, voir TODO plus haut
 
             else:
                 # si le noeud est une intersection
@@ -308,7 +308,6 @@ class Voiture:
 
     def depasse_noeud(self):
         # selon de la voiture renvoie si elle a dépassé le prochain point sur le chemin
-        # TODO : verifier que c'est bien self.direction_prochain_chemin
         prochain_noeud = self.chemin[1]
         if self.direction_prochain_chemin == Vecteur2D(1, 0):
             if self.position.x > prochain_noeud.position.x + prochain_noeud.size.x:
@@ -414,7 +413,7 @@ class Voiture:
 
     def trouver_voiture_sur_mon_chemin(self):
         # renvoie ou pas une voiture qui est dans ma distance de securite et sur mon chemin
-        # TODO: revoir la fonction pour qu'elle prenne en compte les distances des arretes
+
         longueur = 0
         for i in range(len(self.chemin)-1):
             noeud_depart = self.chemin[i]
@@ -443,8 +442,8 @@ class Voiture:
         return None, None
 
     def trouver_noeuds_sur_mon_chemin(self):
-        # TODO: revoir la fonction pour qu'elle prenne en compte les distances des arretes
         # renvoie ou pas tous les noeuds qui sont dans ma distance de securite et sur mon chemin
+        
         noeuds: list[Noeud] = []
         longueur = 0
         for i in range(len(self.chemin)-1):

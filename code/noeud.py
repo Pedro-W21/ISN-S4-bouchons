@@ -113,9 +113,7 @@ class Intersection_T(Noeud):
                         libre = False  
         if libre:
             self.enregistrer_usager(voiture, orientation, intention)
-        else:
-            # TODO: Implémenter gestion de la file de priorité
-            pass
+
         return libre
 
 class Intersection_X(Noeud):

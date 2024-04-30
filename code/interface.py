@@ -76,6 +76,7 @@ class App(ctk.CTk):
         #crée la tabview modele et création
         self.tabview_modele()
         self.tabview_creation()
+        self.tabview_generation()
 
         #cree la tabview parametres
         self.tabview_parametres_voitures()
@@ -115,6 +116,7 @@ class App(ctk.CTk):
 
         self.modele = self.tabview_model.add('Modèle existant')
         self.creation = self.tabview_model.add('Création')
+        self.generation = self.tabview_model.add('Génération')
 
         self.parametres = self.tabview_parametres.add('Paramètres véhicules')
 
@@ -230,6 +232,19 @@ class App(ctk.CTk):
             self.affiche_sim()
         self.mode_avant = self.mode_affichage
 
+    def tabview_generation(self):
+        """
+        paramétrise la partie "génération" de l'interface d'édition de carte
+
+        input : aucun
+        return : aucun
+
+        effets secondaires : création et agencement 
+        """
+        self.generer_carte = CTkButton(master=self.generation, text="générer une carte aléatoirement")
+        self.generer_carte.pack(side=TOP, expand=True, fill="x")
+        self.generer_carte.bind("<Button-1>", self.generer_carte_test)
+
     def tabview_creation(self):
         """
         paramétrise la partie "création" de l'interface d'édition de carte
@@ -257,13 +272,9 @@ class App(ctk.CTk):
         self.hauteur_y_scale.set(self.hauteur_carte)
         self.hauteur_y_scale.pack(side=TOP, expand=True, fill="x")
 
-        self.creer_route = CTkButton(master=self.creation, text="créer une route", fg_color="purple")
+        self.creer_route = CTkButton(master=self.creation, text="créer une grille vide")
         self.creer_route.pack(side=TOP, expand=True, fill="x")
         self.creer_route.bind('<Button-1>', self.creer_nouvelle_carte)
-
-        self.generer_carte = CTkButton(master=self.creation, text="générer une carte")
-        self.generer_carte.pack(side=TOP, expand=True, fill="x")
-        self.generer_carte.bind("<Button-1>", self.generer_carte_test)
 
         self.filtre_route = CTkButton(master=self.creation, text="appliquer le filtre")
         self.filtre_route.pack(side=TOP, expand=True, fill="x")
@@ -394,9 +405,9 @@ class App(ctk.CTk):
 
         self.nombre_voitures_Label = CTkLabel(master=self.parametres, text="nb voitures selectionnées")
         self.nombre_voitures_Label.pack(side=TOP, expand=True, fill="x")
-        self.nombre_voitures_Label_affichees = CTkLabel(master=self.parametres, text=f"{10}", text_color="purple")
+        self.nombre_voitures_Label_affichees = CTkLabel(master=self.parametres, text=f"{10}")
         self.nombre_voitures_Label_affichees.pack(side=TOP, expand=True, fill="x")
-        self.nombre_voiture_scale = CTkSlider(master=self.parametres, progress_color="purple", from_=1, to=100, command=self.afficher_scale_voitures)
+        self.nombre_voiture_scale = CTkSlider(master=self.parametres, from_=1, to=100, command=self.afficher_scale_voitures)
         self.nombre_voiture_scale.pack(side=TOP, expand=True, fill="x")
         self.nombre_voiture_scale.set(10)
 
@@ -404,10 +415,10 @@ class App(ctk.CTk):
         self.niveau_agressivite_Label = CTkLabel(master=self.parametres, text="niveau d'agressivité")
         self.niveau_agressivite_Label.pack(side=TOP, expand=True, fill="x")
 
-        self.niveau_agressivite_Label_affichees = CTkLabel(master=self.parametres, text=f"{10}", text_color="red")
+        self.niveau_agressivite_Label_affichees = CTkLabel(master=self.parametres, text=f"{10}")
         self.niveau_agressivite_Label_affichees.pack(side=TOP, expand=True, fill="x")
 
-        self.niveau_agressivite = CTkSlider(master=self.parametres, progress_color="red", from_=1, to=100, command=self.afficher_scale_voitures)
+        self.niveau_agressivite = CTkSlider(master=self.parametres, from_=1, to=100, command=self.afficher_scale_voitures)
         self.niveau_agressivite.set(10)
         self.niveau_agressivite.pack(side=TOP, expand=True, fill="x")
 
@@ -422,10 +433,6 @@ class App(ctk.CTk):
         self.carte_france_button = CTkButton(master=self.parametres, text="carte de France de l'agressivité")
         self.carte_france_button.pack(side=TOP, expand=True, fill="x")
         self.carte_france_button.bind('<Button-1>', self.affichage_france)
-
-        self.validation_para_button = CTkButton(master=self.parametres, text = "Coquin, valide !", text_color='black', fg_color ='pink')
-        self.validation_para_button.pack(side=TOP, expand=True, fill="x")
-        self.validation_para_button.bind('<Button-1>', self.validew)
 
         self.bool_carte_affichee = False
     
@@ -443,30 +450,9 @@ class App(ctk.CTk):
         nb_voitures = self.nombre_voiture_scale.get()
         niveau_agressivite = self.niveau_agressivite.get()
 
-        if nb_voitures < 10:
-            self.nombre_voitures_Label_affichees.configure(text=f"{str(nb_voitures)[0]}")
+        self.nombre_voitures_Label_affichees.configure(text=f"{str(int(nb_voitures))}")
 
-        if nb_voitures == 100:
-            self.nombre_voitures_Label_affichees.configure(text=f"{str(nb_voitures)}")
-
-        if nb_voitures >= 10 and nb_voitures < 100:
-            self.nombre_voitures_Label_affichees.configure(text=f" {str(nb_voitures)[:2]}")
-
-        if niveau_agressivite < 10:
-            self.niveau_agressivite_Label_affichees.configure(text=f"{str(niveau_agressivite)[0]}")
-
-        if niveau_agressivite == 100:
-            self.niveau_agressivite_Label_affichees.configure(text=f"{str(niveau_agressivite)}")
-
-        if niveau_agressivite >= 10 and niveau_agressivite < 100:
-            self.niveau_agressivite_Label_affichees.configure(text=f" {str(niveau_agressivite)[:2]}")
-
-    def validew(self, event):
-        model = Model()
-        scale_1 = self.nombre_voiture_scale.get()
-        scale_2 = self.niveau_agressivite.get()
-        model.get_data(scale_1)
-        model.get_data(scale_2)
+        self.niveau_agressivite_Label_affichees.configure(text=f"{str(int(niveau_agressivite))}")
         
     def affichage_france(self, event):
         """

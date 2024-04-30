@@ -209,6 +209,8 @@ class App(ctk.CTk):
         if self.nom_fichier_valide(nom):
             carte = Carte(self.largeur_carte, self.hauteur_carte, self.grille_route)
             self.assure_existence_dossier_routes()
+            carte.sauvegarder_carte(nom + ".json")
+            self.toplevel.destroy()
             carte.sauvegarder_carte(nom.strip() + ".json")
         else:
             print('non valide')

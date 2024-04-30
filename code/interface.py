@@ -1,7 +1,7 @@
 import customtkinter as ctk
 from customtkinter import *
 import json
-from PIL import Image
+from PIL import Image as PILImage
 import os
 from os.path import abspath, dirname
 from recup_donnees import Model
@@ -131,24 +131,40 @@ class App(ctk.CTk):
         :return: la route choisie sous forme de ?
         """
 
-        self.nom_route_combox = CTkComboBox(master=self.modele, values=["Choisissez ici"])
-        self.nom_route_combox.pack(side=TOP,expand=True, fill="x")
-
-        self.bouton_chargement = CTkButton(master=self.modele, text="charger la carte choisie")
-        self.bouton_chargement.pack(side=TOP, expand=True, fill="x")
-        self.bouton_chargement.bind("<Button-1>", self.charge_carte)
+        self.modele.columnconfigure(0, weight=1, uniform='a')
+        self.modele.rowconfigure(0, weight=1, uniform='a')
+        self.modele.rowconfigure(1, weight=1, uniform='a')
+        self.modele.rowconfigure(2, weight=1, uniform='a')
 
 
-        self.bouton_valider = CTkButton(master=self.modele, text="valider la carte actuelle")
-        self.bouton_valider.pack(side=TOP, expand=True, fill="x")
+
+        self.carte_choisie_bool = False
+        self.nom_route_combox = CTkComboBox(master=self.modele, values=["Choisissez ici"], command= self.afficher_bouton_valider, width=150)
+        self.nom_route_combox.grid(row=0, column=0)
+        #self.nom_route_combox.pack(side=TOP,expand=True, fill="x")
+
+
+
+
+        self.image_sauvegarde = CTkImage(light_image=PILImage.open('../photos/sauvegarde.png'), size=(30, 30))
+
+        self.bouton_valider = CTkButton(master=self.modele, text="   sauvegarder la carte", image=self.image_sauvegarde, compound="left")
+        self.bouton_valider.grid(row=2, column=0, padx=10)
+        #self.bouton_valider.pack(side=BOTTOM, expand=True, fill="x")
         self.bouton_valider.bind("<Button-1>", self.topLevel_validation_carte)
 
-
-        self.bouton_resize = CTkButton(master=self.modele, text="redimensionner le canvas")
-        self.bouton_resize.pack(side=TOP, expand=True, fill="x")
-        self.bouton_resize.bind('<Button-1>', self.resize_func)
-
         self.ajout_routes()
+
+    def afficher_bouton_valider(self,event=None):
+        if self.nom_route_combox.get() != "Choisissez ici" and not self.carte_choisie_bool:
+            self.bouton_chargement = CTkButton(master=self.modele, text="charger la carte choisie")
+            self.bouton_chargement.grid(row=1, column=0, padx=10)
+            #self.bouton_chargement.pack(side=TOP, expand=True, fill="x")
+            self.bouton_chargement.bind("<Button-1>", self.charge_carte)
+            self.carte_choisie_bool = True
+
+
+
 
     def topLevel_validation_carte(self, event=None):
         """
@@ -156,7 +172,7 @@ class App(ctk.CTk):
         """
 
         self.toplevel = CTkToplevel()
-        self.toplevel.title("Validation de la carte")
+        self.toplevel.title("Sauvegarder la carte")
         self.toplevel.geometry("300x125")
         self.toplevel.resizable(False, False)
         self.toplevel.grab_set()
@@ -398,16 +414,6 @@ class App(ctk.CTk):
 
         self.hauteur_y_scale.set(hauteur_y)
         self.hauteur_y_scale_gen.set(hauteur_y)
-
-
-    def resize_func(self, event):
-        """
-        bloque le resize
-        :param event:
-        :return:
-        """
-        self.resizable(False, False)
-        self.bool_previsualisation = False
 
 
     def creer_nouvelle_carte(self, event):

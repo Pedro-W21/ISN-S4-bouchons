@@ -208,6 +208,7 @@ class App(ctk.CTk):
             carte = Carte(self.largeur_carte, self.hauteur_carte, self.grille_route)
             self.assure_existence_dossier_routes()
             carte.sauvegarder_carte(nom + ".json")
+            self.toplevel.destroy()
         else:
             print('non valide')
             self.entree_sauvegarde.delete(0, END)

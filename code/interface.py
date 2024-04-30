@@ -184,7 +184,7 @@ class App(ctk.CTk):
         if "routes" not in os.listdir("../"):
             os.mkdir("../routes")
 
-    def nom_fichier_valide(self,nom):
+    def nom_fichier_valide(self,nom:str):
         """
         renvoie True si nom est un nom de fichier valide sans extension, False sinon
 
@@ -192,7 +192,7 @@ class App(ctk.CTk):
         return : booléen
         """
         caracteres_interdits = [":", ".", "#", "/", "'\'", "\n"]
-        return not any(cara in nom for cara in caracteres_interdits)
+        return not any(cara in nom for cara in caracteres_interdits) and len(nom.strip()) > 1
 
 
     def sauvegarde_carte(self, event=None):
@@ -209,7 +209,7 @@ class App(ctk.CTk):
         if self.nom_fichier_valide(nom):
             carte = Carte(self.largeur_carte, self.hauteur_carte, self.grille_route)
             self.assure_existence_dossier_routes()
-            carte.sauvegarder_carte(nom + ".json")
+            carte.sauvegarder_carte(nom.strip() + ".json")
         else:
             print('non valide')
             self.entree_sauvegarde.delete(0, END)

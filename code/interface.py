@@ -7,6 +7,7 @@ from os.path import abspath, dirname
 from recup_donnees import Model
 import numpy as np
 import tkinter as tk
+from tkinter import messagebox
 import math
 from carte import Carte
 from noeud import Noeud
@@ -137,12 +138,10 @@ class App(ctk.CTk):
         self.bouton_chargement.pack(side=TOP, expand=True, fill="x")
         self.bouton_chargement.bind("<Button-1>", self.charge_carte)
 
-        self.entree_sauvegarde = CTkEntry(master=self.modele)
-        self.entree_sauvegarde.pack(side=TOP, expand=True, fill="x")
 
-        self.bouton_sauvegarde = CTkButton(master=self.modele, text="sauvegarder la carte actuelle")
-        self.bouton_sauvegarde.pack(side=TOP, expand=True, fill="x")
-        self.bouton_sauvegarde.bind("<Button-1>", self.sauvegarde_carte)
+        self.bouton_valider = CTkButton(master=self.modele, text="valider la carte actuelle")
+        self.bouton_valider.pack(side=TOP, expand=True, fill="x")
+        self.bouton_valider.bind("<Button-1>", self.topLevel_validation_carte)
 
 
         self.bouton_resize = CTkButton(master=self.modele, text="redimensionner le canvas")
@@ -150,7 +149,29 @@ class App(ctk.CTk):
         self.bouton_resize.bind('<Button-1>', self.resize_func)
 
         self.ajout_routes()
-    
+
+    def topLevel_validation_carte(self, event=None):
+        """
+        Crée une fenêtre de validation de la carte
+        """
+
+        self.toplevel = CTkToplevel()
+        self.toplevel.title("Validation de la carte")
+        self.toplevel.geometry("300x125")
+        self.toplevel.resizable(False, False)
+        self.toplevel.grab_set()
+
+
+        self.entree_sauvegarde = CTkEntry(master=self.toplevel, placeholder_text="Nom du fichier")
+        self.entree_sauvegarde.pack(side=TOP, pady=15)
+        self.bouton_sauvegarde = CTkButton(master=self.toplevel, text="sauvegarder la carte actuelle")
+        self.bouton_sauvegarde.pack(side=TOP, pady=10)
+        self.bouton_sauvegarde.bind("<Button-1>", self.sauvegarde_carte)
+
+
+
+
+
     def assure_existence_dossier_routes(self):
         """
         garanti que le dossier "../routes/" existe à la fin de cette fonction
@@ -184,13 +205,17 @@ class App(ctk.CTk):
         effets secondaires : changement du système de fichier et/ou mise à jour du texte dans le Entry
         """
         nom = self.entree_sauvegarde.get()
+
         if self.nom_fichier_valide(nom):
             carte = Carte(self.largeur_carte, self.hauteur_carte, self.grille_route)
             self.assure_existence_dossier_routes()
             carte.sauvegarder_carte(nom + ".json")
         else:
+            print('non valide')
             self.entree_sauvegarde.delete(0, END)
-            self.entree_sauvegarde.insert(INSERT, "Nom invalide")
+            messagebox.showinfo("Information", "Le nom du fichier ne doit pas contenir de caractères spéciaux")
+            # self.entree_sauvegarde.delete(0, END)
+            # self.entree_sauvegarde.insert(INSERT, "Nom invalide")
 
     def charge_carte(self, event=None):
         """

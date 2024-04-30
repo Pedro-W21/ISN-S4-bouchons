@@ -268,6 +268,24 @@ class App(ctk.CTk):
 
         effets secondaires : création et agencement 
         """
+        self.longueur_x_Label_gen = CTkLabel(master=self.generation, text="longueur (x)")
+        self.longueur_x_Label_gen.pack(side=TOP, expand=True, fill="x")
+        self.longueur_x_Label_affichees_gen = CTkLabel(master=self.generation, text=f"{self.largeur_carte}", text_color="white")
+        self.longueur_x_Label_affichees_gen.pack(side=TOP, expand=True, fill="x")
+        self.largeur_x_scale_gen = CTkSlider(master=self.generation, progress_color="white", from_=10, to=50, command=self.afficher_scale_creation)
+        self.largeur_x_scale_gen.set(self.largeur_carte)
+        self.largeur_x_scale_gen.pack(side=TOP, expand=True, fill="x")
+
+
+        self.hauteur_y_Label_gen = CTkLabel(master=self.generation, text="hauteur (y)")
+        self.hauteur_y_Label_gen.pack(side=TOP, expand=True, fill="x")
+        self.hauteur_y_Label_affichees_gen = CTkLabel(master=self.generation, text=f"{self.hauteur_carte}", text_color="gold")
+        self.hauteur_y_Label_affichees_gen.pack(side=TOP, expand=True, fill="x")
+        self.hauteur_y_scale_gen = CTkSlider(master=self.generation, progress_color="gold", from_=10, to=50, command=self.afficher_scale_creation)
+        self.hauteur_y_scale_gen.set(self.hauteur_carte)
+        self.hauteur_y_scale_gen.pack(side=TOP, expand=True, fill="x")
+
+
         self.generer_carte = CTkButton(master=self.generation, text="générer une carte aléatoirement")
         self.generer_carte.pack(side=TOP, expand=True, fill="x")
         self.generer_carte.bind("<Button-1>", self.generer_carte_test)
@@ -295,7 +313,6 @@ class App(ctk.CTk):
         self.hauteur_y_Label_affichees = CTkLabel(master=self.creation, text=f"{self.hauteur_carte}", text_color="gold")
         self.hauteur_y_Label_affichees.pack(side=TOP, expand=True, fill="x")
         self.hauteur_y_scale = CTkSlider(master=self.creation, progress_color="gold", from_=10, to=50, command=self.afficher_scale_creation)
-        
         self.hauteur_y_scale.set(self.hauteur_carte)
         self.hauteur_y_scale.pack(side=TOP, expand=True, fill="x")
 
@@ -371,8 +388,16 @@ class App(ctk.CTk):
         hauteur_y = self.hauteur_y_scale.get()
     
         self.longueur_x_Label_affichees.configure(text=f"{str(int(longueur_x))}")
+        self.longueur_x_Label_affichees_gen.configure(text=f"{str(int(longueur_x))}")
+
+        self.largeur_x_scale.set(longueur_x)
+        self.largeur_x_scale_gen.set(longueur_x)
         
         self.hauteur_y_Label_affichees.configure(text=f"{str(int(hauteur_y))}")
+        self.hauteur_y_Label_affichees_gen.configure(text=f"{str(int(hauteur_y))}")
+
+        self.hauteur_y_scale.set(hauteur_y)
+        self.hauteur_y_scale_gen.set(hauteur_y)
 
 
     def resize_func(self, event):

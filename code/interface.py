@@ -332,23 +332,9 @@ class App(ctk.CTk):
         longueur_x = self.largeur_x_scale.get()
         hauteur_y = self.hauteur_y_scale.get()
     
-        if longueur_x < 10:
-            self.longueur_x_Label_affichees.configure(text=f"{str(longueur_x)[0]}")
-    
-        if longueur_x == 100:
-            self.longueur_x_Label_affichees.configure(text=f"{str(longueur_x)}")
-    
-        if longueur_x >= 10 and longueur_x < 100:
-            self.longueur_x_Label_affichees.configure(text=f" {str(longueur_x)[:2]}")
-    
-        if hauteur_y < 10:
-            self.hauteur_y_Label_affichees.configure(text=f"{str(hauteur_y)[0]}")
-    
-        if hauteur_y == 100:
-            self.hauteur_y_Label_affichees.configure(text=f"{str(hauteur_y)}")
-    
-        if hauteur_y >= 10 and hauteur_y < 100:
-            self.hauteur_y_Label_affichees.configure(text=f" {str(hauteur_y)[:2]}")
+        self.longueur_x_Label_affichees.configure(text=f"{str(int(longueur_x))}")
+        
+        self.hauteur_y_Label_affichees.configure(text=f"{str(int(hauteur_y))}")
 
 
     def resize_func(self, event):
@@ -587,7 +573,7 @@ class App(ctk.CTk):
         if self.mode_affichage == "edition":
             self.surligne_case_selectionnee()
         elif self.mode_affichage == "simulation" and self.simulation != None:
-            self.simulation.update()
+            self.simulation.update(environnement_actif=True)
             self.affiche_sim()
         self.after(50, self.constant_canvas_update)
 

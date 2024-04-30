@@ -46,7 +46,7 @@ class App(ctk.CTk):
 
         # Calculer la taille du cadre en fonction des dimensions de l'écran mais marche pas
         self.columnconfigure(0, weight=1, uniform='a')
-        self.columnconfigure(1, weight=4, uniform='a')
+        self.columnconfigure(1, weight=3, uniform='a')
         self.rowconfigure(0, weight=1, uniform='a')
         self.rowconfigure(1, weight=1, uniform='a')
 
@@ -272,7 +272,7 @@ class App(ctk.CTk):
         self.longueur_x_Label_gen.pack(side=TOP, expand=True, fill="x")
         self.longueur_x_Label_affichees_gen = CTkLabel(master=self.generation, text=f"{self.largeur_carte}", text_color="white")
         self.longueur_x_Label_affichees_gen.pack(side=TOP, expand=True, fill="x")
-        self.largeur_x_scale_gen = CTkSlider(master=self.generation, progress_color="white", from_=10, to=50, command=self.afficher_scale_creation)
+        self.largeur_x_scale_gen = CTkSlider(master=self.generation, progress_color="white", from_=10, to=50, command=self.afficher_scale_generation)
         self.largeur_x_scale_gen.set(self.largeur_carte)
         self.largeur_x_scale_gen.pack(side=TOP, expand=True, fill="x")
 
@@ -281,7 +281,7 @@ class App(ctk.CTk):
         self.hauteur_y_Label_gen.pack(side=TOP, expand=True, fill="x")
         self.hauteur_y_Label_affichees_gen = CTkLabel(master=self.generation, text=f"{self.hauteur_carte}", text_color="gold")
         self.hauteur_y_Label_affichees_gen.pack(side=TOP, expand=True, fill="x")
-        self.hauteur_y_scale_gen = CTkSlider(master=self.generation, progress_color="gold", from_=10, to=50, command=self.afficher_scale_creation)
+        self.hauteur_y_scale_gen = CTkSlider(master=self.generation, progress_color="gold", from_=10, to=50, command=self.afficher_scale_generation)
         self.hauteur_y_scale_gen.set(self.hauteur_carte)
         self.hauteur_y_scale_gen.pack(side=TOP, expand=True, fill="x")
 
@@ -338,8 +338,8 @@ class App(ctk.CTk):
         effets secondaires : changement et écrasement de la carte stockée dans self.grille_route, et affichage de la nouvelle carte dans le canvas
         """
         if self.mode_affichage == "edition":
-            self.largeur_carte = int(self.largeur_x_scale.get())
-            self.hauteur_carte = int(self.hauteur_y_scale.get())
+            self.largeur_carte = int(self.largeur_x_scale_gen.get())
+            self.hauteur_carte = int(self.hauteur_y_scale_gen.get())
             carte = Carte.genere_aleatoirement(self.largeur_carte, self.hauteur_carte)
             self.grille_route = carte.grille
             self.affiche_carte_dans_canvas()
@@ -378,6 +378,23 @@ class App(ctk.CTk):
         decalage = int(self.echelle * 0.5)
         self.canvas_affichage.create_line(x0 + decalage, y0 + decalage, x1 + decalage, y1 + decalage, arrow="first",fill=BLUE)
 
+    def afficher_scale_generation(self, event):
+        """
+        met à jour les scale dans le tabview de génération
+
+        input : event, inutilisé mais nécessaire pour utiliser cette fonction en callback
+        output : rien
+
+        effets secondaires : modification de l'affichage des scale
+        """
+
+        longueur_x = self.largeur_x_scale_gen.get()
+        hauteur_y = self.hauteur_y_scale_gen.get()
+        
+        self.longueur_x_Label_affichees_gen.configure(text=f"{str(int(longueur_x))}")
+        
+        self.hauteur_y_Label_affichees_gen.configure(text=f"{str(int(hauteur_y))}")
+
     def afficher_scale_creation(self, event):
         """
         Récupère la valeur des sliders relatifs à la taille de l'écran
@@ -388,16 +405,8 @@ class App(ctk.CTk):
         hauteur_y = self.hauteur_y_scale.get()
     
         self.longueur_x_Label_affichees.configure(text=f"{str(int(longueur_x))}")
-        self.longueur_x_Label_affichees_gen.configure(text=f"{str(int(longueur_x))}")
-
-        self.largeur_x_scale.set(longueur_x)
-        self.largeur_x_scale_gen.set(longueur_x)
         
         self.hauteur_y_Label_affichees.configure(text=f"{str(int(hauteur_y))}")
-        self.hauteur_y_Label_affichees_gen.configure(text=f"{str(int(hauteur_y))}")
-
-        self.hauteur_y_scale.set(hauteur_y)
-        self.hauteur_y_scale_gen.set(hauteur_y)
 
 
     def resize_func(self, event):

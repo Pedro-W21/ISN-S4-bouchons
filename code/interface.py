@@ -845,11 +845,11 @@ class App(ctk.CTk):
         if self.largeur_canvas != self.canvas_affichage.winfo_width() or self.hauteur_canvas != self.canvas_affichage.winfo_height() or not self.fini_affichage:
             self.fini_affichage = True
             self.calcul_echelle()
-            self.xo, self.yo = 0, 0
+            self.xo, self.yo = (max(self.hauteur_carte - self.largeur_carte, 0) * self.echelle) // 2, (max(self.largeur_carte - self.hauteur_carte, 0) * self.echelle) // 2
             if self.canvas_affichage.winfo_height() < self.canvas_affichage.winfo_width():
-                self.xo = self.canvas_affichage.winfo_width()//2 - self.canvas_affichage.winfo_height()//2
+                self.xo += self.canvas_affichage.winfo_width()//2 - self.canvas_affichage.winfo_height()//2
             else:
-                self.yo = self.canvas_affichage.winfo_height()//2 - self.canvas_affichage.winfo_width()//2
+                self.yo += self.canvas_affichage.winfo_height()//2 - self.canvas_affichage.winfo_width()//2
 
             if len(self.grille_canvas) != self.largeur_carte * self.hauteur_carte:
                 self.grille_canvas = []

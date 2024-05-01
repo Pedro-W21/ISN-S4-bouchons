@@ -246,20 +246,48 @@ class Carte:
             ens.add(choix)
         return ens
 
-    def genere_aleatoirement(largeur:int, hauteur:int):
+    def noeud_avant_distance(self, xc:int, yc:int, distance:int) -> bool:
+        """
+        renvoie un booléen indiquant si il y a un noeud autour du point (xc, yc) AVANT (<) la distance donnée
+
+        input :
+            - xc : entier de coordonnée horizontale valide dans la carte
+            - yc : entier de coordonnée verticale valide dans la carte
+            - distance : entier de nombre de cases 
+        return : booléen, True si il y a un noeud, false sinon
+        """
+        trouve = False
+        start_x = xc - distance
+        stop_x = xc + distance
+        y = yc - distance
+        stop_y = yc + distance
+        while not trouve and y <= stop_y:
+            x = start_x
+            while not trouve and x <= stop_x:
+                if self.est_noeud(x, y):
+                    trouve = True
+                x += 1
+            y += 1
+        return trouve
+
+    def genere_aleatoirement(largeur:int, hauteur:int, nombre_de_noeuds:int = 100, distance_minimale_entre_noeuds:int = 1):
         """
         génère aléatoirement une carte de largeur et hauteur données en respectant toutes les règles de construction
 
         input :
             - largeur : entier >= 3
             - hauteur : entier >= 3
+            - nombre_de_noeuds : entier >= 1
         return : Carte respectant toutes les règles de construction imposées par la simulation
         """
         carte = Carte(largeur=largeur, hauteur=hauteur)
         sx, sy = carte.pos_utilisable_comme_start(randint(0, largeur - 1), randint(0, hauteur - 1))
+        carte.grille[sx, sy] = 1
         dirs_depuis = {(sx, sy):carte.set_dirs_depuis(sx, sy)}
         cases_avec_dirs = {(sx, sy)}
-        while len(cases_avec_dirs) > 0:
+        noeuds_poses = 0
+        noeuds = [(sx, sy)]
+        while len(cases_avec_dirs) > 0 and noeuds_poses < nombre_de_noeuds:
             a_rajouter = []
             a_enlever = []
             avec_dirs = choice(list(cases_avec_dirs))
@@ -267,26 +295,28 @@ class Carte:
             for dx, dy in dirs_depuis[avec_dirs]:
                 i = 1
                 while carte.position_posable_et_vide(xc + i * dx, yc + i * dy):
-                    a_rajouter.append((xc + i * dx, yc + i * dy))
+                    if i >= distance_minimale_entre_noeuds:
+                        a_rajouter.append((xc + i * dx, yc + i * dy))
                     carte.grille[xc + i * dx, yc + i * dy] = 1
                     i += 1
             for (xc, yc) in cases_avec_dirs:
                 ens = carte.set_dirs_depuis(xc, yc)
-                if len(ens) == 0:
+                if len(ens) == 0 or carte.noeud_avant_distance(xc, yc, distance_minimale_entre_noeuds):
                     a_enlever.append((xc, yc))
                 else:
                     dirs_depuis[(xc, yc)] = ens
             for (xc, yc) in a_rajouter:
                 ens = carte.set_dirs_depuis(xc, yc)
-                if len(ens) > 1:
+                if len(ens) > 1 and not carte.noeud_avant_distance(xc, yc, distance_minimale_entre_noeuds):
                     cases_avec_dirs.add((xc, yc))
                     dirs_depuis[(xc, yc)] = ens
             for enlev in a_enlever:
                 cases_avec_dirs.remove(enlev)
             nb = randint(8, 10)
-            while len(cases_avec_dirs) > nb and randint(0, 10) > 2:
+            while len(cases_avec_dirs) > nb and randint(1, 10) > 1:
                 cases_avec_dirs.remove(choice(list(cases_avec_dirs)))
-        carte.filtre_correction_carte()
+            noeuds_poses += 1
+        #carte.filtre_correction_carte()
         return carte
     def applique_changements(self, changements:list[tuple[int, int]]):
         """

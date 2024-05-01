@@ -93,6 +93,17 @@ class Carte:
                 ret = True
         return ret
 
+    def est_dedans(self, xc:int, yc:int) -> bool:
+        """
+        renvoie un booléen indiquant si (xc, yc) est dans la grille
+
+        input :
+            - xc : entier de coordonnée horizontale
+            - yc : entier de coordonnée verticale
+        return : booléen, True si dedans, False sinon
+        """
+        return 0 <= xc < self.largeur and 0 <= yc < self.hauteur
+
     def get_at_or_0(self, xc:int, yc:int) -> int:
         """
         renvoie la valeur de la grille de route en (xc, yc) si elle est dans la carte ou 0 sinon
@@ -103,7 +114,7 @@ class Carte:
         return : entier, 0 ou 1 (pas un booléen car la plupart des fonctions qui appellent celle-ci le font pour compter des voisins)
         """
         ret = 0
-        if 0 <= xc < self.largeur and 0 <= yc < self.hauteur:
+        if self.est_dedans(xc, yc):
             ret = self.grille[xc,yc]
         return ret
 
@@ -256,18 +267,55 @@ class Carte:
             - distance : entier de nombre de cases 
         return : booléen, True si il y a un noeud, false sinon
         """
+        cotes_par_dir = {(-1, 0) : [(0, 1), (0, -1)], (1, 0) : [(0, 1), (0, -1)], (0, 1) : [(-1, 0), (1, 0)], (0, -1) : [(-1, 0), (1, 0)]}
         trouve = False
-        start_x = xc - distance
-        stop_x = xc + distance
-        y = yc - distance
-        stop_y = yc + distance
-        while not trouve and y <= stop_y:
-            x = start_x
-            while not trouve and x <= stop_x:
-                if self.est_noeud(x, y):
-                    trouve = True
-                x += 1
-            y += 1
+        dirs = list(cotes_par_dir.keys())
+        j = 0
+        px, py = xc, yc
+        branches_trouvees = {}
+        while not trouve and j < len(dirs):
+            dx, dy = dirs[j]
+            i = 1
+            px, py = xc + dx, yc + dy
+            route_debut = self.get_at_or_0(px, py) == 1
+            if route_debut:
+                while self.get_at_or_0(px, py) == 1 and not self.est_noeud(px, py):
+                    i += 1
+                    px, py = xc + i * dx, yc + i * dy
+                
+            else:
+                while self.get_at_or_0(px, py) == 0 and self.est_dedans(px, py):
+                    i += 1
+                    px, py = xc + i * dx, yc + i * dy
+                if self.est_dedans(px, py):
+                    branches_trouvees[(px, py)] = (dx, dy)
+            trouve = self.get_at_or_0(px, py) == 1 and i < distance
+            j += 1
+        if not trouve:
+            branches = list(branches_trouvees.keys())
+            i = 0
+            while not trouve and i < len(branches):
+                (xc, yc) = branches[i]
+                for (dx, dy) in cotes_par_dir[branches_trouvees[(xc, yc)]]:
+                    px, py = xc + dx, yc + dy
+                    j = 1
+                    while j < distance and self.get_at_or_0(px, py) == 1 and not self.est_noeud(px, py):
+                        j += 1
+                        px, py = xc + j * dx, yc + j * dy
+                    if not trouve:
+                        trouve = self.est_noeud(px, py)
+                i += 1
+        # start_x = xc - distance
+        # stop_x = xc + distance
+        # y = yc - distance
+        # stop_y = yc + distance
+        # while not trouve and y <= stop_y:
+        #     x = start_x
+        #     while not trouve and x <= stop_x:
+        #         if self.est_noeud(x, y):
+        #             trouve = True
+        #         x += 1
+        #     y += 1
         return trouve
 
     def genere_aleatoirement(largeur:int, hauteur:int, nombre_de_noeuds:int = 100, distance_minimale_entre_noeuds:int = 1):
@@ -295,7 +343,7 @@ class Carte:
             for dx, dy in dirs_depuis[avec_dirs]:
                 i = 1
                 while carte.position_posable_et_vide(xc + i * dx, yc + i * dy):
-                    if i >= distance_minimale_entre_noeuds:
+                    if i > distance_minimale_entre_noeuds:
                         a_rajouter.append((xc + i * dx, yc + i * dy))
                     carte.grille[xc + i * dx, yc + i * dy] = 1
                     i += 1

@@ -1,6 +1,5 @@
 import customtkinter as ctk
-from customtkinter import TOP, BOTH, BOTTOM, RIGHT, LEFT, INSERT, END
-import json
+from customtkinter import TOP, BOTH, BOTTOM, RIGHT, LEFT, INSERT, EXTENDED, END
 from PIL import Image as PILImage
 import os
 from os.path import abspath, dirname
@@ -963,12 +962,7 @@ class App(ctk.CTk):
         carte.filtre_correction_carte()
         self.grille_route = carte.grille
         self.affiche_carte_dans_canvas()
-        
 
-    
-
-        
-        
 
 if __name__ == "__main__":
     os.chdir(dirname(abspath(__file__)))

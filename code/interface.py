@@ -1,12 +1,11 @@
 import customtkinter as ctk
-from customtkinter import *
-import json
-from PIL import Image
+from customtkinter import TOP, BOTH, BOTTOM, RIGHT, LEFT, INSERT, EXTENDED, END
+from PIL import Image as PILImage
 import os
 from os.path import abspath, dirname
-from recup_donnees import Model
 import numpy as np
 import tkinter as tk
+from tkinter import messagebox
 import math
 from carte import Carte
 from noeud import Noeud
@@ -45,17 +44,17 @@ class App(ctk.CTk):
 
         # Calculer la taille du cadre en fonction des dimensions de l'écran mais marche pas
         self.columnconfigure(0, weight=1, uniform='a')
-        self.columnconfigure(1, weight=4, uniform='a')
+        self.columnconfigure(1, weight=3, uniform='a')
         self.rowconfigure(0, weight=1, uniform='a')
         self.rowconfigure(1, weight=1, uniform='a')
 
-        self.frame_modele = CTkFrame(self, fg_color='#4C6085')
+        self.frame_modele = ctk.CTkFrame(self, fg_color='#4C6085')
         self.frame_modele.grid(row=0, column=0, pady=5, padx=5, sticky='nsew')
 
-        self.frame_parametres = CTkFrame(self, fg_color='#4C6085')
+        self.frame_parametres = ctk.CTkFrame(self, fg_color='#4C6085')
         self.frame_parametres.grid(row=1, column=0, pady=5, padx=5, sticky='nsew')
 
-        self.frame_carte = CTkFrame(self, fg_color='#4C6085')
+        self.frame_carte = ctk.CTkFrame(self, fg_color='#4C6085')
         self.frame_carte.grid(row=0, column=1, rowspan=2, pady=5, padx=5, sticky='nsew')
         #initialisation des routes
         self.routes = []
@@ -76,6 +75,7 @@ class App(ctk.CTk):
         #crée la tabview modele et création
         self.tabview_modele()
         self.tabview_creation()
+        self.tabview_generation()
 
         #cree la tabview parametres
         self.tabview_parametres_voitures()
@@ -106,15 +106,16 @@ class App(ctk.CTk):
         paramètres : aucun
         :return:  aucun
         """
-        self.tabview_model = CTkTabview(self.frame_modele, border_color='#32322C', border_width=2)
+        self.tabview_model = ctk.CTkTabview(self.frame_modele, border_color='#32322C', border_width=2)
         self.tabview_model.pack(fill=BOTH, expand=True, padx=5, pady=5)
 
-        self.tabview_parametres = CTkTabview(self.frame_parametres, border_color='#32322C', border_width=2)
+        self.tabview_parametres = ctk.CTkTabview(self.frame_parametres, border_color='#32322C', border_width=2)
         self.tabview_parametres.pack(fill=BOTH, expand=True, padx=5)
 
 
         self.modele = self.tabview_model.add('Modèle existant')
         self.creation = self.tabview_model.add('Création')
+        self.generation = self.tabview_model.add('Génération')
 
         self.parametres = self.tabview_parametres.add('Paramètres véhicules')
 
@@ -128,27 +129,63 @@ class App(ctk.CTk):
         :return: la route choisie sous forme de ?
         """
 
-        self.nom_route_combox = CTkComboBox(master=self.modele, values=["Choisissez ici"])
-        self.nom_route_combox.pack(side=TOP,expand=True, fill="x")
+        self.modele.columnconfigure(0, weight=1, uniform='a')
+        self.modele.rowconfigure(0, weight=1, uniform='a')
+        self.modele.rowconfigure(1, weight=1, uniform='a')
+        self.modele.rowconfigure(2, weight=1, uniform='a')
 
-        self.bouton_chargement = CTkButton(master=self.modele, text="charger la carte choisie")
-        self.bouton_chargement.pack(side=TOP, expand=True, fill="x")
-        self.bouton_chargement.bind("<Button-1>", self.charge_carte)
 
-        self.entree_sauvegarde = CTkEntry(master=self.modele)
-        self.entree_sauvegarde.pack(side=TOP, expand=True, fill="x")
 
-        self.bouton_sauvegarde = CTkButton(master=self.modele, text="sauvegarder la carte actuelle")
-        self.bouton_sauvegarde.pack(side=TOP, expand=True, fill="x")
+        self.carte_choisie_bool = False
+        self.nom_route_combox = ctk.CTkComboBox(master=self.modele, values=["Choisissez ici"], command= self.afficher_bouton_valider, width=150)
+        self.nom_route_combox.grid(row=0, column=0)
+        #self.nom_route_combox.pack(side=TOP,expand=True, fill="x")
+
+
+
+
+        self.image_sauvegarde = ctk.CTkImage(light_image=PILImage.open('../photos/sauvegarde.png'), size=(30, 30))
+
+        self.bouton_valider = ctk.CTkButton(master=self.modele, text="   sauvegarder la carte", image=self.image_sauvegarde, compound="left")
+        self.bouton_valider.grid(row=2, column=0, padx=10)
+        #self.bouton_valider.pack(side=BOTTOM, expand=True, fill="x")
+        self.bouton_valider.bind("<Button-1>", self.topLevel_validation_carte)
+
+        self.ajout_routes()
+
+    def afficher_bouton_valider(self,event=None):
+        if self.nom_route_combox.get() != "Choisissez ici" and not self.carte_choisie_bool:
+            self.bouton_chargement = ctk.CTkButton(master=self.modele, text="charger la carte choisie")
+            self.bouton_chargement.grid(row=1, column=0, padx=10)
+            #self.bouton_chargement.pack(side=TOP, expand=True, fill="x")
+            self.bouton_chargement.bind("<Button-1>", self.charge_carte)
+            self.carte_choisie_bool = True
+
+
+
+
+    def topLevel_validation_carte(self, event=None):
+        """
+        Crée une fenêtre de validation de la carte
+        """
+
+        self.toplevel = ctk.CTkToplevel()
+        self.toplevel.title("Sauvegarder la carte")
+        self.toplevel.geometry("300x125")
+        self.toplevel.resizable(False, False)
+        self.toplevel.grab_set()
+
+
+        self.entree_sauvegarde = ctk.CTkEntry(master=self.toplevel, placeholder_text="Nom du fichier")
+        self.entree_sauvegarde.pack(side=TOP, pady=15)
+        self.bouton_sauvegarde = ctk.CTkButton(master=self.toplevel, text="sauvegarder la carte actuelle")
+        self.bouton_sauvegarde.pack(side=TOP, pady=10)
         self.bouton_sauvegarde.bind("<Button-1>", self.sauvegarde_carte)
 
 
-        self.bouton_resize = CTkButton(master=self.modele, text="redimensionner le canvas")
-        self.bouton_resize.pack(side=TOP, expand=True, fill="x")
-        self.bouton_resize.bind('<Button-1>', self.resize_func)
 
-        self.ajout_routes()
-    
+
+
     def assure_existence_dossier_routes(self):
         """
         garanti que le dossier "../routes/" existe à la fin de cette fonction
@@ -161,7 +198,7 @@ class App(ctk.CTk):
         if "routes" not in os.listdir("../"):
             os.mkdir("../routes")
 
-    def nom_fichier_valide(self,nom):
+    def nom_fichier_valide(self,nom:str):
         """
         renvoie True si nom est un nom de fichier valide sans extension, False sinon
 
@@ -169,7 +206,7 @@ class App(ctk.CTk):
         return : booléen
         """
         caracteres_interdits = [":", ".", "#", "/", "'\'", "\n"]
-        return not any(cara in nom for cara in caracteres_interdits)
+        return not any(cara in nom for cara in caracteres_interdits) and len(nom.strip()) > 1
 
 
     def sauvegarde_carte(self, event=None):
@@ -182,13 +219,19 @@ class App(ctk.CTk):
         effets secondaires : changement du système de fichier et/ou mise à jour du texte dans le Entry
         """
         nom = self.entree_sauvegarde.get()
+
         if self.nom_fichier_valide(nom):
             carte = Carte(self.largeur_carte, self.hauteur_carte, self.grille_route)
             self.assure_existence_dossier_routes()
-            carte.sauvegarder_carte(nom + ".json")
+            carte.sauvegarder_carte(nom.strip() + ".json")
+            self.toplevel.destroy()
+            
         else:
+            print('non valide')
             self.entree_sauvegarde.delete(0, END)
-            self.entree_sauvegarde.insert(INSERT, "Nom invalide")
+            messagebox.showinfo("Information", "Le nom du fichier ne doit pas contenir de caractères spéciaux")
+            # self.entree_sauvegarde.delete(0, END)
+            # self.entree_sauvegarde.insert(INSERT, "Nom invalide")
 
     def charge_carte(self, event=None):
         """
@@ -230,6 +273,53 @@ class App(ctk.CTk):
             self.affiche_sim()
         self.mode_avant = self.mode_affichage
 
+    def tabview_generation(self):
+        """
+        paramétrise la partie "génération" de l'interface d'édition de carte
+
+        input : aucun
+        return : aucun
+
+        effets secondaires : création et agencement 
+        """
+        self.largeur_x_Label_gen = ctk.CTkLabel(master=self.generation, text="largeur (x)")
+        self.largeur_x_Label_gen.pack(side=TOP, expand=True, fill="x")
+        self.largeur_x_Label_affichees_gen = ctk.CTkLabel(master=self.generation, text=f"{self.largeur_carte}", text_color="white")
+        self.largeur_x_Label_affichees_gen.pack(side=TOP, expand=True, fill="x")
+        self.largeur_x_scale_gen = ctk.CTkSlider(master=self.generation, progress_color="white", from_=10, to=50, command=self.afficher_scale_generation)
+        self.largeur_x_scale_gen.set(self.largeur_carte)
+        self.largeur_x_scale_gen.pack(side=TOP, expand=True, fill="x")
+
+
+        self.hauteur_y_Label_gen = ctk.CTkLabel(master=self.generation, text="hauteur (y)")
+        self.hauteur_y_Label_gen.pack(side=TOP, expand=True, fill="x")
+        self.hauteur_y_Label_affichees_gen = ctk.CTkLabel(master=self.generation, text=f"{self.hauteur_carte}", text_color="white")
+        self.hauteur_y_Label_affichees_gen.pack(side=TOP, expand=True, fill="x")
+        self.hauteur_y_scale_gen = ctk.CTkSlider(master=self.generation, progress_color="white", from_=10, to=50, command=self.afficher_scale_generation)
+        self.hauteur_y_scale_gen.set(self.hauteur_carte)
+        self.hauteur_y_scale_gen.pack(side=TOP, expand=True, fill="x")
+
+        self.nb_noeuds_label_gen = ctk.CTkLabel(master=self.generation, text="nombre de noeuds maximum à poser")
+        self.nb_noeuds_label_gen.pack(side=TOP, expand=True, fill="x")
+        self.nb_noeuds_label_affichees_gen = ctk.CTkLabel(master=self.generation, text=f"{5}", text_color="white")
+        self.nb_noeuds_label_affichees_gen.pack(side=TOP, expand=True, fill="x")
+        self.nb_noeuds_scale_gen = ctk.CTkSlider(master=self.generation, progress_color="white", from_=1, to=100, command=self.afficher_scale_generation)
+        self.nb_noeuds_scale_gen.set(5)
+        self.nb_noeuds_scale_gen.pack(side=TOP, expand=True, fill="x")
+
+        self.dst_noeuds_label_gen = ctk.CTkLabel(master=self.generation, text="distance minimale entre noeuds")
+        self.dst_noeuds_label_gen.pack(side=TOP, expand=True, fill="x")
+        self.dst_noeuds_label_affichees_gen = ctk.CTkLabel(master=self.generation, text=f"{1}", text_color="white")
+        self.dst_noeuds_label_affichees_gen.pack(side=TOP, expand=True, fill="x")
+        self.dst_noeuds_scale_gen = ctk.CTkSlider(master=self.generation, progress_color="white", from_=1, to=min(self.largeur_carte, self.hauteur_carte) - 2, command=self.afficher_scale_generation)
+        self.dst_noeuds_scale_gen.set(1)
+        self.dst_noeuds_scale_gen.pack(side=TOP, expand=True, fill="x")
+
+
+        self.generer_carte = ctk.CTkButton(master=self.generation, text="générer une carte aléatoirement")
+        self.generer_carte.pack(side=TOP, expand=True, fill="x")
+        self.generer_carte.bind("<Button-1>", self.generer_carte_test)
+
     def tabview_creation(self):
         """
         paramétrise la partie "création" de l'interface d'édition de carte
@@ -239,37 +329,32 @@ class App(ctk.CTk):
 
         effets secondaires : création et agencement des widgets tkinter associés à cette tab
         """
-        self.longueur_x_Label = CTkLabel(master=self.creation, text="longueur (x)")
-        self.longueur_x_Label.pack(side=TOP, expand=True, fill="x")
-        self.longueur_x_Label_affichees = CTkLabel(master=self.creation, text=f"{self.largeur_carte}", text_color="white")
-        self.longueur_x_Label_affichees.pack(side=TOP, expand=True, fill="x")
-        self.largeur_x_scale = CTkSlider(master=self.creation, progress_color="white", from_=10, to=50, command=self.afficher_scale_creation)
+        self.largeur_x_Label = ctk.CTkLabel(master=self.creation, text="largeur (x)")
+        self.largeur_x_Label.pack(side=TOP, expand=True, fill="x")
+        self.largeur_x_Label_affichees = ctk.CTkLabel(master=self.creation, text=f"{self.largeur_carte}", text_color="white")
+        self.largeur_x_Label_affichees.pack(side=TOP, expand=True, fill="x")
+        self.largeur_x_scale = ctk.CTkSlider(master=self.creation, progress_color="white", from_=10, to=50, command=self.afficher_scale_creation)
         self.largeur_x_scale.set(self.largeur_carte)
         self.largeur_x_scale.pack(side=TOP, expand=True, fill="x")
 
 
-        self.hauteur_y_Label = CTkLabel(master=self.creation, text="hauteur (y)")
+        self.hauteur_y_Label = ctk.CTkLabel(master=self.creation, text="hauteur (y)")
         self.hauteur_y_Label.pack(side=TOP, expand=True, fill="x")
-        self.hauteur_y_Label_affichees = CTkLabel(master=self.creation, text=f"{self.hauteur_carte}", text_color="gold")
+        self.hauteur_y_Label_affichees = ctk.CTkLabel(master=self.creation, text=f"{self.hauteur_carte}", text_color="white")
         self.hauteur_y_Label_affichees.pack(side=TOP, expand=True, fill="x")
-        self.hauteur_y_scale = CTkSlider(master=self.creation, progress_color="gold", from_=10, to=50, command=self.afficher_scale_creation)
-        
+        self.hauteur_y_scale = ctk.CTkSlider(master=self.creation, progress_color="white", from_=10, to=50, command=self.afficher_scale_creation)
         self.hauteur_y_scale.set(self.hauteur_carte)
         self.hauteur_y_scale.pack(side=TOP, expand=True, fill="x")
 
-        self.creer_route = CTkButton(master=self.creation, text="créer une route", fg_color="purple")
+        self.creer_route = ctk.CTkButton(master=self.creation, text="créer une grille vide")
         self.creer_route.pack(side=TOP, expand=True, fill="x")
         self.creer_route.bind('<Button-1>', self.creer_nouvelle_carte)
 
-        self.generer_carte = CTkButton(master=self.creation, text="générer une carte")
-        self.generer_carte.pack(side=TOP, expand=True, fill="x")
-        self.generer_carte.bind("<Button-1>", self.generer_carte_test)
-
-        self.filtre_route = CTkButton(master=self.creation, text="appliquer le filtre")
+        self.filtre_route = ctk.CTkButton(master=self.creation, text="appliquer le filtre")
         self.filtre_route.pack(side=TOP, expand=True, fill="x")
         self.filtre_route.bind('<Button-1>', self.filtre_correction_carte)
 
-        self.transforme_into_noeuds = CTkButton(master=self.creation, text="tester la conversion")
+        self.transforme_into_noeuds = ctk.CTkButton(master=self.creation, text="tester la conversion")
         self.transforme_into_noeuds.pack(side=TOP, expand=True, fill="x")
         self.transforme_into_noeuds.bind('<Button-1>', self.test_transforme)
     
@@ -283,9 +368,11 @@ class App(ctk.CTk):
         effets secondaires : changement et écrasement de la carte stockée dans self.grille_route, et affichage de la nouvelle carte dans le canvas
         """
         if self.mode_affichage == "edition":
-            self.largeur_carte = int(self.largeur_x_scale.get())
-            self.hauteur_carte = int(self.hauteur_y_scale.get())
-            carte = Carte.genere_aleatoirement(self.largeur_carte, self.hauteur_carte)
+            self.largeur_carte = int(self.largeur_x_scale_gen.get())
+            self.hauteur_carte = int(self.hauteur_y_scale_gen.get())
+            noeuds = int(self.nb_noeuds_scale_gen.get())
+            distance_entre_noeuds = int(self.dst_noeuds_scale_gen.get())
+            carte = Carte.genere_aleatoirement(self.largeur_carte, self.hauteur_carte, noeuds, distance_entre_noeuds)
             self.grille_route = carte.grille
             self.affiche_carte_dans_canvas()
 
@@ -323,42 +410,45 @@ class App(ctk.CTk):
         decalage = int(self.echelle * 0.5)
         self.canvas_affichage.create_line(x0 + decalage, y0 + decalage, x1 + decalage, y1 + decalage, arrow="first",fill=BLUE)
 
+    def afficher_scale_generation(self, event):
+        """
+        met à jour les scale dans le tabview de génération
+
+        input : event, inutilisé mais nécessaire pour utiliser cette fonction en callback
+        output : rien
+
+        effets secondaires : modification de l'affichage des scale
+        """
+
+        largeur_x = self.largeur_x_scale_gen.get()
+        hauteur_y = self.hauteur_y_scale_gen.get()
+        noeuds = self.nb_noeuds_scale_gen.get()
+        distance = self.dst_noeuds_scale_gen.get()
+        
+        self.largeur_x_Label_affichees_gen.configure(text=f"{str(int(largeur_x))}")
+        
+        self.hauteur_y_Label_affichees_gen.configure(text=f"{str(int(hauteur_y))}")
+
+        self.nb_noeuds_label_affichees_gen.configure(text=f"{str(int(noeuds))}")
+
+        max_dist = min(int(largeur_x), int(hauteur_y)) - 2
+
+        self.dst_noeuds_label_affichees_gen.configure(text=f"{str(int(distance))}")
+        self.dst_noeuds_scale_gen.set(min(distance, max_dist))
+        self.dst_noeuds_scale_gen.configure(to=max_dist)
+
     def afficher_scale_creation(self, event):
         """
         Récupère la valeur des sliders relatifs à la taille de l'écran
         :param event:
         :return: aucun (affiche la valeur des sliders)
         """
-        longueur_x = self.largeur_x_scale.get()
+        largeur_x = self.largeur_x_scale.get()
         hauteur_y = self.hauteur_y_scale.get()
     
-        if longueur_x < 10:
-            self.longueur_x_Label_affichees.configure(text=f"{str(longueur_x)[0]}")
-    
-        if longueur_x == 100:
-            self.longueur_x_Label_affichees.configure(text=f"{str(longueur_x)}")
-    
-        if longueur_x >= 10 and longueur_x < 100:
-            self.longueur_x_Label_affichees.configure(text=f" {str(longueur_x)[:2]}")
-    
-        if hauteur_y < 10:
-            self.hauteur_y_Label_affichees.configure(text=f"{str(hauteur_y)[0]}")
-    
-        if hauteur_y == 100:
-            self.hauteur_y_Label_affichees.configure(text=f"{str(hauteur_y)}")
-    
-        if hauteur_y >= 10 and hauteur_y < 100:
-            self.hauteur_y_Label_affichees.configure(text=f" {str(hauteur_y)[:2]}")
-
-
-    def resize_func(self, event):
-        """
-        bloque le resize
-        :param event:
-        :return:
-        """
-        self.resizable(False, False)
-        self.bool_previsualisation = False
+        self.largeur_x_Label_affichees.configure(text=f"{str(int(largeur_x))}")
+        
+        self.hauteur_y_Label_affichees.configure(text=f"{str(int(hauteur_y))}")
 
 
     def creer_nouvelle_carte(self, event):
@@ -406,40 +496,36 @@ class App(ctk.CTk):
 
 
 
-        self.nombre_voitures_Label = CTkLabel(master=self.parametres, text="nb voitures selectionnées")
+        self.nombre_voitures_Label = ctk.CTkLabel(master=self.parametres, text="nb voitures selectionnées")
         self.nombre_voitures_Label.pack(side=TOP, expand=True, fill="x")
-        self.nombre_voitures_Label_affichees = CTkLabel(master=self.parametres, text=f"{10}", text_color="purple")
+        self.nombre_voitures_Label_affichees = ctk.CTkLabel(master=self.parametres, text=f"{10}")
         self.nombre_voitures_Label_affichees.pack(side=TOP, expand=True, fill="x")
-        self.nombre_voiture_scale = CTkSlider(master=self.parametres, progress_color="purple", from_=1, to=100, command=self.afficher_scale_voitures)
+        self.nombre_voiture_scale = ctk.CTkSlider(master=self.parametres, from_=1, to=100, command=self.afficher_scale_voitures)
         self.nombre_voiture_scale.pack(side=TOP, expand=True, fill="x")
         self.nombre_voiture_scale.set(1)
 
 
-        self.niveau_agressivite_Label = CTkLabel(master=self.parametres, text="niveau d'agressivité")
+        self.niveau_agressivite_Label = ctk.CTkLabel(master=self.parametres, text="niveau d'agressivité")
         self.niveau_agressivite_Label.pack(side=TOP, expand=True, fill="x")
 
-        self.niveau_agressivite_Label_affichees = CTkLabel(master=self.parametres, text=f"{10}", text_color="red")
+        self.niveau_agressivite_Label_affichees = ctk.CTkLabel(master=self.parametres, text=f"{10}")
         self.niveau_agressivite_Label_affichees.pack(side=TOP, expand=True, fill="x")
 
-        self.niveau_agressivite = CTkSlider(master=self.parametres, progress_color="red", from_=1, to=100, command=self.afficher_scale_voitures)
+        self.niveau_agressivite = ctk.CTkSlider(master=self.parametres, from_=1, to=100, command=self.afficher_scale_voitures)
         self.niveau_agressivite.set(10)
         self.niveau_agressivite.pack(side=TOP, expand=True, fill="x")
 
-        self.lance_simu_button = CTkButton(master=self.parametres, text="lancer simulation de test")
+        self.lance_simu_button = ctk.CTkButton(master=self.parametres, text="lancer simulation de test")
         self.lance_simu_button.pack(side=TOP, expand=True, fill="x")
         self.lance_simu_button.bind("<Button-1>", self.lance_simulation)
 
-        self.stop_simu_button = CTkButton(master=self.parametres, text="arrêter simulation")
+        self.stop_simu_button = ctk.CTkButton(master=self.parametres, text="arrêter simulation")
         self.stop_simu_button.pack(side=TOP, expand=True, fill="x")
         self.stop_simu_button.bind("<Button-1>", self.stop_simulation)
 
-        self.carte_france_button = CTkButton(master=self.parametres, text="carte de France de l'agressivité")
+        self.carte_france_button = ctk.CTkButton(master=self.parametres, text="carte de France de l'agressivité")
         self.carte_france_button.pack(side=TOP, expand=True, fill="x")
         self.carte_france_button.bind('<Button-1>', self.affichage_france)
-
-        self.validation_para_button = CTkButton(master=self.parametres, text = "Coquin, valide !", text_color='black', fg_color ='pink')
-        self.validation_para_button.pack(side=TOP, expand=True, fill="x")
-        self.validation_para_button.bind('<Button-1>', self.validew)
 
         self.bool_carte_affichee = False
     
@@ -457,30 +543,9 @@ class App(ctk.CTk):
         nb_voitures = self.nombre_voiture_scale.get()
         niveau_agressivite = self.niveau_agressivite.get()
 
-        if nb_voitures < 10:
-            self.nombre_voitures_Label_affichees.configure(text=f"{str(nb_voitures)[0]}")
+        self.nombre_voitures_Label_affichees.configure(text=f"{str(int(nb_voitures))}")
 
-        if nb_voitures == 100:
-            self.nombre_voitures_Label_affichees.configure(text=f"{str(nb_voitures)}")
-
-        if nb_voitures >= 10 and nb_voitures < 100:
-            self.nombre_voitures_Label_affichees.configure(text=f" {str(nb_voitures)[:2]}")
-
-        if niveau_agressivite < 10:
-            self.niveau_agressivite_Label_affichees.configure(text=f"{str(niveau_agressivite)[0]}")
-
-        if niveau_agressivite == 100:
-            self.niveau_agressivite_Label_affichees.configure(text=f"{str(niveau_agressivite)}")
-
-        if niveau_agressivite >= 10 and niveau_agressivite < 100:
-            self.niveau_agressivite_Label_affichees.configure(text=f" {str(niveau_agressivite)[:2]}")
-
-    def validew(self, event):
-        model = Model()
-        scale_1 = self.nombre_voiture_scale.get()
-        scale_2 = self.niveau_agressivite.get()
-        model.get_data(scale_1)
-        model.get_data(scale_2)
+        self.niveau_agressivite_Label_affichees.configure(text=f"{str(int(niveau_agressivite))}")
         
     def affichage_france(self, event):
         """
@@ -493,12 +558,12 @@ class App(ctk.CTk):
             self.bool_carte_affichee = True
 
 
-            self.france_topLevel= CTkToplevel(master=self)
+            self.france_topLevel= ctk.CTkToplevel(master=self)
             self.france_topLevel.geometry('500x500')
             self.france_topLevel.title("carte de France de l'agressivité")
 
-            carte_France = CTkImage(light_image=Image.open('../photos/carte France.jpg'), size=(500, 500))
-            carte_France_Label = CTkLabel(master=self.france_topLevel, image= carte_France, text="")
+            carte_France = ctk.CTkImage(light_image=Image.open('../photos/carte France.jpg'), size=(500, 500))
+            carte_France_Label = ctk.CTkLabel(master=self.france_topLevel, image= carte_France, text="")
             carte_France_Label.pack(fill=BOTH, expand=True)
 
 
@@ -521,7 +586,7 @@ class App(ctk.CTk):
         effets secondaires : agencement du canvas et de son frame et affichage d'une carte vide par défaut sur le canvas
         """
 
-        self.label_affichage = CTkLabel(master =self.frame_carte, text="Affichage de la carte et de la simulation")
+        self.label_affichage = ctk.CTkLabel(master =self.frame_carte, text="Affichage de la carte et de la simulation")
         self.label_affichage.pack(fill="x")
         self.largeur_canvas = 100
         self.hauteur_canvas = 100
@@ -587,7 +652,7 @@ class App(ctk.CTk):
         if self.mode_affichage == "edition":
             self.surligne_case_selectionnee()
         elif self.mode_affichage == "simulation" and self.simulation != None:
-            self.simulation.update()
+            self.simulation.update(environnement_actif=True)
             self.affiche_sim()
         self.after(50, self.constant_canvas_update)
 
@@ -780,11 +845,11 @@ class App(ctk.CTk):
         if self.largeur_canvas != self.canvas_affichage.winfo_width() or self.hauteur_canvas != self.canvas_affichage.winfo_height() or not self.fini_affichage:
             self.fini_affichage = True
             self.calcul_echelle()
-            self.xo, self.yo = 0, 0
+            self.xo, self.yo = (max(self.hauteur_carte - self.largeur_carte, 0) * self.echelle) // 2, (max(self.largeur_carte - self.hauteur_carte, 0) * self.echelle) // 2
             if self.canvas_affichage.winfo_height() < self.canvas_affichage.winfo_width():
-                self.xo = self.canvas_affichage.winfo_width()//2 - self.canvas_affichage.winfo_height()//2
+                self.xo += self.canvas_affichage.winfo_width()//2 - self.canvas_affichage.winfo_height()//2
             else:
-                self.yo = self.canvas_affichage.winfo_height()//2 - self.canvas_affichage.winfo_width()//2
+                self.yo += self.canvas_affichage.winfo_height()//2 - self.canvas_affichage.winfo_width()//2
 
             if len(self.grille_canvas) != self.largeur_carte * self.hauteur_carte:
                 self.grille_canvas = []
@@ -897,12 +962,7 @@ class App(ctk.CTk):
         carte.filtre_correction_carte()
         self.grille_route = carte.grille
         self.affiche_carte_dans_canvas()
-        
 
-    
-
-        
-        
 
 if __name__ == "__main__":
     os.chdir(dirname(abspath(__file__)))

@@ -332,19 +332,22 @@ class Voiture:
         
         while queue:
             print("queue ", queue)
+            print("Etat des lieux--------------\nDistances", distances, "\nChemin", chemin, "\nNoeud_parents", noeud_parent)
             dist, noeud = heapq.heappop(queue)
-            
+            print("\n\nOn examine le noeud", noeud, "avec une distance partant de", dist)
             if dist > chemin[noeud]:
+                print("Continue")
                 continue
             
             for (noeud_arrivee, arete) in self.graphe[noeud]:
+                print("On peut atteindre", noeud_arrivee, "par", arete)
                 new_distance = chemin[noeud] + arete.get_poids()
                 
                 if new_distance < chemin[noeud_arrivee]:
                     distances[noeud_arrivee] = new_distance
                     chemin[noeud_arrivee] = new_distance
                     heapq.heappush(queue, (new_distance, noeud_arrivee))
-                    print("Noeud arrivee", noeud_arrivee, "Noeud depart", noeud)
+                    print("On peut atteindre", noeud_arrivee, " depuis le noeud, en minimisant la distance", noeud)
                     noeud_parent[noeud_arrivee] = noeud
             print("new queue ", queue)
         print("out")

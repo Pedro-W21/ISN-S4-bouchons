@@ -125,7 +125,7 @@ class Simulation:
                 self.noeuds.append(Intersection_T(Vecteur2D(intersection[0], intersection[1]), aretes_reliee))
 
     def genere_graphe(self):
-    
+        
         for noeud_courant in self.noeuds:
             self.graphe[noeud_courant] = []
             aretes_connectees = []
@@ -136,6 +136,11 @@ class Simulation:
                             if arete1.is_equal(arete2, inverted=True):
                                 aretes_connectees.append((noeud_arrivee, arete1))
             self.graphe[noeud_courant] = aretes_connectees
+        print("Graphe généré : ")
+        for neod_depart, couples in self.graphe.items():
+            print("Le point :", neod_depart.position, " mène à :")
+            for i in couples:
+                print(i[0].position, "avec l'arête allant de ", i[1].position_depart, " à ", i[1].position_arrivee)
           
     def update(self, environnement_actif = False):
         #Si on veut générer + de voitures

@@ -31,13 +31,13 @@ class GestionnaireVitesse:
 
         self.voiture = voiture
         self.position_depart_courante: Vecteur2D = self.voiture.position
-        print(self.voiture.arete_actuelle)
-        self.courbe_courante = self.genere_courbe_acceleration_arete(self.voiture.arete_actuelle)
+        self.genere_courbe_acceleration_arete(self.voiture.arete_actuelle)
+        self.courbe_courante = self.courbes[self.ACCELERATION][0]
         
 
     def desactiver_courbes(self, nom_courbes: list[str]):
         for nom_courbe in self.courbes.keys():
-            for a_supprimer in nom_courbes:
+            for a_supprimer in nom_courbes: 
                 if nom_courbe.startswith(a_supprimer):
                     if self.NOEUD in nom_courbe:
                         del self.courbes[nom_courbe]
@@ -50,6 +50,7 @@ class GestionnaireVitesse:
         return Courbe(0, distance_finale, vitesse_initiale, vitesse_finale, acceleration)
 
     def genere_courbe_suivie_voiture(self, voiture_obstacle, distance_voiture_obstacle_initiale: float):
+        print(voiture_obstacle.gestionnaire_vitesse.courbe_courante.position_finale)
         deplacement_voiture_obstacle_total_depuis_t = voiture_obstacle.gestionnaire_vitesse.courbe_courante.position_finale - voiture_obstacle.gestionnaire_vitesse.courbe_courante.result_e(time.time())
         distance = deplacement_voiture_obstacle_total_depuis_t + distance_voiture_obstacle_initiale - self.voiture.distance_securite(voiture_obstacle.gestionnaire_vitesse.courbe_courante.vitesse_finale)
         courbe = self.cree_courbe(distance, self.voiture.vitesse, voiture_obstacle.gestionnaire_vitesse.courbe_courante.vitesse_finale)

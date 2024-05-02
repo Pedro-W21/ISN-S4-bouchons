@@ -44,12 +44,11 @@ class Vecteur2D:
         else:
             raise TypeError("GROSSE ERREUR DE TYPE ICI AUSSI")
         
-    def __div__(self, rhs):
+    def __truediv__(self, rhs):
         if type(rhs) == float or type(rhs) == int:
             return Vecteur2D(self.x / rhs, self.y / rhs)
         else:
             raise TypeError("GROSSE ERREUR DE TYPE ICI AUSSI")
-
 
     def __str__(self):
         return f"x : {self.x}, y : {self.y}"

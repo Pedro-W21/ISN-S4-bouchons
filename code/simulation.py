@@ -16,18 +16,15 @@ class Simulation:
 
     def __init__(self, carte: Carte, nombre_voiture: float, agressivite: float) -> None:
         
+        
         self.noeuds: list[Noeud] = carte.into_aretes_noeuds()
+
         self.aretes: list[Arete] = []
         for noeud in self.noeuds:
             for arete in noeud.aretes:
                 if arete not in self.aretes:
                     self.aretes.append(arete)
-        print("Tous mes noeuds")
-        for noeud in self.noeuds:
-            print(noeud)
-        print("Toutes mes arêtes")
-        for arete in self.aretes:
-            print(arete)
+
         self.entrees_sorties: list[EntreeSortie] = [noeud for noeud in self.noeuds if noeud.type == self.ENTREE_SORTIE]
 
         self.graphe: dict[Noeud: list[Noeud, Arete]] = {}
@@ -55,7 +52,6 @@ class Simulation:
             sorties = self.entrees_sorties.copy()
             sorties.remove(entree)
             sortie = choice(sorties)
-            
             nouvelle_voiture = Voiture(self.genere_id(), self.genere_agressivite(), entree, sortie, self.graphe)
             self.voitures.append(nouvelle_voiture)
             
@@ -64,7 +60,7 @@ class Simulation:
                 #voitures fraichement créées et les voitures non affichées qui peuvent apparaitre sans rien changer
                 if voiture.noeud_depart in entrees_libres:
                     voiture.affiche = True
-                    voiture.noeud_depart.enregistrer_usager(voiture)
+                    voiture.noeud_depart.enregistrer_usager(voiture, voiture.direction, voiture.direction_prochain_chemin)
                     entrees_libres.remove(voiture.noeud_depart)
                 #voiture qui a pour entrée une entrée déjà prise, mais il reste des entrées disponibles
                 elif len(entrees_libres_restantes)>0:
@@ -129,8 +125,7 @@ class Simulation:
                 self.noeuds.append(Intersection_T(Vecteur2D(intersection[0], intersection[1]), aretes_reliee))
 
     def genere_graphe(self):
-        print("Genere graphe", self.noeuds)
-        print("Aretes", self.aretes)
+    
         for noeud_courant in self.noeuds:
             self.graphe[noeud_courant] = []
             aretes_connectees = []
@@ -141,9 +136,8 @@ class Simulation:
                             if arete1.is_equal(arete2, inverted=True):
                                 aretes_connectees.append((noeud_arrivee, arete1))
             self.graphe[noeud_courant] = aretes_connectees
-        print("Graphe fourni, ", self.graphe)
           
-    def update(self, environnement_actif = False):
+    def update(self, environnement_actif = True):
         #Si on veut générer + de voitures
         if environnement_actif:
             if self.nombre_voiture > len(self.voitures):

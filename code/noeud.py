@@ -47,7 +47,7 @@ class Noeud:
         return True
     
     def est_empruntee(self) -> bool:
-        return self.usagers > 0
+        return len(self.usagers) > 0
     
     def est_un_usager(self, voiture) -> bool:
         return voiture in self.usagers

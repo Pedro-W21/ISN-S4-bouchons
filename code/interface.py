@@ -412,7 +412,7 @@ class App(ctk.CTk):
         self.nombre_voitures_Label_affichees.pack(side=TOP, expand=True, fill="x")
         self.nombre_voiture_scale = CTkSlider(master=self.parametres, progress_color="purple", from_=1, to=100, command=self.afficher_scale_voitures)
         self.nombre_voiture_scale.pack(side=TOP, expand=True, fill="x")
-        self.nombre_voiture_scale.set(10)
+        self.nombre_voiture_scale.set(1)
 
 
         self.niveau_agressivite_Label = CTkLabel(master=self.parametres, text="niveau d'agressivité")

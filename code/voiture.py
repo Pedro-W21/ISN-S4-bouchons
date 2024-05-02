@@ -464,7 +464,7 @@ class Voiture:
         return random.choice(couleurs)
 
     def recuperer_position(self):
-        angle = math.atan2(self.direction.y, self.direction.x)
-        x = self.position.get_x()+Noeud.size.get_x()/4*math.sin(angle)
-        y = self.position.get_y()+Noeud.size.get_x()/4*math.cos(angle)
+        angle = -math.atan2(self.direction.y, self.direction.x)
+        x = self.position.get_x()+Noeud.size.get_x()/4*(math.sin(angle)+2)
+        y = self.position.get_y()+Noeud.size.get_y()/4*(math.cos(angle)+2)
         return (Vecteur2D(x,y), angle)

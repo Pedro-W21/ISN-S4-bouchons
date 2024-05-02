@@ -20,11 +20,9 @@ class Noeud:
         temps_deceleration = abs(0 - self.vitesse_max) / 8
         self.distance_securite = 1/2 * (8 / 3.6) * temps_deceleration**2 + 0.5 * self.size.get_x()
         self.aretes = aretes
-
-    def __str__(self) -> str:
-        return f"Noeud: {self.position}"
     
     def retirer_usager(self, voiture):
+        print("Je retire l'usager", voiture.id, self.usagers)
         del self.usagers[voiture]
 
     def get_poids(self):

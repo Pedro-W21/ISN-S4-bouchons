@@ -5,7 +5,7 @@ from arete import Arete
 from vecteur_2d import Vecteur2D
 from noeud import Noeud, Virage, Intersection_T, Intersection_X, EntreeSortie
 from gestionnaire_vitesse import GestionnaireVitesse
-
+import heapq
 
 
 class Voiture:
@@ -135,8 +135,8 @@ class Voiture:
         voiture_obstacle, distance_voiture_obstacle = self.trouver_voiture_sur_mon_chemin()
         noeuds_obstacles_longueur: list[tuple[Noeud, float]] = self.trouver_noeuds_sur_mon_chemin()
 
+        print("Voici mes obstacles :\nVoitures ? ", voiture_obstacle, distance_voiture_obstacle, "\nNoeuds ? ", noeuds_obstacles_longueur)
         
-
         # Si il n'y pas d'obstacles
         if not voiture_obstacle and (not noeuds_obstacles_longueur):
              
@@ -145,7 +145,7 @@ class Voiture:
                                     GestionnaireVitesse.SUIVRE_VOITURE,
                                     GestionnaireVitesse.ARRET]
             self.gestionnaire_vitesse.desactiver_courbes(desactiver_courbes)
-            
+            print("On a désactivé :", desactiver_courbes)
             # si on est pas à la vitesse max
             if self.vitesse < self.arete_actuelle.vitesse_max:
                 if not self.gestionnaire_vitesse.courbe_est_active(self.gestionnaire_vitesse.ACCELERATION):
@@ -163,7 +163,7 @@ class Voiture:
             desactiver_courbes = [GestionnaireVitesse.ROULE,
                                     GestionnaireVitesse.ACCELERATION]
             self.gestionnaire_vitesse.desactiver_courbes(desactiver_courbes)
-
+            print("On a désactivé :", desactiver_courbes)
 
             if voiture_obstacle:
                 # TODO : implementer un meilleur check vérifier l'id de la voiture (pour plus tard non essentiel)
@@ -171,6 +171,7 @@ class Voiture:
                     self.gestionnaire_vitesse.genere_courbe_suivie_voiture(voiture_obstacle, distance_voiture_obstacle)
             else:
                 self.gestionnaire_vitesse.desactiver_courbes([GestionnaireVitesse.SUIVRE_VOITURE])
+                print("On a désactivé :", [GestionnaireVitesse.SUIVRE_VOITURE])
 
             
             for i in range(len(noeuds_obstacles_longueur)):
@@ -192,6 +193,7 @@ class Voiture:
                         if (not est_empruntee) or (voie_est_libre):
                         
                             self.gestionnaire_vitesse.desactiver_courbes([GestionnaireVitesse.ARRET])
+                            print("On a désactivé :", GestionnaireVitesse.ARRET)
 
                             self.ancient_usagers = {}
 
@@ -244,6 +246,7 @@ class Voiture:
                 desactiver_courbes = [GestionnaireVitesse.FREINAGE,
                                     GestionnaireVitesse.ARRET]
                 self.gestionnaire_vitesse.desactiver_courbes(desactiver_courbes)
+                print("On a désactivé :", GestionnaireVitesse.ARRET)
     
     def id_noeud(self, noeud: Noeud):
         return self.gestionnaire_vitesse.NOEUD+noeud.nom
@@ -254,7 +257,10 @@ class Voiture:
         if noeud_depasse:
             
             if noeud_depasse == self.noeud_depart:
-                self.noeud_depasse.retirer_usager(self)
+                noeud_depasse.retirer_usager(self)
+                chemin, distances = self.recherche_chemin(noeud_depasse)
+                self.chemin: list[Noeud] = chemin
+                self.distances = distances
             elif noeud_depasse == self.noeud_arrivee:
                 # desactive la voiture
                 self.affiche = False
@@ -288,16 +294,14 @@ class Voiture:
         distance_parcourue, self.vitesse, self.etat = self.gestionnaire_vitesse.recuperer_position_etat()
 
         reste_distance = 0
-        if self.direction.projection(abs(self.direction)) >= 0:
-            if self.direction*distance_parcourue+self.position > self.arete_actuelle.position_arrivee.projection(self.direction):
-                reste_distance = distance_parcourue - (self.arete_actuelle.position_arrivee - self.position).projection(self.direction)
+        if self.direction.projection(abs(self.direction)).valeur_projetee() >= 0:
+            if self.direction*distance_parcourue+self.position > self.arete_actuelle.position_arrivee.projection(self.direction).valeur_projetee():
+                reste_distance = distance_parcourue - (self.arete_actuelle.position_arrivee - self.position).projection(self.direction).valeur_projetee()
         else:
-            if self.direction*distance_parcourue+self.position < self.arete_actuelle.position_arrivee.projection(abs(self.direction)):
-                reste_distance = distance_parcourue - (self.arete_actuelle.position_arrivee - self.position).projection(self.direction)
+            if abs(self.direction)*distance_parcourue+self.position < self.arete_actuelle.position_arrivee.projection(abs(self.direction)).valeur_projetee():
+                reste_distance = distance_parcourue - (self.arete_actuelle.position_arrivee - self.position).projection(self.direction).valeur_projetee()
 
-        self.position = (self.position + (
-            (distance_parcourue-reste_distance)*self.direction()
-            )+ (reste_distance*(self.direction_prochain_chemin)))
+        self.position = (self.position + (self.direction*(distance_parcourue-reste_distance))+ (self.direction_prochain_chemin*reste_distance))
 
     def depasse_noeud(self):
         # selon de la voiture renvoie si elle a dépassé le prochain point sur le chemin
@@ -319,35 +323,39 @@ class Voiture:
         return None
 
     def recherche_chemin(self, noeud_depart: Noeud):
-        # Recherche chemin à partir de dernier point passé
-        
+        print("Noeud depart", noeud_depart, "Noeud arrivee", self.noeud_arrivee)
         distances = {noeud_depart: 0}
-
         chemin = {noeud: float('inf') for noeud in self.graphe}
         noeud_parent = {noeud: None for noeud in self.graphe}
         chemin[noeud_depart] = 0
         queue = [(0, noeud_depart)]
-        i = 0
+        
         while queue:
-            dist, noeud = queue.pop(0)
-            if chemin[noeud] < dist:
-                i+=1
+            print("queue ", queue)
+            dist, noeud = heapq.heappop(queue)
+            
+            if dist > chemin[noeud]:
                 continue
+            
             for (noeud_arrivee, arete) in self.graphe[noeud]:
                 new_distance = chemin[noeud] + arete.get_poids()
                 
                 if new_distance < chemin[noeud_arrivee]:
-                    distances[noeud_arrivee] = arete.longueur
+                    distances[noeud_arrivee] = new_distance
                     chemin[noeud_arrivee] = new_distance
-                    queue.append((new_distance, noeud_arrivee))
+                    heapq.heappush(queue, (new_distance, noeud_arrivee))
+                    print("Noeud arrivee", noeud_arrivee, "Noeud depart", noeud)
                     noeud_parent[noeud_arrivee] = noeud
-            i+=1
+            print("new queue ", queue)
+        print("out")
         parcours = []
+        print(noeud_parent)
         noeud = self.noeud_arrivee
         while noeud != noeud_depart:
             parcours.append(noeud)
             noeud = noeud_parent[noeud]
         parcours.append(noeud_depart)
+        
         return parcours[::-1], distances
 
     def distance_securite(self, vitesse: float) -> float:
@@ -404,23 +412,35 @@ class Voiture:
                 arete = self.trouver_arete_entre_noeuds(noeud_depart, noeud_arrivee)
                 if longueur < self.distance_securite(self.vitesse):
                     if arete.a_des_voitures():
+                        print("Voitures dans l'arête suivante :", arete.voitures)
                         voiture_obstacle = arete.voitures[-1]
-                        longueur += (noeud_depart.position - voiture_obstacle.position).norme_manathan()
-                        if longueur < self.distance_securite(self.vitesse):
-                            return voiture_obstacle, longueur
+                        if voiture_obstacle != self:
+                            longueur += (noeud_depart.position - voiture_obstacle.position).norme_manathan()
+                            if longueur < self.distance_securite(self.vitesse):
+                                print("Voiture obstacle trouvée, dans les arêtes suivantes", voiture_obstacle, longueur)
+                                return voiture_obstacle, longueur
+                        elif len(arete.voitures)>1:
+                            voiture_obstacle = arete.voitures[arete.voitures.index(self)-1]
+                            if voiture_obstacle != self:
+                                longueur += (noeud_depart.position - voiture_obstacle.position).norme_manathan()
+                                if longueur < self.distance_securite(self.vitesse):
+                                    print("Voiture obstacle trouvée, dans les arêtes suivantes", voiture_obstacle, longueur)
+                                    return voiture_obstacle, longueur
                         else:
-                            return None, None
+                            longueur += arete.longueur
                     else:
                         longueur += arete.longueur
                 else:
                     return None, None
             elif noeud_depart:
-                    if arete.voitures[0] != self and len(arete.voitures) > 1:
-                        voiture_obstacle = arete.voitures[arete.voitures.index(self)-1]
-                        longueur += (self.position - voiture_obstacle.position).norme_manathan()
-                        return voiture_obstacle, longueur
-                    else:
-                        longueur += (self.position - noeud_arrivee.position).norme_manathan()
+                arete = self.trouver_arete_entre_noeuds(noeud_depart, noeud_arrivee)
+                if arete.voitures[0] != self and len(arete.voitures) > 1:
+                    voiture_obstacle = arete.voitures[arete.voitures.index(self)-1]
+                    longueur += (self.position - voiture_obstacle.position).norme_manathan()
+                    print("Voiture obstacle trouvée, dans le noeud de départ", voiture_obstacle, longueur)
+                    return voiture_obstacle, longueur
+                else:
+                    longueur += (self.position - noeud_arrivee.position).norme_manathan()
         return None, None
 
     def trouver_noeuds_sur_mon_chemin(self):
@@ -434,7 +454,7 @@ class Voiture:
                 longueur += (self.chemin[1].position - self.position).norme_manathan()
             else:
                 if longueur < self.distance_securite(self.vitesse):
-                    if noeud_devant.est_empruntee():
+                    if noeud_devant.est_empruntee() and not noeud_devant.est_un_usager(self):
                         noeuds.append((noeud_devant, longueur))
                 longueur += (self.chemin[i+1].position - self.chemin[i].position).norme_manathan()
         return noeuds
@@ -444,7 +464,7 @@ class Voiture:
         return random.choice(couleurs)
 
     def recuperer_position(self):
-        angle = -math.atan2(self.orientation.y, self.orientation.x)
+        angle = math.atan2(self.direction.y, self.direction.x)
         x = self.position.get_x()+Noeud.size.get_x()/4*math.sin(angle)
         y = self.position.get_y()+Noeud.size.get_x()/4*math.cos(angle)
         return (Vecteur2D(x,y), angle)

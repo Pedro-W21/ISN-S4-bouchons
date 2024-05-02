@@ -137,7 +137,7 @@ class Simulation:
                                 aretes_connectees.append((noeud_arrivee, arete1))
             self.graphe[noeud_courant] = aretes_connectees
           
-    def update(self, environnement_actif = True):
+    def update(self, environnement_actif = False):
         #Si on veut générer + de voitures
         if environnement_actif:
             if self.nombre_voiture > len(self.voitures):

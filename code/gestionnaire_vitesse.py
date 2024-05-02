@@ -43,15 +43,12 @@ class GestionnaireVitesse:
                         del self.courbes[nom_courbe]
                     else:
                         self.courbes[nom_courbe] = []
-            else:
-                self.courbes[nom_courbe] = []
-
     def cree_courbe(self, distance_finale: float, vitesse_initiale: float, vitesse_finale: float, acceleration: float = 8):
         return Courbe(0, distance_finale, vitesse_initiale, vitesse_finale, acceleration)
 
     def genere_courbe_suivie_voiture(self, voiture_obstacle, distance_voiture_obstacle_initiale: float):
-        print(voiture_obstacle.gestionnaire_vitesse.courbe_courante.position_finale)
-        deplacement_voiture_obstacle_total_depuis_t = voiture_obstacle.gestionnaire_vitesse.courbe_courante.position_finale - voiture_obstacle.gestionnaire_vitesse.courbe_courante.result_e(time.time())
+        vitesse, position = voiture_obstacle.gestionnaire_vitesse.courbe_courante.result_e(time.time())
+        deplacement_voiture_obstacle_total_depuis_t = voiture_obstacle.gestionnaire_vitesse.courbe_courante.position_finale - position
         distance = deplacement_voiture_obstacle_total_depuis_t + distance_voiture_obstacle_initiale - self.voiture.distance_securite(voiture_obstacle.gestionnaire_vitesse.courbe_courante.vitesse_finale)
         courbe = self.cree_courbe(distance, self.voiture.vitesse, voiture_obstacle.gestionnaire_vitesse.courbe_courante.vitesse_finale)
         self.courbes[self.SUIVRE_VOITURE].append((courbe, self.voiture.position))
@@ -110,12 +107,11 @@ class GestionnaireVitesse:
         for courbe in list_courbes:
             vitesse, position = courbe.result_e(time.time())
             vitesses[vitesse] = courbe, position
-
         vitesse = min(list(vitesses.keys()))
 
-        self.courbe_courante, position = vitesses[position]
+        self.courbe_courante, position = vitesses[vitesse]
 
-        return vitesse, position, self.trouver_etat_par_courbe(vitesses[vitesse])
+        return vitesse, position, self.trouver_etat_par_courbe(vitesses[vitesse][0])
     
     def courbe_est_active(self, nom_courbe: str) -> bool:
         return self.courbes.get(nom_courbe, False)

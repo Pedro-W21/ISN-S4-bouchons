@@ -1,3 +1,5 @@
+import numpy as np
+
 class Vecteur2D:
     def __init__(self, x:float, y:float):
         self.x = x
@@ -8,6 +10,9 @@ class Vecteur2D:
     
     def get_y(self):
         return self.y
+    
+    def valeur_projetee(self):
+        return self.x+self.y
     
     def __add__(self, rhs):
         return Vecteur2D(self.x + rhs.x, self.y + rhs.y)
@@ -39,9 +44,10 @@ class Vecteur2D:
     def __mul__(self, rhs):
         if type(rhs) == Vecteur2D:
             return self.scalaire(rhs)
-        elif type(rhs) == float or type(rhs) == int:
+        elif type(rhs) == float or type(rhs) == int or type(rhs) == np.float64:
             return Vecteur2D(self.x * rhs, self.y * rhs)
         else:
+            print(type(rhs))
             raise TypeError("GROSSE ERREUR DE TYPE ICI AUSSI")
         
     def __truediv__(self, rhs):
@@ -58,3 +64,15 @@ class Vecteur2D:
     
     def __abs__(self):
         return Vecteur2D(abs(self.x), abs(self.y))
+    
+    def __gt__(self, number):
+        return self.x > number or self.y > number
+    
+    def __ge__(self, number):
+        return self.x >= number or self.y >= number
+    
+    def __lt__(self, number):
+        return self.x < number or self.y < number
+
+    def __lt__(self, number):
+        return self.x <= number or self.y <= number

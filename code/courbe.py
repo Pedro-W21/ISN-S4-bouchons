@@ -73,4 +73,5 @@ class Courbe:
         return vitesse, position
 
     def __eq__(self, courbe) -> bool:
-        return (self.vitesse_initiale, self.vitesse_finale, self.acceleration) == (courbe.vitesse_initiale, courbe.vitesse_finale, courbe.acceleration)
+        print("Attributs des courbes", self, courbe)
+        return (self.vitesse_initiale, self.vitesse_finale, self.position_initiale, self.position_finale) == (courbe.vitesse_initiale, courbe.vitesse_finale, courbe.acceleration, courbe.position_initiale, courbe.position_finale)

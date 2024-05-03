@@ -109,9 +109,13 @@ class Voiture:
         self.distances = distances
 
         self.arete_actuelle: Arete = self.trouver_arete_entre_noeuds(self.chemin[1], self.chemin[2])
-        self.prochaine_arete: Arete = self.trouver_arete_entre_noeuds(self.chemin[2], self.chemin[3])
 
+        if not type(self.chemin[2]) == EntreeSortie:
+            self.prochaine_arete: Arete = self.trouver_arete_entre_noeuds(self.chemin[2], self.chemin[3])
+        else:
+            self.prochaine_arete = None
         self.ancienne_arete: Arete = None
+
         self.update_orientation()
         self.update_orientation_prochain_chemin()
 
@@ -255,7 +259,7 @@ class Voiture:
         noeud_depasse: Noeud = self.depasse_noeud()
         # si on depasse un noeud
         if noeud_depasse:
-            
+            print("Voitures dans l'arete actuelle : ",self.arete_actuelle.voitures)
             if noeud_depasse == self.noeud_depart:
                 noeud_depasse.retirer_usager(self)
                 chemin, distances = self.recherche_chemin(noeud_depasse)
@@ -263,8 +267,10 @@ class Voiture:
                 self.distances = distances
             elif noeud_depasse == self.noeud_arrivee:
                 # desactive la voiture
+                print("Dépassement noeud de fin")
                 self.affiche = False
                 self.arete_actuelle.voitures.remove(self)
+                print("Je viens de me retirer : ",self.arete_actuelle.voitures)
 
             else:
                 # si le noeud est une intersection
@@ -289,6 +295,7 @@ class Voiture:
                 # update les variables de position sur le graphes
                 self.arete_actuelle.push_voiture(self)
                 self.ancienne_arete.voitures.remove(self)
+                print("Je viens de me retirer : ",self.arete_actuelle.voitures)
 
     def update_position(self):
         distance_parcourue, self.vitesse, self.etat = self.gestionnaire_vitesse.recuperer_position_etat()
@@ -437,11 +444,12 @@ class Voiture:
                     return None, None
             elif noeud_depart:
                 arete = self.trouver_arete_entre_noeuds(noeud_depart, noeud_arrivee)
-                if arete.voitures[0] != self and len(arete.voitures) > 1:
-                    voiture_obstacle = arete.voitures[arete.voitures.index(self)-1]
-                    longueur += (self.position - voiture_obstacle.position).norme_manathan()
-                    print("Voiture obstacle trouvée, dans le noeud de départ", voiture_obstacle, longueur)
-                    return voiture_obstacle, longueur
+                if arete.a_des_voitures():
+                    if arete.voitures[0] != self and len(arete.voitures) > 1:
+                        voiture_obstacle = arete.voitures[arete.voitures.index(self)-1]
+                        longueur += (self.position - voiture_obstacle.position).norme_manathan()
+                        print("Voiture obstacle trouvée, dans le noeud de départ", voiture_obstacle, longueur)
+                        return voiture_obstacle, longueur
                 else:
                     longueur += (self.position - noeud_arrivee.position).norme_manathan()
         return None, None

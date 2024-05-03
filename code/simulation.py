@@ -59,15 +59,22 @@ class Simulation:
             if not voiture.affiche:
                 #voitures fraichement créées et les voitures non affichées qui peuvent apparaitre sans rien changer
                 if voiture.noeud_depart in entrees_libres:
-                    voiture.affiche = True
-                    voiture.noeud_depart.enregistrer_usager(voiture, voiture.direction, voiture.direction_prochain_chemin)
-                    entrees_libres.remove(voiture.noeud_depart)
+                    if self.chemin[0] == None:
+                        voiture.affiche = True
+                        voiture.noeud_depart.enregistrer_usager(voiture, voiture.direction, voiture.direction_prochain_chemin)
+                        entrees_libres.remove(voiture.noeud_depart)
+                    else:
+                        voiture.reassign(self.genere_agressivite(), voiture.noeud_depart, voiture.noeud_arrivee)
+                        voiture.affiche = True
+                        voiture.noeud_depart.enregistrer_usager(voiture, voiture.direction, voiture.direction_prochain_chemin)
+                        entrees_libres.remove(voiture.noeud_depart)
                 #voiture qui a pour entrée une entrée déjà prise, mais il reste des entrées disponibles
                 elif len(entrees_libres_restantes)>0:
+                    print("On réassigne la voiture")
                     entree = choice(entrees_libres_restantes)
                     entrees_libres_restantes.remove(entree)
                     sortie = choice(sorties)
-                    voiture.reassign(self.genere_agressivite, entree, sortie)
+                    voiture.reassign(self.genere_agressivite(), entree, sortie)
                     voiture.noeud_depart.enregistrer_usager(voiture)
 
     def genere_id(self) -> int:
@@ -145,10 +152,9 @@ class Simulation:
     def update(self, environnement_actif = False):
         #Si on veut générer + de voitures
         if environnement_actif:
-            if self.nombre_voiture > len(self.voitures):
-                self.activer_voitures()
-            
             voitures_actives = self.recuperer_voitures()
+            if self.nombre_voiture > len(self.voitures) or len(voitures_actives) < len(self.voitures):
+                self.activer_voitures()
             for voiture in voitures_actives:
                 voiture.update()
         else:
@@ -162,4 +168,4 @@ class Simulation:
         self.nombre_voiture = nombre_voiture
 
     def recuperer_voitures(self):
-        return self.voitures
+        return [voiture for voiture in self.voitures if voiture.affiche]

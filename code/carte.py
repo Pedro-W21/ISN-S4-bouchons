@@ -29,13 +29,15 @@ class Carte:
         directions = [(-1,0), (1,0), (0,1), (0,-1)]
         sx = Noeud.size.get_x()
         sy = Noeud.size.get_y()
+        #print("starting test")
         for ((xc, yc), aretes) in noeuds_dict.items():
             for (dx, dy) in directions:
-                fxc, fyc = xc, yc
-                while self.get_at_or_0(fxc + dx, fyc + dy) == 1:
+                fxc, fyc = xc + dx, yc + dy
+                while self.get_at_or_0(fxc, fyc) == 1 and not self.est_noeud(fxc, fyc):
                     fxc += dx
                     fyc += dy
-                if not (fxc == xc and fyc == yc):
+                if self.get_at_or_0(fxc, fyc) == 1:
+                    #print(xc, yc, fxc, fyc)
                     aretes.append(Arete(Vecteur2D(xc * sx, yc * sy), Vecteur2D(fxc * sx, fyc * sy)))
         return [self.cree_noeud(xc, yc, aretes) for ((xc, yc), aretes) in noeuds_dict.items()]
 

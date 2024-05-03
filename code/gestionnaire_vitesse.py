@@ -32,13 +32,13 @@ class GestionnaireVitesse:
         self.voiture = voiture
         self.position_depart_courante: Vecteur2D = self.voiture.position
         self.genere_courbe_acceleration_arete(self.voiture.arete_actuelle)
-        self.courbe_courante = self.courbes[self.ACCELERATION][0]
+        self.courbe_courante = self.courbes[self.ACCELERATION][0][0]
         
 
     def desactiver_courbes(self, nom_courbes: list[str]):
         for nom_courbe in self.courbes.keys():
-            for a_supprimer in nom_courbes: 
-                if nom_courbe.startswith(a_supprimer):
+            for a_supprimer in nom_courbes:
+                if nom_courbe.startswith(a_supprimer) or a_supprimer == "ALL":
                     if self.NOEUD in nom_courbe:
                         del self.courbes[nom_courbe]
                     else:
@@ -68,7 +68,7 @@ class GestionnaireVitesse:
 
     def genere_courbe_acceleration(self, vitesse_finale: float, nom_courbe = ACCELERATION):
         courbe = self.cree_courbe(self.voiture.distance_acceleration(self.voiture.vitesse, vitesse_finale), self.voiture.vitesse, vitesse_finale, self.voiture.acceleration)
-        self.courbes[nom_courbe].append(courbe)
+        self.courbes[nom_courbe].append((courbe, self.voiture.position))
     
     def genere_courbe_acceleration_arete(self, arete: Arete):
         self.genere_courbe_acceleration(arete.vitesse_max)
@@ -94,20 +94,20 @@ class GestionnaireVitesse:
         self.genere_courbe_arret(distance_noeud - Noeud.size, nom_courbe=self.ARRET+self.NOEUD+nom_noeud)
 
     def trouver_etat_par_courbe(self, courbe: Courbe) -> str:
-        for etat, courbes in self.courbes.items():
+        for etat, tuples in self.courbes.items():
+            courbes = [courbe for courbe, _ in tuples]
             if courbe in courbes:
                 return etat
 
+    def liste_courbes(self):
+        return [courbe for valeurs in self.courbes.values() for courbe, _ in valeurs]
+    
     def recuperer_position_etat(self):
         vitesses: dict[float: Courbe] = {}
-        list_courbes: list[Courbe] = []
-        for courbes in self.courbes.values():
-            list_courbes += courbes
-
-        for courbe in list_courbes:
+        for courbe in self.liste_courbes():
             vitesse, position = courbe.result_e(time.time())
             vitesses[vitesse] = courbe, position
-        vitesse = min(list(vitesses.keys()))
+        vitesse = min(min(list(vitesses.keys())),100)
 
         self.courbe_courante, position = vitesses[vitesse]
 

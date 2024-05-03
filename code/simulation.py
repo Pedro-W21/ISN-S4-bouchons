@@ -44,6 +44,7 @@ class Simulation:
         #Si on a besoin de créer de nouvelles voitures
         for i in range(max(0,self.nombre_voiture-len(self.voitures))):
             if len(entrees_libres_restantes) == 0:
+                print("Entrée sortie existantes :", self.entrees_sorties)
                 entree = choice(self.entrees_sorties)
             else: 
                 entree = choice(entrees_libres_restantes)
@@ -54,28 +55,33 @@ class Simulation:
             sortie = choice(sorties)
             nouvelle_voiture = Voiture(self.genere_id(), self.genere_agressivite(), entree, sortie, self.graphe)
             self.voitures.append(nouvelle_voiture)
-            
-        for voiture in reversed(self.voitures):
-            if not voiture.affiche:
-                #voitures fraichement créées et les voitures non affichées qui peuvent apparaitre sans rien changer
-                if voiture.noeud_depart in entrees_libres:
-                    if self.chemin[0] == None:
-                        voiture.affiche = True
-                        voiture.noeud_depart.enregistrer_usager(voiture, voiture.direction, voiture.direction_prochain_chemin)
-                        entrees_libres.remove(voiture.noeud_depart)
-                    else:
-                        voiture.reassign(self.genere_agressivite(), voiture.noeud_depart, voiture.noeud_arrivee)
-                        voiture.affiche = True
-                        voiture.noeud_depart.enregistrer_usager(voiture, voiture.direction, voiture.direction_prochain_chemin)
-                        entrees_libres.remove(voiture.noeud_depart)
+        
+        voitures_non_active = self.recuperer_voitures_non_actives()
+        for voiture in voitures_non_active:
+            #Le noeud est libre
+            if voiture.noeud_depart in entrees_libres:
+                #La voiture n'est pas encore partie
+                if voiture.chemin[0] == None:
+                    voiture.affiche = True
+                    voiture.noeud_depart.enregistrer_usager(voiture, voiture.direction, voiture.direction_prochain_chemin)
+                    entrees_libres.remove(voiture.noeud_depart)
+                #La voiture est déjà partie
+                else:
+                    voiture.reassign(self.genere_agressivite(), voiture.noeud_depart, voiture.noeud_arrivee)
+                    voiture.affiche = True
+                    voiture.noeud_depart.enregistrer_usager(voiture, voiture.direction, voiture.direction_prochain_chemin)
+                    entrees_libres.remove(voiture.noeud_depart)
                 #voiture qui a pour entrée une entrée déjà prise, mais il reste des entrées disponibles
-                elif len(entrees_libres_restantes)>0:
-                    print("On réassigne la voiture")
-                    entree = choice(entrees_libres_restantes)
-                    entrees_libres_restantes.remove(entree)
-                    sortie = choice(sorties)
-                    voiture.reassign(self.genere_agressivite(), entree, sortie)
-                    voiture.noeud_depart.enregistrer_usager(voiture)
+            #Le noeud n'est pas libre mais il reste des entrées disponibles
+            elif len(entrees_libres_restantes)>0:
+                print("On réassigne la voiture")
+                entree = choice(entrees_libres_restantes)
+                entrees_libres_restantes.remove(entree)
+                sorties = self.entrees_sorties.copy()
+                sorties.remove(entree)
+                sortie = choice(sorties)
+                voiture.reassign(self.genere_agressivite(), entree, sortie)
+                voiture.noeud_depart.enregistrer_usager(voiture, voiture.direction, voiture.direction_prochain_chemin)
 
     def genere_id(self) -> int:
         return len(self.voitures)
@@ -169,3 +175,6 @@ class Simulation:
 
     def recuperer_voitures(self):
         return [voiture for voiture in self.voitures if voiture.affiche]
+    
+    def recuperer_voitures_non_actives(self):
+        return reversed([voiture for voiture in self.voitures if not voiture.affiche])

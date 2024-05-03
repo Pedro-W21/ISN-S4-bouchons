@@ -104,10 +104,10 @@ class Voiture:
         #Variables primaires (ne changeront plus)
         self.genere_couleur()
 
-        chemin, distances = self.recherche_chemin(noeud_depart)
+        chemin, distances = self.recherche_chemin(self.noeud_depart)
         self.chemin: list[Noeud] = [None] + chemin
         self.distances = distances
-
+        print("Chemin reassign: ", self.chemin)
         self.arete_actuelle: Arete = self.trouver_arete_entre_noeuds(self.chemin[1], self.chemin[2])
 
         if not type(self.chemin[2]) == EntreeSortie:
@@ -124,7 +124,7 @@ class Voiture:
         self.distance_marge_securite = self.size.x + self.size.y
 
         self.ancient_usagers = {}
-
+        self.gestionnaire_vitesse.desactiver_courbes(["ALL"])
         self.etat = GestionnaireVitesse.ACCELERATION
 
     def update(self):

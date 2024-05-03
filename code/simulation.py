@@ -39,21 +39,9 @@ class Simulation:
 
     def activer_voitures(self):
         entrees_libres = self.trouver_entrees_libres()
-        entrees_libres_restantes = entrees_libres.copy()
 
         #Si on a besoin de créer de nouvelles voitures
         for i in range(max(0,self.nombre_voiture-len(self.voitures))):
-            # if len(entrees_libres_restantes) == 0:
-            #     print("Entrée sortie existantes :", self.entrees_sorties)
-            #     entree = choice(self.entrees_sorties)
-            # else: 
-            #     entree = choice(entrees_libres_restantes)
-            #     entrees_libres_restantes.remove(entree)
-            # entree_prise.append(entree)
-            # sorties = self.entrees_sorties.copy()
-            # sorties.remove(entree)
-            # sortie = choice(sorties)
-            # nouvelle_voiture = Voiture(self.genere_id(), self.genere_agressivite(), entree, sortie, self.graphe)
             nouvelle_voiture = Voiture(self.genere_id(), self.graphe)
             self.voitures.append(nouvelle_voiture)
         
@@ -133,11 +121,6 @@ class Simulation:
                             if arete1.is_equal(arete2, inverted=True):
                                 aretes_connectees.append((noeud_arrivee, arete1))
             self.graphe[noeud_courant] = aretes_connectees
-        print("Graphe généré : ")
-        for neod_depart, couples in self.graphe.items():
-            print("Le point :", neod_depart.position, " mène à :")
-            for i in couples:
-                print(i[0].position, "avec l'arête allant de ", i[1].position_depart, " à ", i[1].position_arrivee)
           
     def update(self, environnement_actif = False):
         #Si on veut générer + de voitures
@@ -146,6 +129,7 @@ class Simulation:
             if self.nombre_voiture > len(self.voitures) or len(voitures_actives) < len(self.voitures):
                 self.activer_voitures()
             for voiture in voitures_actives:
+                print("\n\n===============================\nTOUR DE ", voiture.couleur)
                 voiture.update()
         else:
             pass

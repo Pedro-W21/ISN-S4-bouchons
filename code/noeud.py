@@ -22,8 +22,8 @@ class Noeud:
         self.aretes = aretes
     
     def retirer_usager(self, voiture):
-        print("Je retire l'usager", voiture.id, self.usagers)
-        del self.usagers[voiture]
+        if self.usagers.get(voiture, False):
+            del self.usagers[voiture]
 
     def get_poids(self):
         return self.size.x / self.get_vitesse_moyenne()

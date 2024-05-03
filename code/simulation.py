@@ -40,48 +40,32 @@ class Simulation:
     def activer_voitures(self):
         entrees_libres = self.trouver_entrees_libres()
         entrees_libres_restantes = entrees_libres.copy()
-        entree_prise = []
+
         #Si on a besoin de créer de nouvelles voitures
         for i in range(max(0,self.nombre_voiture-len(self.voitures))):
-            if len(entrees_libres_restantes) == 0:
-                print("Entrée sortie existantes :", self.entrees_sorties)
-                entree = choice(self.entrees_sorties)
-            else: 
-                entree = choice(entrees_libres_restantes)
-                entrees_libres_restantes.remove(entree)
-            entree_prise.append(entree)
-            sorties = self.entrees_sorties.copy()
-            sorties.remove(entree)
-            sortie = choice(sorties)
-            nouvelle_voiture = Voiture(self.genere_id(), self.genere_agressivite(), entree, sortie, self.graphe)
+            # if len(entrees_libres_restantes) == 0:
+            #     print("Entrée sortie existantes :", self.entrees_sorties)
+            #     entree = choice(self.entrees_sorties)
+            # else: 
+            #     entree = choice(entrees_libres_restantes)
+            #     entrees_libres_restantes.remove(entree)
+            # entree_prise.append(entree)
+            # sorties = self.entrees_sorties.copy()
+            # sorties.remove(entree)
+            # sortie = choice(sorties)
+            # nouvelle_voiture = Voiture(self.genere_id(), self.genere_agressivite(), entree, sortie, self.graphe)
+            nouvelle_voiture = Voiture(self.genere_id(), self.graphe)
             self.voitures.append(nouvelle_voiture)
         
         voitures_non_active = self.recuperer_voitures_non_actives()
-        for voiture in voitures_non_active:
-            #Le noeud est libre
-            if voiture.noeud_depart in entrees_libres:
-                #La voiture n'est pas encore partie
-                if voiture.chemin[0] == None:
-                    voiture.affiche = True
-                    voiture.noeud_depart.enregistrer_usager(voiture, voiture.direction, voiture.direction_prochain_chemin)
-                    entrees_libres.remove(voiture.noeud_depart)
-                #La voiture est déjà partie
-                else:
-                    voiture.reassign(self.genere_agressivite(), voiture.noeud_depart, voiture.noeud_arrivee)
-                    voiture.affiche = True
-                    voiture.noeud_depart.enregistrer_usager(voiture, voiture.direction, voiture.direction_prochain_chemin)
-                    entrees_libres.remove(voiture.noeud_depart)
-                #voiture qui a pour entrée une entrée déjà prise, mais il reste des entrées disponibles
-            #Le noeud n'est pas libre mais il reste des entrées disponibles
-            elif len(entrees_libres_restantes)>0:
-                print("On réassigne la voiture")
-                entree = choice(entrees_libres_restantes)
-                entrees_libres_restantes.remove(entree)
-                sorties = self.entrees_sorties.copy()
-                sorties.remove(entree)
-                sortie = choice(sorties)
-                voiture.reassign(self.genere_agressivite(), entree, sortie)
-                voiture.noeud_depart.enregistrer_usager(voiture, voiture.direction, voiture.direction_prochain_chemin)
+        while len(voitures_non_active) > 0 and len(entrees_libres) > 0:
+            voiture = voitures_non_active.pop()
+            entree = choice(entrees_libres)
+            entrees_libres.remove(entree)
+            sorties = self.entrees_sorties.copy()
+            sorties.remove(entree)
+            sortie = choice(sorties)
+            voiture.demarrage(self.genere_agressivite(), entree, sortie)
 
     def genere_id(self) -> int:
         return len(self.voitures)
@@ -177,4 +161,4 @@ class Simulation:
         return [voiture for voiture in self.voitures if voiture.affiche]
     
     def recuperer_voitures_non_actives(self):
-        return reversed([voiture for voiture in self.voitures if not voiture.affiche])
+        return [voiture for voiture in self.voitures if not voiture.affiche]

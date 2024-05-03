@@ -4,6 +4,8 @@ from vecteur_2d import Vecteur2D
 from noeud import Noeud
 from arete import Arete
 
+#TODO LA VITESSE MAX NEST PAS IMPLEMENTEE
+
 class RangeError(Exception):
     
     def __init__(self, *args: object) -> None:

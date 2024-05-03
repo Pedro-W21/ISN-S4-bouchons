@@ -5,26 +5,28 @@ from arete import Arete
 from vecteur_2d import Vecteur2D
 from noeud import Noeud, Virage, Intersection_T, Intersection_X, EntreeSortie
 from gestionnaire_vitesse import GestionnaireVitesse
-import heapq
-
 
 class Voiture:
 
     size = Vecteur2D(3.86, 2.14) # m [longueur, largeur]
     distance_marge_securite = size.x + size.y
 
-    def __init__(self, id: int, agressivite: float, noeud_depart: Noeud, noeud_arrivee: Noeud, graphe: dict):
+    def __init__(self, id: int, graphe: dict):
         self.id = id
+        self.affiche = False
+        self.graphe = graphe
+        
+
+    def demarrage(self, agressivite: float, noeud_depart: Noeud, noeud_arrivee: Noeud):
 
         self.position = noeud_depart.position
         self.direction = Vecteur2D(0, 0)
         self.direction_prochain_chemin = Vecteur2D(0, 0)
 
-        self.affiche = False
+        self.affiche = True
 
         self.noeud_depart: Noeud = noeud_depart
         self.noeud_arrivee: Noeud = noeud_arrivee
-        self.graphe = graphe
         
         self.vitesse = 0
 
@@ -59,72 +61,10 @@ class Voiture:
         self.update_orientation_prochain_chemin()
 
         self.arete_actuelle.push_voiture(self)
+        self.noeud_depart.enregistrer_usager(self, self.direction, self.direction_prochain_chemin)
 
         self.ancient_usagers = {}
 
-        self.etat = GestionnaireVitesse.ACCELERATION
-
-    def reassign(self, agressivite: float, noeud_depart: Noeud, noeud_arrivee: Noeud):
-
-        # TODO : revoir les differences avec init pour voir si on a pas oublier des choses
-        """
-        Initialise de nouveau un objet Voiture.
-
-        Cette méthode est utilisée pour remettre en fonctionnement une voiture qui a terminé un trajet.
-
-        Inputs:
-            agressivite (float): Le niveau d'agressivité de la voiture, compris entre 0 et 1.
-            noeud_depart (Noeud): Le nouveau noeud de départ de la voiture.
-            noeud_arrivee (Noeud): Le nouveau noeud d'arrivée de la voiture.
-
-        Returns:
-            None
-
-        Effets secondaires:
-            Cette méthode initialise plusieurs attributs de la voiture, notamment son identifiant, sa position, sa direction,
-            sa vitesse, son agressivité, etc. Elle génère également une couleur pour la voiture et calcule la distance de sécurité.
-            La méthode détermine le chemin à suivre par la voiture, ainsi que les arêtes actuelle, prochaine et ancienne sur lesquelles elle se trouve.
-            Enfin, elle met à jour l'orientation de la voiture et initialise son état de vitesse.
-        """
-        self.position = noeud_depart.position        
-        self.affiche = True
-        
-        self.noeud_depart: Noeud = noeud_depart
-        self.noeud_arrivee: Noeud = noeud_arrivee
-        
-        self.vitesse = 0
-
-        self.agressivite = agressivite # compris entre 0 et 1
-        
-        self.modulation_acceleration = 3 * agressivite
-
-        self.acceleration = (5 + self.modulation_acceleration) / 3.6
-        self.deceleration = (5 + self.modulation_acceleration)  / 3.6
-
-        #Variables primaires (ne changeront plus)
-        self.genere_couleur()
-
-        chemin, distances = self.recherche_chemin(self.noeud_depart)
-        self.chemin: list[Noeud] = [None] + chemin
-        self.distances = distances
-        print("Chemin reassign: ", self.chemin)
-        self.arete_actuelle: Arete = self.trouver_arete_entre_noeuds(self.chemin[1], self.chemin[2])
-
-        if not type(self.chemin[2]) == EntreeSortie:
-            self.prochaine_arete: Arete = self.trouver_arete_entre_noeuds(self.chemin[2], self.chemin[3])
-        else:
-            self.prochaine_arete = None
-        self.ancienne_arete: Arete = None
-
-        self.update_orientation()
-        self.update_orientation_prochain_chemin()
-
-        self.arete_actuelle.push_voiture(self)
-
-        self.distance_marge_securite = self.size.x + self.size.y
-
-        self.ancient_usagers = {}
-        self.gestionnaire_vitesse.desactiver_courbes(["ALL"])
         self.etat = GestionnaireVitesse.ACCELERATION
 
     def update(self):
@@ -198,7 +138,7 @@ class Voiture:
                         
                             self.gestionnaire_vitesse.desactiver_courbes([GestionnaireVitesse.ARRET])
                             print("On a désactivé :", GestionnaireVitesse.ARRET)
-
+                            noeud_obstacle.enregistrer_usager(self, self.direction, self.direction_prochain_chemin)
                             self.ancient_usagers = {}
 
                             if self.vitesse < noeud_obstacle.vitesse_max:
@@ -340,7 +280,7 @@ class Voiture:
         while queue:
             print("queue ", queue)
             print("Etat des lieux--------------\nDistances", distances, "\nChemin", chemin, "\nNoeud_parents", noeud_parent)
-            dist, noeud = heapq.heappop(queue)
+            dist, noeud = queue.pop(0)
             print("\n\nOn examine le noeud", noeud, "avec une distance partant de", dist)
             if dist > chemin[noeud]:
                 print("Continue")
@@ -353,7 +293,7 @@ class Voiture:
                 if new_distance < chemin[noeud_arrivee]:
                     distances[noeud_arrivee] = new_distance
                     chemin[noeud_arrivee] = new_distance
-                    heapq.heappush(queue, (new_distance, noeud_arrivee))
+                    queue.append((new_distance, noeud_arrivee))
                     print("On peut atteindre", noeud_arrivee, " depuis le noeud, en minimisant la distance", noeud)
                     noeud_parent[noeud_arrivee] = noeud
             print("new queue ", queue)

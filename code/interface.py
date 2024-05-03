@@ -694,7 +694,7 @@ class App(ctk.CTk):
         sx = Noeud.size.get_x()
         sy = Noeud.size.get_y()
         tx, ty = Voiture.size.get_x() / sx, Voiture.size.get_y() / sy
-        tx, ty = self.grille_to_canvas_pos(tx, ty)
+        tx, ty = tx * self.echelle, ty * self.echelle
         tx *= 0.5
         ty *= 0.5
         sx, sy = Noeud.size.get_x(), Noeud.size.get_y()

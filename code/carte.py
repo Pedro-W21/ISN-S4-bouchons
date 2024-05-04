@@ -41,7 +41,7 @@ class Carte:
                     aretes.append(Arete(Vecteur2D(xc * sx, yc * sy), Vecteur2D(fxc * sx, fyc * sy)))
         return [self.cree_noeud(xc, yc, aretes) for ((xc, yc), aretes) in noeuds_dict.items()]
 
-    def cree_noeud(self, xc, yc, aretes) -> Noeud:
+    def cree_noeud(self, xc:int, yc:int, aretes:list[Arete]) -> Noeud:
         """
         renvoie le noeud associé au point (xc, yc) rempli des arêtes données
 
@@ -73,7 +73,7 @@ class Carte:
             ret = Intersection_X(pos, aretes)
         return ret
     
-    def est_noeud(self, xc, yc) -> bool:
+    def est_noeud(self, xc:int, yc:int) -> bool:
         """
         Renvoie True si la position de la carte en (xc, yc) est un noeud, False sinon
 
@@ -242,7 +242,7 @@ class Carte:
             rx -= 1
         return (rx, ry)
     
-    def set_dirs_depuis(self, xc, yc):
+    def set_dirs_depuis(self, xc:int, yc:int) -> set[(int, int)]:
         """
         package les directions posables depuis (xc, yc) dans un set généré aléatoirement pour changer l'ordre des explorations de direction
 
@@ -474,7 +474,7 @@ class Carte:
                 changements.append((xc, yc))
             self.applique_changements(changements)
             
-    def composante_connexe_valide(self, composante):
+    def composante_connexe_valide(self, composante:list[(int, int)]) -> bool:
         """
         renvoie un booléen indiquant si la composante connexe (supposée faite de routes) est valide
 
@@ -483,7 +483,7 @@ class Carte:
         """
         return any(self.case_bord_valide(xc, yc) for (xc, yc) in composante)
 
-    def entree_sortie_possible(self):
+    def entree_sortie_possible(self) -> bool:
         """
         renvoie True si la carte a au moins 2 entrées/sortie séparées, False sinon
 
@@ -497,7 +497,7 @@ class Carte:
                     total += 1
         return total >= 2
 
-    def charger_carte(nom_fichier):
+    def charger_carte(nom_fichier:str):
         """
         charge la carte contenue dans le fichier du nom nom_fichier dans le dossier routes
 
@@ -559,7 +559,7 @@ class Carte:
 
         return carte
     
-    def sauvegarder_carte(self, nom_fichier):
+    def sauvegarder_carte(self, nom_fichier:str):
         """
         sauvegarde la carte actuelle dans le fichier de nom nom_fichier dans le dossier routes
 

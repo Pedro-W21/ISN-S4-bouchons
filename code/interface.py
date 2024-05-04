@@ -870,7 +870,7 @@ class App(ctk.CTk):
             ret = NOIR
         return ret
 
-    def couleur_de_curseur(self, xc, yc):
+    def couleur_de_curseur(self, xc:int, yc:int):
         """
         renvoie la couleur de la case à afficher dans le canvas en fonction de si il est possible de poser une route dessus
 

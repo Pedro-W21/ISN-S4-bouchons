@@ -456,16 +456,32 @@ class Carte:
             if len(changements) == 0:
                 bon = True
         
-        changements = []
+        
         composantes = self.trouve_composantes_connexes()
-        if len(composantes) > 1:
+        while len(composantes) > 1:
+            changements = []
             id_plus_petite = 0
             for i in range(len(composantes)):
-                if len(composantes[i]) < len(composantes[id_plus_petite]):
+                if len(composantes[i]) < len(composantes[id_plus_petite]) or not self.composante_connexe_valide(composantes[i]):
                     id_plus_petite = i
             for xc, yc in composantes[id_plus_petite]:
                 changements.append((xc, yc))
-        self.applique_changements(changements)
+            self.applique_changements(changements)
+            composantes = self.trouve_composantes_connexes()
+        if len(composantes) == 1 and not self.composante_connexe_valide(composantes[0]):
+            changements = []
+            for xc, yc in composantes[0]:
+                changements.append((xc, yc))
+            self.applique_changements(changements)
+            
+    def composante_connexe_valide(self, composante):
+        """
+        renvoie un booléen indiquant si la composante connexe (supposée faite de routes) est valide
+
+        input : composante, liste de tuples de coordonnée
+        return : booléen, True si valide, False sinon
+        """
+        return any(self.case_bord_valide(xc, yc) for (xc, yc) in composante)
 
     def entree_sortie_possible(self):
         """

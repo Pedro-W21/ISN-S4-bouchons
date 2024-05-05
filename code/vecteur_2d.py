@@ -47,11 +47,10 @@ class Vecteur2D:
         elif type(rhs) == float or type(rhs) == int or type(rhs) == np.float64:
             return Vecteur2D(self.x * rhs, self.y * rhs)
         else:
-            print(type(rhs))
             raise TypeError("GROSSE ERREUR DE TYPE ICI AUSSI")
         
     def __truediv__(self, rhs):
-        if type(rhs) == float or type(rhs) == int:
+        if type(rhs) == float or type(rhs) == int or type(rhs) == np.float64:
             return Vecteur2D(self.x / rhs, self.y / rhs)
         else:
             raise TypeError("GROSSE ERREUR DE TYPE ICI AUSSI")

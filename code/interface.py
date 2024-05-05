@@ -59,6 +59,7 @@ class App(ctk.CTk):
         #initialisation des routes
         self.routes = []
         self.simulation = None
+        self.simulation_en_cours = False
         self.mode_avant = "rien"
         self.mode_affichage = "edition"
         self.largeur_carte = 10
@@ -245,6 +246,7 @@ class App(ctk.CTk):
         nom = self.nom_route_combox.get()
         carte = Carte.charger_carte(nom)
         if carte != None:
+            self.stop_simulation()
             self.largeur_carte = carte.largeur
             self.hauteur_carte = carte.hauteur
             self.grille_route = carte.grille
@@ -368,6 +370,7 @@ class App(ctk.CTk):
         effets secondaires : changement et écrasement de la carte stockée dans self.grille_route, et affichage de la nouvelle carte dans le canvas
         """
         if self.mode_affichage == "edition":
+            self.stop_simulation()
             self.largeur_carte = int(self.largeur_x_scale_gen.get())
             self.hauteur_carte = int(self.hauteur_y_scale_gen.get())
             noeuds = int(self.nb_noeuds_scale_gen.get())
@@ -457,8 +460,8 @@ class App(ctk.CTk):
         paramètres : aucun
         :return: aucun
         """
-        print(f"longueur {int(self.largeur_x_scale.get())}, largeur : {int(self.hauteur_y_scale.get())}")
-
+        #print(f"longueur {int(self.largeur_x_scale.get())}, largeur : {int(self.hauteur_y_scale.get())}")
+        self.stop_simulation()
         if not self.en_train_dafficher :
 
             self.en_train_dafficher = True #pour savoir si on a affiché la grille
@@ -477,13 +480,24 @@ class App(ctk.CTk):
             self.affiche_carte_dans_canvas()
             self.en_train_dafficher = False
 
-    def lance_simulation(self, event):
-        self.filtre_correction_carte()
+    def lance_simulation(self, event = None):
+        """
+        lance la simulation si la carte actuelle associée est valide
 
-        carte = Carte(self.largeur_carte,self.hauteur_carte,self.grille_route)
-        self.simulation = Simulation(carte, int(self.nombre_voiture_scale.get()), self.niveau_agressivite.get())
+        input : event, inutilisé mais nécessaire pour utiliser cette fonction en callback
+        return : rien
 
-        self.mode_affichage = "simulation"
+        effets secondaires : changement de mode d'utilisation du canvas
+        """
+        
+        if self.carte_valide():
+            self.filtre_correction_carte()
+            carte = Carte(self.largeur_carte,self.hauteur_carte,self.grille_route)
+            self.simulation = Simulation(carte, int(self.nombre_voiture_scale.get()), self.niveau_agressivite.get())
+
+            self.mode_affichage = "simulation"
+        else:
+            messagebox.showinfo("Erreur de simulation", "La carte actuelle n'est pas utilisable pour une simulation")
 
     ########## TABVIEW PARAMETRES ##########
     def tabview_parametres_voitures(self):
@@ -498,7 +512,7 @@ class App(ctk.CTk):
 
         self.nombre_voitures_Label = ctk.CTkLabel(master=self.parametres, text="nb voitures selectionnées")
         self.nombre_voitures_Label.pack(side=TOP, expand=True, fill="x")
-        self.nombre_voitures_Label_affichees = ctk.CTkLabel(master=self.parametres, text=f"{10}")
+        self.nombre_voitures_Label_affichees = ctk.CTkLabel(master=self.parametres, text=f"{1}")
         self.nombre_voitures_Label_affichees.pack(side=TOP, expand=True, fill="x")
         self.nombre_voiture_scale = ctk.CTkSlider(master=self.parametres, from_=1, to=100, command=self.afficher_scale_voitures)
         self.nombre_voiture_scale.pack(side=TOP, expand=True, fill="x")
@@ -515,9 +529,9 @@ class App(ctk.CTk):
         self.niveau_agressivite.set(10)
         self.niveau_agressivite.pack(side=TOP, expand=True, fill="x")
 
-        self.lance_simu_button = ctk.CTkButton(master=self.parametres, text="lancer simulation de test")
+        self.lance_simu_button = ctk.CTkButton(master=self.parametres, text="Lancer une simulation")
         self.lance_simu_button.pack(side=TOP, expand=True, fill="x")
-        self.lance_simu_button.bind("<Button-1>", self.lance_simulation)
+        self.lance_simu_button.bind("<Button-1>", self.pause_play_simulation)
 
         self.stop_simu_button = ctk.CTkButton(master=self.parametres, text="arrêter simulation")
         self.stop_simu_button.pack(side=TOP, expand=True, fill="x")
@@ -529,9 +543,40 @@ class App(ctk.CTk):
 
         self.bool_carte_affichee = False
     
-    def stop_simulation(self, event):
-        self.mode_affichage = "edition"
+    def pause_play_simulation(self, event):
+        """
+        permet de mettre en pause la simulation ou de la relancer si elle est en pause
+        input : event, inutilisé mais nécessaire pour utiliser cette fonction en callback
+        return : rien
 
+        effets secondaires : changement de l'état de pause de la simulation, qui affecte la mise à jour de celle-ci
+        """
+        if self.simulation == None:
+            self.lance_simulation()
+            if self.simulation != None:
+                self.simulation_en_cours = True
+                self.lance_simu_button.configure(text="Mettre en pause la simulation")
+        elif self.simulation_en_cours:
+            self.simulation_en_cours = False
+            self.lance_simu_button.configure(text="Reprendre la simulation")
+        else:
+            self.simulation_en_cours = True
+            self.lance_simu_button.configure(text="Mettre en pause la simulation")
+
+    def stop_simulation(self, event=None):
+        """
+        arrête la simulation en cours
+
+        input : event, inutilisé mais nécessaire pour utiliser cette fonction en callback
+        return : rien
+
+        effets secondaires : modification de l'affichage dans le canvas et élimination de la simulation actuelle
+        """
+        self.mode_affichage = "edition"
+        for voit in self.voitures_canvas:
+            self.canvas_affichage.delete(voit)
+        self.voitures = []
+        self.lance_simu_button.configure(text="Lancer une simulation")
         self.simulation = None
 
     def afficher_scale_voitures(self, event):
@@ -546,6 +591,10 @@ class App(ctk.CTk):
         self.nombre_voitures_Label_affichees.configure(text=f"{str(int(nb_voitures))}")
 
         self.niveau_agressivite_Label_affichees.configure(text=f"{str(int(niveau_agressivite))}")
+
+        if self.simulation != None:
+            self.simulation.mettre_a_jour_nombre_voiture(int(nb_voitures))
+            self.simulation.mettre_a_jour_agressivite(niveau_agressivite/100.0)
         
     def affichage_france(self, event):
         """
@@ -622,8 +671,8 @@ class App(ctk.CTk):
         effets secondaires : rajout de route en mode édition avec mise à jour de l'affichage si besoin
         """
         if self.mode_affichage == "edition":
-            
             self.rajoute_route_click(event)
+
         elif self.mode_affichage == "simulation":
             pass
     def fonction_clique_droit_canvas(self, event=None):
@@ -652,7 +701,8 @@ class App(ctk.CTk):
         if self.mode_affichage == "edition":
             self.surligne_case_selectionnee()
         elif self.mode_affichage == "simulation" and self.simulation != None:
-            self.simulation.update(environnement_actif=True)
+            if self.simulation_en_cours:
+                self.simulation.update(environnement_actif=True)
             self.affiche_sim()
         self.after(50, self.constant_canvas_update)
 
@@ -700,7 +750,8 @@ class App(ctk.CTk):
         sx, sy = Noeud.size.get_x(), Noeud.size.get_y()
         if len(self.voitures_canvas) != len(self.voitures) or len(self.voitures) == 0:
             self.voitures:list[Voiture] = self.simulation.recuperer_voitures()
-            self.canvas_affichage.delete(self.voitures_canvas)
+            for voit in self.voitures_canvas:
+                self.canvas_affichage.delete(voit)
             self.voitures_canvas = []
             for voiture in self.voitures:
                 pos, angle = voiture.recuperer_position()
@@ -819,7 +870,7 @@ class App(ctk.CTk):
             ret = NOIR
         return ret
 
-    def couleur_de_curseur(self, xc, yc):
+    def couleur_de_curseur(self, xc:int, yc:int):
         """
         renvoie la couleur de la case à afficher dans le canvas en fonction de si il est possible de poser une route dessus
 
@@ -963,6 +1014,16 @@ class App(ctk.CTk):
         self.grille_route = carte.grille
         self.affiche_carte_dans_canvas()
 
+    def carte_valide(self):
+        """
+        renvoie un booléen indiquant si la carte actuelle en mémoire est valide pour une simulation
+
+        input : rien
+        return : booléen, True si
+        """
+        carte = Carte(self.largeur_carte, self.hauteur_carte, self.grille_route.copy())
+        carte.filtre_correction_carte()
+        return (carte.grille != np.zeros((self.largeur_carte, self.hauteur_carte))).any()
 
 if __name__ == "__main__":
     os.chdir(dirname(abspath(__file__)))

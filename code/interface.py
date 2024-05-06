@@ -507,9 +507,7 @@ class App(ctk.CTk):
 
         :return: aucun
         """
-
-
-
+        
         self.nombre_voitures_Label = ctk.CTkLabel(master=self.parametres, text="nb voitures selectionnées")
         self.nombre_voitures_Label.pack(side=TOP, expand=True, fill="x")
         self.nombre_voitures_Label_affichees = ctk.CTkLabel(master=self.parametres, text=f"{1}")
@@ -894,6 +892,7 @@ class App(ctk.CTk):
         effets secondaires : mise à jour de l'affichage de la carte, de self.xo, self.yo l'origine de la carte dans le canvas, self.grille_canvas et de self.fini_affichage
         """
         if self.largeur_canvas != self.canvas_affichage.winfo_width() or self.hauteur_canvas != self.canvas_affichage.winfo_height() or not self.fini_affichage:
+            self.voitures_canvas = []
             self.fini_affichage = True
             self.calcul_echelle()
             self.xo, self.yo = (max(self.hauteur_carte - self.largeur_carte, 0) * self.echelle) // 2, (max(self.largeur_carte - self.hauteur_carte, 0) * self.echelle) // 2

@@ -122,14 +122,15 @@ class Simulation:
                                 aretes_connectees.append((noeud_arrivee, arete1))
             self.graphe[noeud_courant] = aretes_connectees
           
-    def update(self, environnement_actif = False):
+    def update(self, environnement_actif = True):
         #Si on veut générer + de voitures
         if environnement_actif:
             voitures_actives = self.recuperer_voitures()
             if self.nombre_voiture > len(self.voitures) or len(voitures_actives) < len(self.voitures):
                 self.activer_voitures()
             for voiture in voitures_actives:
-                print("\n\n===============================\nTOUR DE ", voiture.couleur)
+                # print("\n\n===============================\nTOUR DE ", voiture.couleur)
+                print("VOITURE", voiture.couleur, "POSITION", voiture.position)
                 voiture.update()
         else:
             pass

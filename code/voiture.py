@@ -8,7 +8,9 @@ from gestionnaire_vitesse import GestionnaireVitesse
 
 class Voiture:
 
-    size = Vecteur2D(3.86, 2.14) # m [longueur, largeur]
+    #size = Vecteur2D(3.86, 2.14) # m [longueur, largeur]
+    size = Vecteur2D(2, 1.75) # m [longueur, largeur]
+    
     distance_marge_securite = size.x + size.y
 
     def __init__(self, id: int, graphe: dict):
@@ -18,11 +20,12 @@ class Voiture:
         
 
     def demarrage(self, agressivite: float, noeud_depart: Noeud, noeud_arrivee: Noeud):
+        print(noeud_depart.position/Noeud.size.x)
 
         self.position = noeud_depart.position
-        self.direction = Vecteur2D(0, 0)
-        self.direction_prochain_chemin = Vecteur2D(0, 0)
 
+
+        
         self.affiche = True
 
         self.noeud_depart: Noeud = noeud_depart
@@ -57,7 +60,11 @@ class Voiture:
 
         self.gestionnaire_vitesse = GestionnaireVitesse(self)
 
-        self.update_orientation()
+
+        self.direction = (self.arete_actuelle.position_arrivee - self.arete_actuelle.position_depart).unitaire()
+        self.ancienne_direction = self.direction
+        self.direction_prochain_chemin = Vecteur2D(0, 0)
+        
         self.update_orientation_prochain_chemin()
 
         self.arete_actuelle.push_voiture(self)
@@ -66,6 +73,8 @@ class Voiture:
         self.ancient_usagers = {}
 
         self.etat = GestionnaireVitesse.ACCELERATION
+        print(self.couleur)
+
 
     def update(self):
         self.update_position_graphe()
@@ -79,7 +88,7 @@ class Voiture:
         voiture_obstacle, distance_voiture_obstacle = self.trouver_voiture_sur_mon_chemin()
         noeuds_obstacles_longueur: list[tuple[Noeud, float]] = self.trouver_noeuds_sur_mon_chemin()
 
-        print("Voici mes obstacles :\nVoitures ? ", voiture_obstacle, distance_voiture_obstacle, "\nNoeuds ? ", noeuds_obstacles_longueur)
+        # print("Voici mes obstacles :\nVoitures ? ", voiture_obstacle, distance_voiture_obstacle, "\nNoeuds ? ", noeuds_obstacles_longueur)
         
         # Si il n'y pas d'obstacles
         if not voiture_obstacle and (not noeuds_obstacles_longueur):
@@ -197,7 +206,8 @@ class Voiture:
         return self.gestionnaire_vitesse.NOEUD+noeud.nom
         
     def update_position_graphe(self):
-        noeud_depasse: Noeud = self.depasse_noeud()
+        self.depasse_noeud()
+        noeud_depasse: Noeud = self.changement_arete()
         # si on depasse un noeud
         if noeud_depasse:
             #print("Voitures dans l'arete actuelle : ",self.arete_actuelle.voitures)
@@ -225,7 +235,6 @@ class Voiture:
                 # update les variables de position sur le graphes
                 self.ancienne_arete = self.arete_actuelle
                 self.arete_actuelle = self.trouver_arete_entre_noeuds(self.chemin[0], self.chemin[1])
-                self.update_orientation()
                 # si le prochain noeud n'est pas une entré-sortie
                 if type(self.chemin[1]) != EntreeSortie:
                     self.prochaine_arete = self.trouver_arete_entre_noeuds(self.chemin[1], self.chemin[2])
@@ -238,38 +247,45 @@ class Voiture:
                 self.ancienne_arete.voitures.remove(self)
                 # print("Je viens de me retirer : ",self.arete_actuelle.voitures)
 
+
     def update_position(self):
         distance_parcourue, self.vitesse, self.etat = self.gestionnaire_vitesse.recuperer_position_etat()
 
+        distance_au_point = (self.arete_actuelle.position_arrivee - self.position).norme_manathan()
         reste_distance = 0
-        if self.direction.projection(abs(self.direction)).valeur_projetee() >= 0:
-            if self.direction*distance_parcourue+self.position > self.arete_actuelle.position_arrivee.projection(self.direction).valeur_projetee():
-                reste_distance = distance_parcourue - (self.arete_actuelle.position_arrivee - self.position).projection(self.direction).valeur_projetee()
-        else:
-            if abs(self.direction)*distance_parcourue+self.position < self.arete_actuelle.position_arrivee.projection(abs(self.direction)).valeur_projetee():
-                reste_distance = distance_parcourue - (self.arete_actuelle.position_arrivee - self.position).projection(self.direction).valeur_projetee()
+        
+        if distance_parcourue >= distance_au_point:
+            reste_distance = distance_parcourue - distance_au_point
+            distance_parcourue = distance_au_point
+        
+        print("Distance totale parcourue", distance_parcourue, " Selon la prochaine arête ", reste_distance)
+        print("J'update ma position : ", self.position)
 
-        self.position = (self.position + (self.direction*(distance_parcourue-reste_distance))+ (self.direction_prochain_chemin*reste_distance))
+        self.position = self.position + (self.direction * distance_parcourue) + (self.direction_prochain_chemin * reste_distance)
+        
 
+        print("Nouveau : ", self.position)
+        print("Vitesse : " ,self.vitesse)
+        print()
+    
     def depasse_noeud(self):
+        vecteur = (self.arete_actuelle.position_arrivee - self.position).unitaire()
+        print("Vecteur :", vecteur, "Direction", self.direction)
+        if vecteur != self.direction:
+            print('dépassement noeud')
+            self.update_orientation()
+
+    def changement_arete(self):
         # selon de la voiture renvoie si elle a dépassé le prochain point sur le chemin
-        print("Je dépasse un noeud")
+        # print("Je dépasse un noeud")
         prochain_noeud = self.chemin[1]
-
-        if self.direction_prochain_chemin == Vecteur2D(1, 0):
-            if self.position.x >= prochain_noeud.position.x + prochain_noeud.size.x:
-                return prochain_noeud
-        elif self.direction_prochain_chemin == Vecteur2D(-1, 0):
-            if self.position.x < prochain_noeud.position.x - prochain_noeud.size.x:
-                return prochain_noeud
-        elif self.direction_prochain_chemin == Vecteur2D(0, 1):
-            if self.position.y > prochain_noeud.position.y + prochain_noeud.size.y:
-                return prochain_noeud
-        elif self.direction_prochain_chemin == Vecteur2D(0, -1):
-            if self.position.y < prochain_noeud.position.y - prochain_noeud.size.y:
-                return prochain_noeud
-        return None
-
+        taille_sup = prochain_noeud.size.x/2
+        
+        distance = (prochain_noeud.position - self.position).norme()
+        if ((prochain_noeud.position - self.position).projection(self.direction).valeur_projetee() < 0 or self.direction != self.ancienne_direction) and distance > taille_sup:
+            print("J'ai changé d'arête")
+            return prochain_noeud
+        
     def recherche_chemin(self, noeud_depart: Noeud):
         # print("Noeud depart", noeud_depart, "Noeud arrivee", self.noeud_arrivee)
         distances = {noeud_depart: 0}
@@ -329,7 +345,8 @@ class Voiture:
         return self.direction, self.direction_prochain_chemin
             
     def update_orientation(self):
-        self.direction = (self.arete_actuelle.position_arrivee - self.arete_actuelle.position_depart).unitaire()
+        self.ancienne_direction = self.direction
+        self.direction = self.direction_prochain_chemin
 
     def update_orientation_prochain_chemin(self):
         if self.prochaine_arete is not None:
@@ -386,7 +403,7 @@ class Voiture:
             elif noeud_depart:
                 arete = self.trouver_arete_entre_noeuds(noeud_depart, noeud_arrivee)
                 if arete.a_des_voitures():
-                    if arete.voitures[0] != self and len(arete.voitures) > 1:
+                    if arete.voitures[0] != self and len(arete.voitures) > 2:
                         voiture_obstacle = arete.voitures[arete.voitures.index(self)-1]
                         longueur += (self.position - voiture_obstacle.position).norme_manathan()
                         # print("Voiture obstacle trouvée, dans le noeud de départ", voiture_obstacle, longueur)

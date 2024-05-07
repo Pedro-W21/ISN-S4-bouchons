@@ -23,6 +23,7 @@ class Noeud:
     
     def retirer_usager(self, voiture):
         if self.usagers.get(voiture, False):
+            print(f"Retrait de {voiture.couleur} à {self.nom}")
             del self.usagers[voiture]
 
     def get_poids(self):
@@ -39,6 +40,7 @@ class Noeud:
         return self.usagers
     
     def enregistrer_usager(self, voiture, orientation, intention):
+        print(f"Ajout de {voiture.couleur} à {self.nom}")
         self.usagers[voiture] = [orientation, intention]
 
     def voie_est_libre(self, voiture):
@@ -178,10 +180,5 @@ class EntreeSortie(Noeud):
     def voie_est_libre(self):
         if self.usagers:
             return False
-        else: 
+        else:
             return True
-    
-    def update(self):
-        for voiture in self.usagers:
-            if voiture.distance_a_entite(self) < voiture.distance_marge_securite:
-                del self.usagers[voiture]

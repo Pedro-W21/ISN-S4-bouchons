@@ -1,5 +1,4 @@
 import math
-import random
 import time
 from arete import Arete
 from vecteur_2d import Vecteur2D
@@ -19,7 +18,7 @@ class Voiture:
         self.graphe = graphe
         
 
-    def demarrage(self, agressivite: float, noeud_depart: Noeud, noeud_arrivee: Noeud):
+    def demarrage(self, agressivite: float, noeud_depart: Noeud, noeud_arrivee: Noeud, couleur: str):
         print(noeud_depart.position/Noeud.size.x)
 
         self.position = noeud_depart.position
@@ -44,7 +43,7 @@ class Voiture:
         self.acceleration_demarage = 0.6 #m/s^2 -> acceleration pour passer de 0 à 0.01 m/s en 1/60s
 
         #Variables primaires (ne changeront plus)
-        self.couleur = self.genere_couleur()
+        self.couleur = couleur
         chemin, distances = self.recherche_chemin(noeud_depart)
         self.chemin: list[Noeud] = [None] + chemin
         self.distances = distances
@@ -73,7 +72,6 @@ class Voiture:
         self.ancient_usagers = {}
 
         self.etat = GestionnaireVitesse.ACCELERATION
-        print(self.couleur)
 
 
     def update(self):
@@ -87,8 +85,6 @@ class Voiture:
         distance_voiture_obstacle: float
         voiture_obstacle, distance_voiture_obstacle = self.trouver_voiture_sur_mon_chemin()
         noeuds_obstacles_longueur: list[tuple[Noeud, float]] = self.trouver_noeuds_sur_mon_chemin()
-
-        # print("Voici mes obstacles :\nVoitures ? ", voiture_obstacle, distance_voiture_obstacle, "\nNoeuds ? ", noeuds_obstacles_longueur)
         
         # Si il n'y pas d'obstacles
         if not voiture_obstacle and (not noeuds_obstacles_longueur):
@@ -112,6 +108,7 @@ class Voiture:
 
         
         else:
+            print("Voici mes obstacles :\nVoitures ? ", voiture_obstacle, distance_voiture_obstacle, "\nNoeuds ? ", noeuds_obstacles_longueur)
             # si il y a des obstacles
             desactiver_courbes = [GestionnaireVitesse.ROULE,
                                     GestionnaireVitesse.ACCELERATION]
@@ -249,7 +246,9 @@ class Voiture:
 
 
     def update_position(self):
+        print("Avec l'état : ", self.etat)
         distance_parcourue, self.vitesse, self.etat = self.gestionnaire_vitesse.recuperer_position_etat()
+        print("Nouvelle vitesse calculée : ", self.vitesse)
 
         distance_au_point = (self.arete_actuelle.position_arrivee - self.position).norme_manathan()
         reste_distance = 0
@@ -427,10 +426,6 @@ class Voiture:
                         noeuds.append((noeud_devant, longueur))
                 longueur += (self.chemin[i+1].position - self.chemin[i].position).norme_manathan()
         return noeuds
-
-    def genere_couleur(self):
-        couleurs = ['red', 'blue', 'green', 'yellow', 'orange', 'purple', 'pink', 'brown', 'cyan', 'magenta']
-        return random.choice(couleurs)
 
     def recuperer_position(self):
         angle = -math.atan2(self.direction.y, self.direction.x)

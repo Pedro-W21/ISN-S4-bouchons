@@ -5,7 +5,7 @@ from noeud import Intersection_T, Intersection_X, Virage, Noeud, EntreeSortie
 from vecteur_2d import Vecteur2D
 import numpy as np
 from carte import Carte
-from random import choice, shuffle
+from random import choice, shuffle, random
 
 class Simulation:
 
@@ -18,7 +18,7 @@ class Simulation:
         
         
         self.noeuds: list[Noeud] = carte.into_aretes_noeuds()
-
+        self.couleurs = ['red', 'blue', 'green', 'yellow', 'orange', 'purple', 'pink', 'brown', 'cyan', 'magenta']
         self.aretes: list[Arete] = []
         for noeud in self.noeuds:
             for arete in noeud.aretes:
@@ -53,18 +53,19 @@ class Simulation:
             sorties = self.entrees_sorties.copy()
             sorties.remove(entree)
             sortie = choice(sorties)
-            voiture.demarrage(self.genere_agressivite(), entree, sortie)
+            voiture.demarrage(self.genere_agressivite(), entree, sortie, self.genere_couleur())
 
     def genere_id(self) -> int:
         return len(self.voitures)
- 
+    
+    def genere_couleur(self):
+        couleur = choice(self.couleurs)
+        return couleur
+    
     def trouver_entrees_libres(self) -> list[EntreeSortie]:
-        entrees_libres: list[EntreeSortie] = self.entrees_sorties.copy()
-        for noeud in entrees_libres:
-            if not noeud.voie_est_libre():
-                entrees_libres.remove(noeud)      
+        entrees_libres = [noeud for noeud in self.entrees_sorties if noeud.voie_est_libre()]
         return entrees_libres
-
+    
     def genere_agressivite(self):
         agressivite = np.random.normal(self.moyenne_agressivite, self.ecart_type_agressivite)
         return min(max(0.0,agressivite),1.0)
@@ -129,7 +130,10 @@ class Simulation:
             if self.nombre_voiture > len(self.voitures) or len(voitures_actives) < len(self.voitures):
                 self.activer_voitures()
             for voiture in voitures_actives:
-                # print("\n\n===============================\nTOUR DE ", voiture.couleur)
+                entrees_libres = self.trouver_entrees_libres()
+                if entrees_libres:
+                    print("Entrées libres : ", entrees_libres)
+                print("\n\n===============================\nTOUR DE ", voiture.couleur)
                 print("VOITURE", voiture.couleur, "POSITION", voiture.position)
                 voiture.update()
         else:
@@ -143,7 +147,9 @@ class Simulation:
         self.nombre_voiture = nombre_voiture
 
     def recuperer_voitures(self):
-        return [voiture for voiture in self.voitures if voiture.affiche]
+        liste_voitures = [voiture for voiture in self.voitures if voiture.affiche]
+        print("Voitures actives :",liste_voitures)
+        return liste_voitures
     
     def recuperer_voitures_non_actives(self):
         return [voiture for voiture in self.voitures if not voiture.affiche]

@@ -216,6 +216,7 @@ class Voiture:
         else:
             return
         decalage = self.direction.abs()*(-self.direction.valeur_projetee()*self.direction_prochain_chemin.valeur_projetee())
+        decalage = 0
         vecteur = (self.chemin[1].position+ decalage*Noeud.size.get_x()/4 - self.position).unitaire()
         if vecteur != self.direction:
             print("J'ai dépassé un truc !!!")

@@ -45,7 +45,14 @@ class GestionnaireVitesse:
                         del self.courbes[nom_courbe]
                     else:
                         self.courbes[nom_courbe] = []
+    
     def cree_courbe(self, distance_finale: float, vitesse_initiale: float, vitesse_finale: float, acceleration: float = 8):
+        print("Création courbe : ")
+        print("vitesse_initiale", vitesse_initiale)
+        print("vitesse_finale", vitesse_finale)
+        print("acceleration", acceleration)
+        print("distance_finale", distance_finale)
+
         return Courbe(0, distance_finale, vitesse_initiale, vitesse_finale, acceleration)
 
     def genere_courbe_suivie_voiture(self, voiture_obstacle, distance_voiture_obstacle_initiale: float):
@@ -112,8 +119,17 @@ class GestionnaireVitesse:
         vitesse = min(min(list(vitesses.keys())),100)
 
         self.courbe_courante, position = vitesses[vitesse]
+        
+        
+        self.etat = self.trouver_etat_par_courbe(vitesses[vitesse][0])
+        self.vitesse = vitesse
+        self.position = position
+        
+        print("etat", self.etat)
+        print("vitesse", vitesse)
+        print("position", position)
 
-        return vitesse, position, self.trouver_etat_par_courbe(vitesses[vitesse][0])
+        return vitesse, position, self.etat
     
     def courbe_est_active(self, nom_courbe: str) -> bool:
         return self.courbes.get(nom_courbe, False)

@@ -43,7 +43,7 @@ class Noeud:
         print(f"Ajout de {voiture.couleur} à {self.nom}")
         self.usagers[voiture] = [orientation, intention]
 
-    def voie_est_libre(self, voiture):
+    def voie_est_libre(self):
         return True
     
     def est_empruntee(self) -> bool:

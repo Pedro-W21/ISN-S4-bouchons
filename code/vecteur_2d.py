@@ -15,7 +15,12 @@ class Vecteur2D:
         return self.x+self.y
     
     def __add__(self, rhs):
-        return Vecteur2D(self.x + rhs.x, self.y + rhs.y)
+        if type(rhs) == Vecteur2D:
+            return Vecteur2D(self.x + rhs.x, self.y + rhs.y)
+        elif isinstance(rhs, (float, int, np.float64)):
+            return Vecteur2D(self.x + rhs, self.y + rhs)
+        else:
+            raise TypeError("GROSSE ERREUR DE TYPE ICI AUSSI")
     
     def __sub__(self, rhs):
         return Vecteur2D(self.x - rhs.x, self.y - rhs.y)
@@ -32,9 +37,12 @@ class Vecteur2D:
     def unitaire(self):
         return self/self.norme()
 
+    def abs(self):
+        return Vecteur2D(abs(self.x), abs(self.y))
+    
     def projection(self, vect):
         # projection uniquement sur +-x ou +-y je crois
-        if type(vect) == Vecteur2D:
+        if isinstance(vect, (Vecteur2D)):
             vect = vect.unitaire()
             return Vecteur2D(vect.x * self.x, vect.y * self.y)
         else:
@@ -44,13 +52,13 @@ class Vecteur2D:
     def __mul__(self, rhs):
         if type(rhs) == Vecteur2D:
             return self.scalaire(rhs)
-        elif type(rhs) == float or type(rhs) == int or type(rhs) == np.float64:
+        elif isinstance(rhs, (float, int, np.float64)):
             return Vecteur2D(self.x * rhs, self.y * rhs)
         else:
             raise TypeError("GROSSE ERREUR DE TYPE ICI AUSSI")
         
     def __truediv__(self, rhs):
-        if type(rhs) == float or type(rhs) == int or type(rhs) == np.float64:
+        if isinstance(rhs, (float, int, np.float64)):
             return Vecteur2D(self.x / rhs, self.y / rhs)
         else:
             raise TypeError("GROSSE ERREUR DE TYPE ICI AUSSI")
@@ -72,6 +80,6 @@ class Vecteur2D:
     
     def __lt__(self, number):
         return self.x < number or self.y < number
-
-    def __lt__(self, number):
+    
+    def __le__(self, number):
         return self.x <= number or self.y <= number

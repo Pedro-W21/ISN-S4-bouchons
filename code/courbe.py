@@ -46,14 +46,14 @@ class Courbe:
     def result_e(self, t: float) -> tuple[float, float]:
         temps_normalise = (t - self.t0) / self.plage_t
         if temps_normalise > 1:
-            raise ValueError("vitesse doit être entre vitesse_depart et vitesse_arrivee")
+            raise ValueError("temps doit être entre temps de depart et temps d'arrivée")
         vitesse_normalise = fonction_vitesse_e(temps_normalise)
         position_normalise = fonction_position_e(temps_normalise)
 
         vitesse = vitesse_normalise * self.plage_vitesse + self.vitesse_initiale
-        position = position_normalise * self.plage_vitesse + self.position_initiale
+        position = position_normalise * self.plage_vitesse - self.last_position
 
-        self.last_position = position
+        self.last_position += position
 
         return vitesse, position
     
@@ -66,12 +66,16 @@ class Courbe:
         vitesse_normalise = fonction_vitesse_lineaire(temps_normalise)
         position_normalise = fonction_position_lineaire(temps_normalise)
         vitesse = vitesse_normalise * self.plage_vitesse + self.vitesse_initiale
-        position = position_normalise * self.plage_vitesse + self.position_initiale
+        position = position_normalise * self.plage_vitesse - self.last_position
 
-        self.last_position = position
+        self.last_position += position
 
         return vitesse, position
 
     def __eq__(self, courbe) -> bool:
-        print("Attributs des courbes", self, courbe)
         return (self.vitesse_initiale, self.vitesse_finale, self.position_initiale, self.position_finale) == (courbe.vitesse_initiale, courbe.vitesse_finale, courbe.acceleration, courbe.position_initiale, courbe.position_finale)
+
+
+if __name__ == "__main__":
+
+    pass

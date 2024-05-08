@@ -15,7 +15,7 @@ class Simulation:
     ENTREE_SORTIE = "ENTREE_SORTIE"
 
     def __init__(self, carte: Carte, nombre_voiture: float, agressivite: float) -> None:
-        
+        self.i = 0
         
         self.noeuds: list[Noeud] = carte.into_aretes_noeuds()
         self.couleurs = ['red', 'blue', 'green', 'yellow', 'orange', 'purple', 'pink', 'brown', 'cyan', 'magenta']
@@ -46,14 +46,17 @@ class Simulation:
             self.voitures.append(nouvelle_voiture)
         
         voitures_non_active = self.recuperer_voitures_non_actives()
-        while len(voitures_non_active) > 0 and len(entrees_libres) > 0:
+        voitures_active = self.recuperer_voitures()
+        while len(voitures_non_active) > 0 and len(entrees_libres) > 0 and len(voitures_active) < self.nombre_voiture :
             voiture = voitures_non_active.pop()
             entree = choice(entrees_libres)
             entrees_libres.remove(entree)
             sorties = self.entrees_sorties.copy()
             sorties.remove(entree)
             sortie = choice(sorties)
-            voiture.demarrage(self.genere_agressivite(), entree, sortie, self.genere_couleur())
+            couleur = self.genere_couleur()
+            voiture.demarrage(self.genere_agressivite(), entree, sortie, couleur)
+            print("Spawn de", voiture.couleur, voiture.id)
 
     def genere_id(self) -> int:
         return len(self.voitures)
@@ -125,19 +128,20 @@ class Simulation:
           
     def update(self, environnement_actif = True):
         #Si on veut générer + de voitures
+        self.i+=1
         if environnement_actif:
             voitures_actives = self.recuperer_voitures()
             if self.nombre_voiture > len(self.voitures) or len(voitures_actives) < len(self.voitures):
                 self.activer_voitures()
             for voiture in voitures_actives:
                 entrees_libres = self.trouver_entrees_libres()
-                if entrees_libres:
-                    print("Entrées libres : ", entrees_libres)
-                print("\n\n===============================\nTOUR DE ", voiture.couleur)
-                print("VOITURE", voiture.couleur, "POSITION", voiture.position)
+                print("\n\n===============================\nTOUR DE ", voiture.couleur, voiture.id, voiture.affiche)
+                print("Position :", voiture.position)
                 voiture.update()
         else:
             pass
+        # if self.i == 25:
+            # exit()
     
     def mettre_a_jour_agressivite(self, agressivite: float):
         # agressivite de 0 à 1
@@ -148,7 +152,6 @@ class Simulation:
 
     def recuperer_voitures(self):
         liste_voitures = [voiture for voiture in self.voitures if voiture.affiche]
-        print("Voitures actives :",liste_voitures)
         return liste_voitures
     
     def recuperer_voitures_non_actives(self):

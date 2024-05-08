@@ -111,23 +111,25 @@ if __name__ == "__main__":
 
     elif test == "test4":
         
-        courbe = Courbe(0, 50/3.6, 0, 40, 8)
+        courbe = Courbe(0, 1, 0, 0.017, 2.222222)
         t = time.time()
+        start = t
 
 
         positions = []
         vitesses = []
         temps = []
-
+        
+        position = 0
 
         while True:
             
         
             try:
                 
-                vitesse, position = courbe.result_e(t)
-                
-                temps.append(t)
+                vitesse, e = courbe.result_e(t)
+                position += e
+                temps.append(t - start)
                 positions.append(position)
                 vitesses.append(vitesse)
 

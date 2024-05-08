@@ -12,6 +12,7 @@ from noeud import Noeud
 from arete import Arete
 from simulation import Simulation
 from voiture import Voiture
+import time
 
 def from_rgb(rgb):
     """prend un tuple rgb et le transforme en string héxadécimal de couleur tkinter
@@ -35,7 +36,8 @@ class App(ctk.CTk):
     def __init__(self):
         super().__init__()
 
-        self.geometry('1200x800')
+        self.geometry('1200x850')
+        self.minsize(1000, 800)
         self.title('Interface du début')
         #self.bind('<Motion>', self.motion)
 
@@ -61,6 +63,7 @@ class App(ctk.CTk):
         self.mode_affichage = "edition"
         self.largeur_carte = 10
         self.hauteur_carte = 10
+        self.ms_entre_update = 50
         self.fini_affichage = False
         self.en_train_dafficher = False
 
@@ -517,8 +520,6 @@ class App(ctk.CTk):
         self.nombre_voiture_scale = ctk.CTkSlider(master=self.parametres, from_=1, to=25, command=self.afficher_scale_voitures)
         self.nombre_voiture_scale.pack(side=TOP, expand=True, fill="x")
         self.nombre_voiture_scale.set(1)
-        
-
 
         self.niveau_agressivite_Label = ctk.CTkLabel(master=self.parametres, text="niveau d'agressivité")
         self.niveau_agressivite_Label.pack(side=TOP, expand=True, fill="x")
@@ -532,6 +533,25 @@ class App(ctk.CTk):
         self.niveau_agressivite = ctk.CTkSlider(master=self.parametres, from_=1, to=100, command=self.afficher_scale_voitures)
         self.niveau_agressivite.set(10)
         self.niveau_agressivite.pack(side=TOP, expand=True, fill="x")
+
+        self.iter_par_sec_Label = ctk.CTkLabel(master=self.parametres, text="Itérations de simulation par seconde")
+        self.iter_par_sec_Label.pack(side=TOP, expand=True, fill="x")
+        self.iter_par_sec_stringvar = ctk.StringVar(master=self.parametres)
+        self.iter_par_sec_stringvar.trace_add("write", self.affiche_entry_ips)
+        self.iter_par_sec_entry = ctk.CTkEntry(master=self.parametres, textvariable=self.iter_par_sec_stringvar)
+        self.iter_par_sec_entry.pack(side=TOP)
+        self.iter_par_sec_entry.insert(0, "10")
+        self.iter_par_sec = ctk.CTkSlider(master=self.parametres, from_=5, to=30, command=self.afficher_scale_voitures)
+        self.iter_par_sec.set(10)
+        self.iter_par_sec.pack(side=TOP, expand=True, fill="x")
+
+        self.vitesse_de_simu_Label = ctk.CTkLabel(master=self.parametres, text="Vitesse de simulation")
+        self.vitesse_de_simu_Label.pack(side=TOP, expand=True, fill="x")
+        self.vitesse_de_simu_Label_affichees = ctk.CTkLabel(master=self.parametres, text=f"{1.0}")
+        self.vitesse_de_simu_Label_affichees.pack(side=TOP, expand=True, fill="x")
+        self.vitesse_de_simu = ctk.CTkSlider(master=self.parametres, from_=0.25, to=2.0, number_of_steps=7, command=self.afficher_scale_voitures)
+        self.vitesse_de_simu.set(1.0)
+        self.vitesse_de_simu.pack(side=TOP, expand=True, fill="x")
 
         self.lance_simu_button = ctk.CTkButton(master=self.parametres, text="Lancer une simulation")
         self.lance_simu_button.pack(side=TOP, expand=True, fill="x")
@@ -558,6 +578,24 @@ class App(ctk.CTk):
         """
         if self.simulation != None and not self.simulation_en_cours:
             self.simulation.update(environnement_actif=True)
+
+    def recupere_nombre_entier(self, texte):
+        """
+        prends un mot et récupère un nombre entier ou une chaîne de chars vide
+        input : texte, str à filtrer
+        return : un str contenant que des chiffres ou rien
+
+        """
+        nombres = "0123456789"
+        a_enlever = []
+        for (pos, chara) in enumerate(texte):
+            if chara not in nombres:
+                a_enlever.append(pos)
+        resultat = ""
+        for pos in range(len(texte)):
+            if pos not in a_enlever:
+                resultat += texte[pos]
+        return resultat
             
     def affiche_entry_nb_voitures(self, event=None, arg2=None, arg3=None):
         """
@@ -568,15 +606,7 @@ class App(ctk.CTk):
         effets secondaires : modification du scale de nombre de voitures 
         """
         texte = self.nombre_voitures_stringvar.get()
-        nombres = "0123456789"
-        a_enlever = []
-        for (pos, chara) in enumerate(texte):
-            if chara not in nombres:
-                a_enlever.append(pos)
-        resultat = ""
-        for pos in range(len(texte)):
-            if pos not in a_enlever:
-                resultat += texte[pos]
+        resultat = self.recupere_nombre_entier(texte)
         try:
             resultat = str(min(25, int(resultat)))
             self.nombre_voitures_stringvar.set(resultat)
@@ -587,7 +617,7 @@ class App(ctk.CTk):
         except Exception:
             if resultat != "":
                 print("problémo dans affiche_entry_voitures")
-
+    
     def affiche_entry_agressivite(self, event=None, arg2=None, arg3=None):
         """
         met à jour le scale de l'agressivité si besoin
@@ -597,15 +627,7 @@ class App(ctk.CTk):
         effets secondaires : modification du scale d'agressivité
         """
         texte = self.niveau_agressivite_stringvar.get()
-        nombres = "0123456789"
-        a_enlever = []
-        for (pos, chara) in enumerate(texte):
-            if chara not in nombres:
-                a_enlever.append(pos)
-        resultat = ""
-        for pos in range(len(texte)):
-            if pos not in a_enlever:
-                resultat += texte[pos]
+        resultat = self.recupere_nombre_entier(texte)
         try:
             resultat = str(min(100,int(resultat)))
             self.niveau_agressivite_stringvar.set(resultat)
@@ -613,6 +635,24 @@ class App(ctk.CTk):
             self.niveau_agressivite.set(int( resultat))
             if self.simulation != None:
                 self.simulation.mettre_a_jour_agressivite(agressivite)
+        except Exception:
+            if resultat != "":
+                print("problémo dans affiche_entry_agressivite")
+
+    def affiche_entry_ips(self, event=None, arg2=None, arg3=None):
+        """
+        met à jour le scale de l'agressivité si besoin
+        input : event, arg2, arg3 : inutilisé mais nécessaire pour utiliser cette fonction en callback de trace
+        return : rien
+
+        effets secondaires : modification du scale d'agressivité
+        """
+        texte = self.iter_par_sec_stringvar.get()
+        resultat = self.recupere_nombre_entier(texte)
+        try:
+            resultat = str(min(30,int(resultat)))
+            self.iter_par_sec_stringvar.set(resultat)
+            self.iter_par_sec.set(int( resultat))
         except Exception:
             if resultat != "":
                 print("problémo dans affiche_entry_agressivite")
@@ -661,14 +701,21 @@ class App(ctk.CTk):
         """
         nb_voitures = self.nombre_voiture_scale.get()
         niveau_agressivite = self.niveau_agressivite.get()
+        ips = self.iter_par_sec.get()
+        self.ms_entre_update = int((1.0/ips) * 1000)
+        vitesse_simu = self.vitesse_de_simu.get()
 
         self.nombre_voitures_entry.delete(0, END)
         self.nombre_voitures_entry.insert(0, f"{str(int(nb_voitures))}")
-        # self.nombre_voitures_entry.configure(text=f"{str(int(nb_voitures))}")
 
         self.niveau_agressivite_entry.delete(0, END)
         self.niveau_agressivite_entry.insert(0, f"{str(int(niveau_agressivite))}")
-        # self.niveau_agressivite_Label_affichees.configure(text=f"{str(int(niveau_agressivite))}")
+
+        self.iter_par_sec_entry.delete(0, END)
+        self.iter_par_sec_entry.insert(0, f"{str(int(ips))}")
+
+        self.vitesse_de_simu_Label_affichees.configure(text=f"{str(vitesse_simu)}")
+
         if self.simulation != None:
             self.simulation.mettre_a_jour_nombre_voiture(int(nb_voitures))
             self.simulation.mettre_a_jour_agressivite(niveau_agressivite/100.0)
@@ -775,13 +822,18 @@ class App(ctk.CTk):
 
         effets secondaires : surlignage conditionnel de la case en dessous du curseur en mode edition, et mise à jour de la simulation et de l'affichage des voitures en mode simulation 
         """
+        debut = time.monotonic()
         if self.mode_affichage == "edition":
             self.surligne_case_selectionnee()
         elif self.mode_affichage == "simulation" and self.simulation != None:
             if self.simulation_en_cours:
                 self.simulation.update(environnement_actif=True)
             self.affiche_sim()
-        self.after(50, self.constant_canvas_update)
+        duree = int((time.monotonic() - debut) * 1000.0)
+        ms_jusquau_prochain = 1
+        if duree < self.ms_entre_update:
+            ms_jusquau_prochain = self.ms_entre_update - duree
+        self.after(ms_jusquau_prochain, self.constant_canvas_update)
 
     def aff_to_state_voiture(self, voiture:Voiture) -> str:
         """

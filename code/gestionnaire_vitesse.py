@@ -47,13 +47,12 @@ class GestionnaireVitesse:
                         self.courbes[nom_courbe] = []
     
     def cree_courbe(self, distance_finale: float, vitesse_initiale: float, vitesse_finale: float, acceleration: float = 8):
-        print("Création courbe : ")
+        print("Création courbe gestionnaire_vitese : ")
         print("vitesse_initiale", vitesse_initiale)
         print("vitesse_finale", vitesse_finale)
-        print("acceleration", acceleration)
-        print("distance_finale", distance_finale)
+        print("distance_finale", distance_finale, "\n")
 
-        return Courbe(0, distance_finale, vitesse_initiale, vitesse_finale, acceleration)
+        return Courbe(vitesse_initiale, vitesse_finale, 0, distance_finale, self.voiture.acceleration)
 
     def genere_courbe_suivie_voiture(self, voiture_obstacle, distance_voiture_obstacle_initiale: float):
         vitesse, position = voiture_obstacle.gestionnaire_vitesse.courbe_courante.result_e(time.time())
@@ -86,11 +85,11 @@ class GestionnaireVitesse:
         self.genere_courbe_acceleration(noeud.vitesse_max, nom_courbe=self.ACCELERATION+self.NOEUD+noeud.nom)
 
     def genere_courbe_roule_vitesse_max(self, distance_finale: Vecteur2D, vitesse_max: float, nom_courbe = ROULE):
-        courbe = self.cree_courbe(distance_finale, self.voiture.vitesse, vitesse_max)
+        courbe = self.cree_courbe(999999999, self.voiture.vitesse, vitesse_max)
         self.courbes[nom_courbe].append((courbe, self.voiture.position))
 
     def genere_courbe_roule_arete(self, arete: Arete):
-        self.genere_courbe_roule_vitesse_max((self.voiture.position - arete.position_arrivee).norme_manathan(), arete.vitesse_max)
+        self.genere_courbe_roule_vitesse_max((self.voiture.position - arete.position_arrivee).norme_manathan() + arete.size.x * 3, arete.vitesse_max)
     
     def genere_courbe_roule_noeud(self, noeud: Noeud):
         self.genere_courbe_roule_vitesse_max((self.voiture.position - noeud.position).norme_manathan() + noeud.size[0]/2, noeud.vitesse_max, nom_courbe=self.ROULE+self.NOEUD+noeud.nom)
@@ -113,8 +112,9 @@ class GestionnaireVitesse:
     
     def recuperer_position_etat(self):
         vitesses: dict[float: Courbe] = {}
+        print("liste_courbes", len(self.liste_courbes()))
         for courbe in self.liste_courbes():
-            vitesse, position = courbe.result_e(time.time())
+            vitesse, position, test = courbe.result_e_test(time.time())
             vitesses[vitesse] = courbe, position
         vitesse = min(min(list(vitesses.keys())),100)
 
@@ -124,10 +124,6 @@ class GestionnaireVitesse:
         self.etat = self.trouver_etat_par_courbe(vitesses[vitesse][0])
         self.vitesse = vitesse
         self.position = position
-        
-        print("etat", self.etat)
-        print("vitesse", vitesse)
-        print("position", position)
 
         return vitesse, position, self.etat
     

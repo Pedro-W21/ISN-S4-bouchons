@@ -111,7 +111,7 @@ if __name__ == "__main__":
 
     elif test == "test4":
         
-        courbe = Courbe(0, 1, 0, 0.017, 2.222222)
+        courbe = Courbe(0, 6, 0, 1, 0.5)
         t = time.time()
         start = t
 
@@ -121,25 +121,23 @@ if __name__ == "__main__":
         temps = []
         
         position = 0
-
+        i = 0
         while True:
-            
-        
-            try:
-                
-                vitesse, e = courbe.result_e(t)
-                position += e
-                temps.append(t - start)
-                positions.append(position)
-                vitesses.append(vitesse)
+            vitesse, e, test = courbe.result_e_test(t)
 
-                time.sleep(1/60)
+            print("distance_parcourue", e)
+            print("vitesse", vitesse)
+            position += e
+            temps.append(t - start)
+            positions.append(position)
+            vitesses.append(vitesse)
 
-                t = time.time()
-                
+            time.sleep(1/60)
 
-            except ValueError:
-                print("Erreur")
+            t = time.time()
+            if test:
+                i+=1
+            if i > 6:
                 break
 
         

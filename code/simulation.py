@@ -38,6 +38,12 @@ class Simulation:
         self.ecart_type_agressivite = 0.25
 
     def activer_voitures(self):
+        """
+        Active les voitures sur les entrées libres s'il en manque et génère de nouvelles voitures si l'interface en veut davantage.
+
+        Returns:
+            None
+        """
         entrees_libres = self.trouver_entrees_libres()
 
         #Si on a besoin de créer de nouvelles voitures
@@ -46,8 +52,8 @@ class Simulation:
             self.voitures.append(nouvelle_voiture)
         
         voitures_non_active = self.recuperer_voitures_non_actives()
-        voitures_active = self.recuperer_voitures()
-        while len(voitures_non_active) > 0 and len(entrees_libres) > 0 and len(voitures_active) < self.nombre_voiture :
+        nb_voitures_active = len(self.recuperer_voitures())
+        while len(voitures_non_active) > 0 and len(entrees_libres) > 0 and nb_voitures_active < self.nombre_voiture :
             voiture = voitures_non_active.pop()
             entree = choice(entrees_libres)
             entrees_libres.remove(entree)
@@ -56,24 +62,57 @@ class Simulation:
             sortie = choice(sorties)
             couleur = self.genere_couleur()
             voiture.demarrage(self.genere_agressivite(), entree, sortie, couleur)
-            print("Spawn de", voiture.couleur, voiture.id)
+            nb_voitures_active+=1
 
     def genere_id(self) -> int:
+        """
+        Génère un identifiant unique pour une nouvelle voiture.
+
+        Returns:
+            int: L'identifiant unique généré.
+        """
         return len(self.voitures)
     
     def genere_couleur(self):
+        """
+        Sélectionne aléatoirement une couleur pour une nouvelle voiture.
+
+        Returns:
+            str: La couleur choisie.
+        """
         couleur = choice(self.couleurs)
         return couleur
     
     def trouver_entrees_libres(self) -> list[EntreeSortie]:
+        """
+        Trouve les entrées libres où les voitures peuvent être activées.
+
+        Returns:
+            list[EntreeSortie]: Une liste des entrées libres.
+        """
         entrees_libres = [noeud for noeud in self.entrees_sorties if noeud.voie_est_libre()]
         return entrees_libres
     
     def genere_agressivite(self):
+        """
+        Génère aléatoirement un niveau d'agressivité pour une nouvelle voiture.
+
+        Returns:
+            float: Le niveau d'agressivité généré.
+        """
         agressivite = np.random.normal(self.moyenne_agressivite, self.ecart_type_agressivite)
         return min(max(0.0,agressivite),1.0)
 
     def import_configuration_carte(self, file_path: str):
+        """
+        Importe la configuration de la carte à partir d'un fichier JSON.
+
+        Args:
+            file_path (str): Le chemin du fichier JSON contenant la configuration de la carte.
+
+        Returns:
+            None
+        """
         with open(file_path, 'r') as file:
             json_file = json.load(file)
 
@@ -114,7 +153,12 @@ class Simulation:
                 self.noeuds.append(Intersection_T(Vecteur2D(intersection[0], intersection[1]), aretes_reliee))
 
     def genere_graphe(self):
-        
+        """
+        Génère le graphe représentant la carte routière avec les noeuds et les arêtes connectés.
+
+        Returns:
+            None
+        """
         for noeud_courant in self.noeuds:
             self.graphe[noeud_courant] = []
             aretes_connectees = []
@@ -127,6 +171,15 @@ class Simulation:
             self.graphe[noeud_courant] = aretes_connectees
           
     def update(self, environnement_actif = True):
+        """
+        Met à jour l'environnement : active les voitures si nécessaire et met à jour chaque voiture active.
+
+        Args:
+            environnement_actif (bool, optional): Indique si l'environnement est actif. Par défaut, True.
+
+        Returns:
+            None
+        """
         #Si on veut générer + de voitures
         self.i+=1
         if environnement_actif:
@@ -144,15 +197,45 @@ class Simulation:
             # exit()
     
     def mettre_a_jour_agressivite(self, agressivite: float):
+        """
+        Met à jour le niveau moyen d'agressivité des voitures dans l'environnement.
+
+        Args:
+            agressivite (float): Le nouveau niveau d'agressivité (compris entre 0 et 1).
+
+        Returns:
+            None
+        """
         # agressivite de 0 à 1
         self.moyenne_agressivite = min(max(0.0,agressivite),1.0)
 
     def mettre_a_jour_nombre_voiture(self, nombre_voiture: int):
+        """
+        Met à jour le nombre de voitures dans l'environnement.
+
+        Args:
+            nombre_voiture (int): Le nouveau nombre de voitures.
+
+        Returns:
+            None
+        """
         self.nombre_voiture = nombre_voiture
 
     def recuperer_voitures(self):
+        """
+        Récupère la liste des voitures actives dans l'environnement.
+
+        Returns:
+            list: La liste des voitures actives.
+        """
         liste_voitures = [voiture for voiture in self.voitures if voiture.affiche]
         return liste_voitures
     
     def recuperer_voitures_non_actives(self):
+        """
+        Récupère la liste des voitures non actives dans l'environnement.
+
+        Returns:
+            list: La liste des voitures non actives.
+        """
         return [voiture for voiture in self.voitures if not voiture.affiche]

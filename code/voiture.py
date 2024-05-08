@@ -19,7 +19,18 @@ class Voiture:
         
 
     def demarrage(self, agressivite: float, noeud_depart: Noeud, noeud_arrivee: Noeud, couleur: str):
-        
+        """
+        Initialise les paramètres nécessaires au démarrage d'un véhicule.
+
+        Args:
+            agressivite (float): Niveau d'agressivité du conducteur, compris entre 0 et 1.
+            noeud_depart (Noeud): Noeud de départ du véhicule.
+            noeud_arrivee (Noeud): Noeud d'arrivée du véhicule.
+            couleur (str): Couleur du véhicule.
+
+        Returns:
+            None
+        """
         self.affiche = True
 
         self.noeud_depart: Noeud = noeud_depart
@@ -29,10 +40,10 @@ class Voiture:
 
         self.agressivite = agressivite # compris entre 0 et 1
         
-        self.modulation_acceleration = 3 * agressivite
+        self.modulation_acceleration = 0.1 * agressivite
 
-        self.acceleration = (5 + self.modulation_acceleration) / 3.6
-        self.deceleration = (5 + self.modulation_acceleration)  / 3.6
+        self.acceleration = (2 + self.modulation_acceleration)
+        self.deceleration = (2 + self.modulation_acceleration)
 
         self.deceleration_demarage = 0.6 #m/s^2 -> acceleration pour passer de 0 à 0.01 m/s en 1/60s
         self.acceleration_demarage = 0.6 #m/s^2 -> acceleration pour passer de 0 à 0.01 m/s en 1/60s
@@ -70,11 +81,23 @@ class Voiture:
 
 
     def update(self):
+        """
+        Met à jour l'orientation de la voiture, son appartenance aux objets de la map, la vitesse et sa position.
+
+        Returns:
+            None
+        """
         self.update_position_graphe()
         self.update_vitesse()
         self.update_position()
         
     def update_vitesse(self):
+        """
+        Met à jour les courbes de vitesse suivies du véhicule en fonction des obstacles détectés sur sa trajectoire.
+
+        Returns:
+            None
+        """
         # identification des obstacles dans ma zone de sécurité
         voiture_obstacle: Voiture = None
         distance_voiture_obstacle: float = None
@@ -90,15 +113,24 @@ class Voiture:
                                     GestionnaireVitesse.ARRET]
             self.gestionnaire_vitesse.desactiver_courbes(desactiver_courbes)
             # si on est pas à la vitesse max
+            
             if self.vitesse < self.arete_actuelle.vitesse_max:
+                print("Je suis en train d'accélérer")
                 if not self.gestionnaire_vitesse.courbe_est_active(self.gestionnaire_vitesse.ACCELERATION):
                     self.gestionnaire_vitesse.genere_courbe_acceleration_arete(self.arete_actuelle)
+                    self.gestionnaire_vitesse.desactiver_courbes([GestionnaireVitesse.ROULE, GestionnaireVitesse.FREINAGE])
             elif self.vitesse == self.arete_actuelle.vitesse_max:
+                print("Je suis en train de rouler")
                 if not self.gestionnaire_vitesse.courbe_est_active(self.gestionnaire_vitesse.ROULE):
                     self.gestionnaire_vitesse.genere_courbe_roule_arete(self.arete_actuelle)
+                    self.gestionnaire_vitesse.desactiver_courbes([GestionnaireVitesse.ACCELERATION, GestionnaireVitesse.FREINAGE])
+
             else:
+                print("Je suis en train de freiner")
                 if not self.gestionnaire_vitesse.courbe_est_active(self.gestionnaire_vitesse.FREINAGE):
                     self.gestionnaire_vitesse.genere_courbe_freinage_arete(self.arete_actuelle)
+                    self.gestionnaire_vitesse.desactiver_courbes([GestionnaireVitesse.ACCELERATION, GestionnaireVitesse.ROULE])
+
 
         
         else:
@@ -179,10 +211,11 @@ class Voiture:
                         elif self.vitesse == noeud_obstacle.vitesse_max:
                             if not self.gestionnaire_vitesse.courbe_est_active(self.gestionnaire_vitesse.ROULE+self.id_noeud(noeud_obstacle)):
                                 self.gestionnaire_vitesse.genere_courbe_roule_noeud(noeud_obstacle)
+
                         else:
                             if not self.gestionnaire_vitesse.courbe_est_active(self.gestionnaire_vitesse.FREINAGE+self.id_noeud(noeud_obstacle)):
                                 self.gestionnaire_vitesse.genere_courbe_freinage_noeud(noeud_obstacle)
-            
+                                
             # si il n'y a pas d'obstacle noeud
             else:
                 desactiver_courbes = [GestionnaireVitesse.FREINAGE,
@@ -190,19 +223,42 @@ class Voiture:
                 self.gestionnaire_vitesse.desactiver_courbes(desactiver_courbes)
     
     def id_noeud(self, noeud: Noeud):
+        """
+        Génère le nom unique d'une courbe pour un noeud donné.
+
+        Args:
+            noeud (Noeud): Le noeud pour lequel générer le nom.
+
+        Returns:
+            str: Le nom unique de la courbe associée au noeud donné
+        """
         return self.gestionnaire_vitesse.NOEUD+noeud.nom
         
     def update_position_graphe(self):
+        """
+        Ensemble des fonctions à appeler pour mettre à jour l'orientation, le chemin et les arêtes.
+
+        Returns:
+            None
+        """
         self.depasse_noeud()
         self.usage_noeuds()
         
 
 
     def update_position(self):
-        distance_parcourue, self.vitesse, self.etat = self.gestionnaire_vitesse.recuperer_position_etat()
+        """
+        Met à jour la position du véhicule en fonction de sa vitesse et de son état actuel.
+
+        Returns:
+            None
+        """
+        self.vitesse, distance_parcourue, self.etat = self.gestionnaire_vitesse.recuperer_position_etat()
 
         distance_au_point = (self.arete_actuelle.position_arrivee - self.position).norme_manathan()
         reste_distance = 0
+
+        print("vitesse", self.vitesse, "distance parcourue", distance_parcourue, self.etat)
         
         if distance_parcourue >= distance_au_point:
             reste_distance = distance_parcourue - distance_au_point
@@ -211,6 +267,12 @@ class Voiture:
         self.position = self.position + (self.direction * distance_parcourue) + (self.direction_prochain_chemin * reste_distance)
     
     def depasse_noeud(self):
+        """
+        Détermine si le véhicule dépasse un noeud sur son chemin et met à jour toutes les arêtes en fonction
+
+        Returns:
+            None
+        """
         if len(self.chemin) > 1:
             noeud_a_depasser = self.chemin[1]
         else:
@@ -219,7 +281,6 @@ class Voiture:
         decalage = 0
         vecteur = (self.chemin[1].position+ decalage*Noeud.size.get_x()/4 - self.position).unitaire()
         if vecteur != self.direction:
-            print("J'ai dépassé un truc !!!")
             self.update_orientation()
             
             chemin, distances = self.recherche_chemin(noeud_a_depasser)
@@ -237,11 +298,14 @@ class Voiture:
 
                 self.arete_actuelle.push_voiture(self)
                 self.ancienne_arete.voitures.remove(self)
-        return
 
     def usage_noeuds(self):
-        # selon de la voiture renvoie si elle a dépassé le prochain point sur le chemin
-        # print("Je dépasse un noeud")
+        """
+        Vérifie si le véhicule cesse d'utiliser un noeud sur son chemin et le retire en conséquence.
+
+        Returns:
+            Noeud: Le noeud retiré par le véhicule, s'il y en a un.
+        """
         noeud_a_seloigner = self.chemin[0]
         taille_sup = noeud_a_seloigner.size.x/2+self.size.x/2
         distance = (noeud_a_seloigner.position - self.position).norme_manathan()
@@ -250,11 +314,18 @@ class Voiture:
                 self.affiche = False
                 self.arete_actuelle.voitures.remove(self)
             noeud_a_seloigner.retirer_usager(self)
-            if noeud_a_seloigner == self.noeud_depart:
-                print("Je libère mon point de départ")
             return noeud_a_seloigner
         
     def recherche_chemin(self, noeud_depart: Noeud):
+        """
+        Recherche le chemin optimal entre un noeud de départ et le noeud d'arrivée du véhicule.
+
+        Args:
+            noeud_depart (Noeud): Le noeud de départ.
+
+        Returns:
+            tuple: Une paire contenant le chemin optimal (une liste de noeuds) et les distances réelles associées.
+        """
         # print("Noeud depart", noeud_depart, "Noeud arrivee", self.noeud_arrivee)
         if noeud_depart == self.noeud_arrivee:
             return [noeud_depart], {noeud_depart: 0}
@@ -296,29 +367,82 @@ class Voiture:
         return parcours[::-1], distances
 
     def distance_securite(self, vitesse: float) -> float:
+        """
+        Calcule la distance de sécurité en fonction d'une vitesse.
+
+        Args:
+            vitesse (float): Une vitesse.
+
+        Returns:
+            float: La distance de sécurité.
+        """
         return self.distance_deceleration(vitesse, 0) + self.distance_marge_securite
 
     def distance_deceleration(self, vitesse_initiale, vitesse_finale) -> float:
+        """
+        Calcule la distance de décélération nécessaire pour passer d'une vitesse initiale à une vitesse finale.
+
+        Args:
+            vitesse_initiale (float): La vitesse initiale du véhicule en m/s.
+            vitesse_finale (float): La vitesse finale du véhicule en m/s.
+
+        Returns:
+            float: La distance de décélération.
+        """
         temps_deceleration = abs(vitesse_initiale/3.6 - vitesse_finale/3.6) / self.deceleration
         distance = 1/2 * self.deceleration * temps_deceleration**2 + vitesse_initiale * temps_deceleration
         return distance
     
     def distance_arret(self):
+        """
+        Calcule la distance d'arrêt en fonction de la vitesse actuelle.
+
+        Returns:
+            float: La distance d'arrêt.
+        """
         return self.distance_deceleration(self.vitesse, 0) + self.distance_marge_securite
         
     def distance_acceleration(self, vitesse_initiale, vitesse_finale) -> float:
+        """
+        Calcule la distance d'accélération nécessaire pour passer d'une vitesse initiale à une vitesse finale.
+
+        Args:
+            vitesse_initiale (float): La vitesse initiale du véhicule en m/s.
+            vitesse_finale (float): La vitesse finale du véhicule en m/s.
+
+        Returns:
+            float: La distance de décélération.
+        """
         temps_acceleration = abs(vitesse_finale/3.6 - vitesse_initiale/3.6) / self.acceleration
         distance = 1/2 * self.acceleration * temps_acceleration**2 + vitesse_initiale * temps_acceleration
         return distance
 
     def intention(self):
+        """
+        Retourne les intentions de déplacement du véhicule.
+
+        Returns:
+            tuple: Une paire contenant la direction actuelle et la direction vers la prochaine destination.
+        """
         return self.direction, self.direction_prochain_chemin
             
     def update_orientation(self):
+        """
+        Met à jour les directions en partant du principe qu'on vient de changer d'arête
+
+        Returns:
+            None
+        """
         self.ancienne_direction = self.direction
         self.direction = self.direction_prochain_chemin
 
     def update_orientation_prochain_chemin(self):
+        """
+        Cacule la direction de l'arête suivante
+
+        Returns:
+            None
+        """
         if self.prochaine_arete is not None:
             self.direction_prochain_chemin = (self.prochaine_arete.position_arrivee - self.prochaine_arete.position_depart).unitaire()
         else:
@@ -326,9 +450,14 @@ class Voiture:
 
     def trouver_arete_entre_noeuds(self, noeud_depart: Noeud, noeud_arrivee: Noeud) -> Arete:
         """
-        Renvoie l'arête commune entre deux noeuds.
-        Paramètres: noeud_depart (Noeud), noeud_arrivee (Noeud)
-        Renvoie: arete (Arete)
+        Trouve l'arête reliant deux noeuds donnés.
+
+        Args:
+            noeud_depart (Noeud): Le noeud de départ.
+            noeud_arrivee (Noeud): Le noeud d'arrivée.
+
+        Returns:
+            Arete: L'arête reliant les deux noeuds, s'il en existe une. Sinon, retourne None.
         """
         for arete in noeud_depart.aretes:
             for arete2 in noeud_arrivee.aretes:
@@ -337,9 +466,24 @@ class Voiture:
         return None
 
     def distance_entite(self, position_entite: Vecteur2D):
+        """
+        Calcule la distance entre la position actuelle du véhicule et une entité donnée.
+
+        Args:
+            position_entite (Vecteur2D): La position de l'entité.
+
+        Returns:
+            float: La distance entre le véhicule et l'entité.
+        """
         return (position_entite - self.position).norme_manathan()
 
     def trouver_voiture_sur_mon_chemin(self):
+        """
+        Trouve une voiture sur le chemin du véhicule qui se trouve dans sa zone de sécurité.
+
+        Returns:
+            tuple: Une paire contenant la voiture obstacle et la distance jusqu'à elle, si elle existe. Sinon, une paire de None.
+        """
         # renvoie ou pas une voiture qui est dans ma distance de securite et sur mon chemin
 
         longueur = 0
@@ -384,6 +528,12 @@ class Voiture:
         return None, None
 
     def trouver_noeuds_sur_mon_chemin(self):
+        """
+        Trouve tous les noeuds sur le chemin du véhicule qui se trouvent dans sa zone de sécurité.
+
+        Returns:
+            list: Une liste contenant des tuples de noeuds et de distances jusqu'à eux.
+        """
         # renvoie ou pas tous les noeuds qui sont dans ma distance de securite et sur mon chemin
         
         noeuds: list[Noeud] = []
@@ -400,6 +550,12 @@ class Voiture:
         return noeuds
 
     def recuperer_position(self):
+        """
+        Calcule une position selon l'orientation pour placer la voiture sur la droite ou la gauche de la route.
+
+        Returns:
+            tuple: Un tuple contenant la position (Vecteur2D) ajustée et l'angle (float) du véhicule.
+        """
         angle = -math.atan2(self.direction.y, self.direction.x)
         x = self.position.get_x()+Noeud.size.get_x()/4*(math.sin(angle)+2)
         y = self.position.get_y()+Noeud.size.get_y()/4*(math.cos(angle)+2)

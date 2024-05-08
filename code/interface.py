@@ -30,9 +30,6 @@ ROUGE = from_rgb((255,0,0))
 VERT = from_rgb((0,255,0))
 BLUE = from_rgb((170, 170, 255))
 
-
-
-
 class App(ctk.CTk):
 
     def __init__(self):
@@ -510,19 +507,28 @@ class App(ctk.CTk):
         
         self.nombre_voitures_Label = ctk.CTkLabel(master=self.parametres, text="nb voitures selectionnées")
         self.nombre_voitures_Label.pack(side=TOP, expand=True, fill="x")
-        self.nombre_voitures_Label_affichees = ctk.CTkLabel(master=self.parametres, text=f"{1}")
-        self.nombre_voitures_Label_affichees.pack(side=TOP, expand=True, fill="x")
+        self.nombre_voitures_stringvar = ctk.StringVar(master=self.parametres)
+        self.nombre_voitures_stringvar.trace_add("write", self.affiche_entry_nb_voitures)
+        self.nombre_voitures_entry = ctk.CTkEntry(master=self.parametres, textvariable=self.nombre_voitures_stringvar)
+        self.nombre_voitures_entry.pack(side=TOP)
+        self.nombre_voitures_entry.insert(0, "1")
+        # self.nombre_voitures_Label_affichees = ctk.CTkLabel(master=self.parametres, text=f"{1}")
+        # self.nombre_voitures_Label_affichees.pack(side=TOP, expand=True, fill="x")
         self.nombre_voiture_scale = ctk.CTkSlider(master=self.parametres, from_=1, to=25, command=self.afficher_scale_voitures)
         self.nombre_voiture_scale.pack(side=TOP, expand=True, fill="x")
         self.nombre_voiture_scale.set(1)
+        
 
 
         self.niveau_agressivite_Label = ctk.CTkLabel(master=self.parametres, text="niveau d'agressivité")
         self.niveau_agressivite_Label.pack(side=TOP, expand=True, fill="x")
-
-        self.niveau_agressivite_Label_affichees = ctk.CTkLabel(master=self.parametres, text=f"{10}")
-        self.niveau_agressivite_Label_affichees.pack(side=TOP, expand=True, fill="x")
-
+        self.niveau_agressivite_stringvar = ctk.StringVar(master=self.parametres)
+        self.niveau_agressivite_stringvar.trace_add("write", self.affiche_entry_agressivite)
+        self.niveau_agressivite_entry = ctk.CTkEntry(master=self.parametres, textvariable=self.niveau_agressivite_stringvar)
+        self.niveau_agressivite_entry.pack(side=TOP)
+        self.niveau_agressivite_entry.insert(0, "10")
+        # self.niveau_agressivite_Label_affichees = ctk.CTkLabel(master=self.parametres, text=f"{10}")
+        # self.niveau_agressivite_Label_affichees.pack(side=TOP, expand=True, fill="x")
         self.niveau_agressivite = ctk.CTkSlider(master=self.parametres, from_=1, to=100, command=self.afficher_scale_voitures)
         self.niveau_agressivite.set(10)
         self.niveau_agressivite.pack(side=TOP, expand=True, fill="x")
@@ -536,11 +542,81 @@ class App(ctk.CTk):
         self.stop_simu_button.bind("<Button-1>", self.stop_simulation)
 
         self.carte_france_button = ctk.CTkButton(master=self.parametres, text="carte de France de l'agressivité")
-        self.carte_france_button.pack(side=TOP, expand=True, fill="x")
+        # self.carte_france_button.pack(side=TOP, expand=True, fill="x")
         self.carte_france_button.bind('<Button-1>', self.affichage_france)
 
+        self.bind("<space>", self.frame_by_frame)
+
         self.bool_carte_affichee = False
-    
+    def frame_by_frame(self, event=None):
+        """
+        avance la simulation d'une itération si elle est existante et en pause
+        input : event, inutilisé mais nécessaire pour utiliser cette fonction en callback
+        return : rien
+
+        effets secondaires : avancée de la simulation
+        """
+        if self.simulation != None and not self.simulation_en_cours:
+            self.simulation.update(environnement_actif=True)
+            
+    def affiche_entry_nb_voitures(self, event=None, arg2=None, arg3=None):
+        """
+        met à jour le scale du nombre de voitures si l'entry est modifiée
+        input : event, arg2, arg3 : inutilisé mais nécessaire pour utiliser cette fonction en callback de trace
+        return : rien
+
+        effets secondaires : modification du scale de nombre de voitures 
+        """
+        texte = self.nombre_voitures_stringvar.get()
+        nombres = "0123456789"
+        a_enlever = []
+        for (pos, chara) in enumerate(texte):
+            if chara not in nombres:
+                a_enlever.append(pos)
+        resultat = ""
+        for pos in range(len(texte)):
+            if pos not in a_enlever:
+                resultat += texte[pos]
+        try:
+            resultat = str(min(25, int(resultat)))
+            self.nombre_voitures_stringvar.set(resultat)
+            nb_voitures = int(resultat)
+            self.nombre_voiture_scale.set(nb_voitures)
+            if self.simulation != None:
+                self.simulation.mettre_a_jour_nombre_voiture(nb_voitures)
+        except Exception:
+            if resultat != "":
+                print("problémo dans affiche_entry_voitures")
+
+    def affiche_entry_agressivite(self, event=None, arg2=None, arg3=None):
+        """
+        met à jour le scale de l'agressivité si besoin
+        input : event, arg2, arg3 : inutilisé mais nécessaire pour utiliser cette fonction en callback de trace
+        return : rien
+
+        effets secondaires : modification du scale d'agressivité
+        """
+        texte = self.niveau_agressivite_stringvar.get()
+        nombres = "0123456789"
+        a_enlever = []
+        for (pos, chara) in enumerate(texte):
+            if chara not in nombres:
+                a_enlever.append(pos)
+        resultat = ""
+        for pos in range(len(texte)):
+            if pos not in a_enlever:
+                resultat += texte[pos]
+        try:
+            resultat = str(min(100,int(resultat)))
+            self.niveau_agressivite_stringvar.set(resultat)
+            agressivite = int(resultat)/100.0
+            self.niveau_agressivite.set(int( resultat))
+            if self.simulation != None:
+                self.simulation.mettre_a_jour_agressivite(agressivite)
+        except Exception:
+            if resultat != "":
+                print("problémo dans affiche_entry_agressivite")
+
     def pause_play_simulation(self, event):
         """
         permet de mettre en pause la simulation ou de la relancer si elle est en pause
@@ -586,10 +662,13 @@ class App(ctk.CTk):
         nb_voitures = self.nombre_voiture_scale.get()
         niveau_agressivite = self.niveau_agressivite.get()
 
-        self.nombre_voitures_Label_affichees.configure(text=f"{str(int(nb_voitures))}")
+        self.nombre_voitures_entry.delete(0, END)
+        self.nombre_voitures_entry.insert(0, f"{str(int(nb_voitures))}")
+        # self.nombre_voitures_entry.configure(text=f"{str(int(nb_voitures))}")
 
-        self.niveau_agressivite_Label_affichees.configure(text=f"{str(int(niveau_agressivite))}")
-
+        self.niveau_agressivite_entry.delete(0, END)
+        self.niveau_agressivite_entry.insert(0, f"{str(int(niveau_agressivite))}")
+        # self.niveau_agressivite_Label_affichees.configure(text=f"{str(int(niveau_agressivite))}")
         if self.simulation != None:
             self.simulation.mettre_a_jour_nombre_voiture(int(nb_voitures))
             self.simulation.mettre_a_jour_agressivite(niveau_agressivite/100.0)

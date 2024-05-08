@@ -512,7 +512,7 @@ class App(ctk.CTk):
         self.nombre_voitures_Label.pack(side=TOP, expand=True, fill="x")
         self.nombre_voitures_Label_affichees = ctk.CTkLabel(master=self.parametres, text=f"{1}")
         self.nombre_voitures_Label_affichees.pack(side=TOP, expand=True, fill="x")
-        self.nombre_voiture_scale = ctk.CTkSlider(master=self.parametres, from_=1, to=100, command=self.afficher_scale_voitures)
+        self.nombre_voiture_scale = ctk.CTkSlider(master=self.parametres, from_=1, to=25, command=self.afficher_scale_voitures)
         self.nombre_voiture_scale.pack(side=TOP, expand=True, fill="x")
         self.nombre_voiture_scale.set(1)
 
@@ -603,6 +603,7 @@ class App(ctk.CTk):
         if not self.bool_carte_affichee :
 
             self.bool_carte_affichee = True
+
 
             self.france_topLevel= ctk.CTkToplevel(master=self)
             self.france_topLevel.geometry('500x500')
@@ -745,9 +746,8 @@ class App(ctk.CTk):
         tx *= 0.5
         ty *= 0.5
         sx, sy = Noeud.size.get_x(), Noeud.size.get_y()
+        self.voitures:list[Voiture] = self.simulation.recuperer_voitures()
         if len(self.voitures_canvas) != len(self.voitures) or len(self.voitures) == 0:
-            self.voitures:list[Voiture] = self.simulation.recuperer_voitures()
-            print("Les voitures ce tour-ci",self.voitures)
             for voit in self.voitures_canvas:
                 self.canvas_affichage.delete(voit)
             self.voitures_canvas = []

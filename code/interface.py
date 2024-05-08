@@ -577,7 +577,7 @@ class App(ctk.CTk):
         effets secondaires : avancée de la simulation
         """
         if self.simulation != None and not self.simulation_en_cours:
-            self.simulation.update(environnement_actif=True)
+            self.simulation.update(True, (1.0/self.iter_par_sec.get())*self.vitesse_de_simu.get())
 
     def recupere_nombre_entier(self, texte):
         """
@@ -827,7 +827,7 @@ class App(ctk.CTk):
             self.surligne_case_selectionnee()
         elif self.mode_affichage == "simulation" and self.simulation != None:
             if self.simulation_en_cours:
-                self.simulation.update(environnement_actif=True)
+                self.simulation.update(True, (1.0/self.iter_par_sec.get())*self.vitesse_de_simu.get())
             self.affiche_sim()
         duree = int((time.monotonic() - debut) * 1000.0)
         ms_jusquau_prochain = 1

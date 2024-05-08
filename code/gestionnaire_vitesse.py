@@ -1,10 +1,7 @@
-import time
 from courbe import Courbe
 from vecteur_2d import Vecteur2D
 from noeud import Noeud
 from arete import Arete
-
-#TODO LA VITESSE MAX NEST PAS IMPLEMENTEE
 
 class RangeError(Exception):
     
@@ -52,10 +49,10 @@ class GestionnaireVitesse:
         print("vitesse_finale", vitesse_finale)
         print("distance_finale", distance_finale, "\n")
 
-        return Courbe(vitesse_initiale, vitesse_finale, 0, distance_finale, self.voiture.acceleration)
+        return Courbe(vitesse_initiale, vitesse_finale, 0, distance_finale, self.voiture.acceleration, self.voiture.temps_simulation)
 
     def genere_courbe_suivie_voiture(self, voiture_obstacle, distance_voiture_obstacle_initiale: float):
-        vitesse, position = voiture_obstacle.gestionnaire_vitesse.courbe_courante.result_e(time.time())
+        vitesse, position = voiture_obstacle.gestionnaire_vitesse.courbe_courante.result_e(self.voiture.temps_simulation)
         deplacement_voiture_obstacle_total_depuis_t = voiture_obstacle.gestionnaire_vitesse.courbe_courante.position_finale - position
         distance = deplacement_voiture_obstacle_total_depuis_t + distance_voiture_obstacle_initiale - self.voiture.distance_securite(voiture_obstacle.gestionnaire_vitesse.courbe_courante.vitesse_finale)
         courbe = self.cree_courbe(distance, self.voiture.vitesse, voiture_obstacle.gestionnaire_vitesse.courbe_courante.vitesse_finale)
@@ -110,11 +107,11 @@ class GestionnaireVitesse:
     def liste_courbes(self):
         return [courbe for valeurs in self.courbes.values() for courbe, _ in valeurs]
     
-    def recuperer_position_etat(self):
+    def recuperer_position_etat(self) -> tuple[float, float, str]:
         vitesses: dict[float: Courbe] = {}
         print("liste_courbes", len(self.liste_courbes()))
         for courbe in self.liste_courbes():
-            vitesse, position, test = courbe.result_e_test(time.time())
+            vitesse, position, test = courbe.result_e_test(self.voiture.temps_simulation)
             vitesses[vitesse] = courbe, position
         vitesse = min(min(list(vitesses.keys())),100)
 

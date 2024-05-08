@@ -37,6 +37,8 @@ class Simulation:
         self.moyenne_agressivite = agressivite
         self.ecart_type_agressivite = 0.25
 
+        self.temps_simulation = 0
+
     def activer_voitures(self):
         """
         Active les voitures sur les entrées libres s'il en manque et génère de nouvelles voitures si l'interface en veut davantage.
@@ -61,7 +63,7 @@ class Simulation:
             sorties.remove(entree)
             sortie = choice(sorties)
             couleur = self.genere_couleur()
-            voiture.demarrage(self.genere_agressivite(), entree, sortie, couleur)
+            voiture.demarrage(self.genere_agressivite(), entree, sortie, couleur, self.temps_simulation)
             nb_voitures_active+=1
 
     def genere_id(self) -> int:
@@ -170,7 +172,7 @@ class Simulation:
                                 aretes_connectees.append((noeud_arrivee, arete1))
             self.graphe[noeud_courant] = aretes_connectees
           
-    def update(self, environnement_actif = True):
+    def update(self, environnement_actif, delta_temps_simulation):
         """
         Met à jour l'environnement : active les voitures si nécessaire et met à jour chaque voiture active.
 
@@ -181,6 +183,8 @@ class Simulation:
             None
         """
         #Si on veut générer + de voitures
+        self.temps_simulation += delta_temps_simulation
+
         self.i+=1
         if environnement_actif:
             voitures_actives = self.recuperer_voitures()
@@ -190,7 +194,7 @@ class Simulation:
                 entrees_libres = self.trouver_entrees_libres()
                 print("\n\n===============================\nTOUR DE ", voiture.couleur, voiture.id, voiture.affiche)
                 print("Position :", voiture.position)
-                voiture.update()
+                voiture.update(self.temps_simulation)
         else:
             pass
         # if self.i == 25:

@@ -16,7 +16,7 @@ class Noeud:
         self.nom = f"{position.get_x()},{position.get_y()}"
         # self.usagers: dict[Voiture : list[Vecteur2D, Vecteur2D]] = {}
         #                 {voiture : [orientation, direction_prochaine]}
-        self.vitesse_max = 1 # m/s
+        self.vitesse_max = 0.25 # m/s
         temps_deceleration = abs(0 - self.vitesse_max) / 8
         self.distance_securite = 1/2 * (8 / 3.6) * temps_deceleration**2 + 0.5 * self.size.get_x()
         self.aretes = aretes
@@ -24,7 +24,7 @@ class Noeud:
     def retirer_usager(self, voiture):
         if self.usagers.get(voiture, False):
             print(f"Retrait de {voiture.couleur} à {self.nom}")
-            del self.usagers[voiture]
+            self.usagers.pop(voiture)
 
     def get_poids(self):
         return self.size.x / self.get_vitesse_moyenne()

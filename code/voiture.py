@@ -1,5 +1,4 @@
 import math
-import time
 from arete import Arete
 from vecteur_2d import Vecteur2D
 from noeud import Noeud, Virage, Intersection_T, Intersection_X, EntreeSortie
@@ -18,7 +17,7 @@ class Voiture:
         self.graphe = graphe
         
 
-    def demarrage(self, agressivite: float, noeud_depart: Noeud, noeud_arrivee: Noeud, couleur: str):
+    def demarrage(self, agressivite: float, noeud_depart: Noeud, noeud_arrivee: Noeud, couleur: str, temps_simulation):
         """
         Initialise les paramètres nécessaires au démarrage d'un véhicule.
 
@@ -31,6 +30,8 @@ class Voiture:
         Returns:
             None
         """
+
+        self.temps_simulation = temps_simulation
         self.affiche = True
 
         self.noeud_depart: Noeud = noeud_depart
@@ -80,13 +81,20 @@ class Voiture:
         self.etat = GestionnaireVitesse.ACCELERATION
 
 
-    def update(self):
+
+        self.distance_voiture_obstacle: float = 0
+        self.voiture_obstacle: Voiture = None
+        self.noeuds_obstacles_longueur: tuple[Noeud, float] = []
+
+
+    def update(self, temps_simulation: float):
         """
         Met à jour l'orientation de la voiture, son appartenance aux objets de la map, la vitesse et sa position.
 
         Returns:
             None
         """
+        self.temps_simulation = temps_simulation
         self.update_position_graphe()
         self.update_vitesse()
         self.update_position()
@@ -101,9 +109,13 @@ class Voiture:
         # identification des obstacles dans ma zone de sécurité
         voiture_obstacle: Voiture = None
         distance_voiture_obstacle: float = None
-        # voiture_obstacle, distance_voiture_obstacle = self.trouver_voiture_sur_mon_chemin()
-        noeuds_obstacles_longueur: list[tuple[Noeud, float]] = self.trouver_noeuds_sur_mon_chemin()
+
         
+        # voiture_obstacle, distance_voiture_obstacle = self.trouver_voiture_sur_mon_chemin()
+        self.distance_voiture_obstacle = distance_voiture_obstacle
+        self.voiture_obstacle = voiture_obstacle
+        noeuds_obstacles_longueur: list[tuple[Noeud, float]] = self.trouver_noeuds_sur_mon_chemin()
+        self.noeuds_obstacles_longueur = noeuds_obstacles_longueur
         # Si il n'y pas d'obstacles
         if not voiture_obstacle and (not noeuds_obstacles_longueur):
              
@@ -124,7 +136,6 @@ class Voiture:
                 if not self.gestionnaire_vitesse.courbe_est_active(self.gestionnaire_vitesse.ROULE):
                     self.gestionnaire_vitesse.genere_courbe_roule_arete(self.arete_actuelle)
                     self.gestionnaire_vitesse.desactiver_courbes([GestionnaireVitesse.ACCELERATION, GestionnaireVitesse.FREINAGE])
-
             else:
                 print("Je suis en train de freiner")
                 if not self.gestionnaire_vitesse.courbe_est_active(self.gestionnaire_vitesse.FREINAGE):

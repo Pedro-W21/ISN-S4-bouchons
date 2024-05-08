@@ -892,6 +892,8 @@ class App(ctk.CTk):
         effets secondaires : mise à jour de l'affichage de la carte, de self.xo, self.yo l'origine de la carte dans le canvas, self.grille_canvas et de self.fini_affichage
         """
         if self.largeur_canvas != self.canvas_affichage.winfo_width() or self.hauteur_canvas != self.canvas_affichage.winfo_height() or not self.fini_affichage:
+            for voiture in self.voitures_canvas:
+                self.canvas_affichage.delete(voiture)
             self.voitures_canvas = []
             self.fini_affichage = True
             self.calcul_echelle()

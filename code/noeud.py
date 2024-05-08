@@ -16,7 +16,7 @@ class Noeud:
         self.nom = f"{position.get_x()},{position.get_y()}"
         # self.usagers: dict[Voiture : list[Vecteur2D, Vecteur2D]] = {}
         #                 {voiture : [orientation, direction_prochaine]}
-        self.vitesse_max = 40
+        self.vitesse_max = 1.0
         temps_deceleration = abs(0 - self.vitesse_max) / 8
         self.distance_securite = 1/2 * (8 / 3.6) * temps_deceleration**2 + 0.5 * self.size.get_x()
         self.aretes = aretes

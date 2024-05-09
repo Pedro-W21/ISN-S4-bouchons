@@ -31,7 +31,7 @@ class Courbe:
     def result_negatif(self, temps_simuation):
         if temps_simuation > self.temps_depart + self.duree:
             vitesse = self.vitesse_finale
-            position = self.vitesse_finale * (temps_simuation - self.temps_depart) + self.last_position
+            position = self.vitesse_finale * (temps_simuation - self.temps_depart) - self.last_position
         else:
             vitesse = fonction_vitesse_e((temps_simuation - self.temps_depart)/self.duree) * (self.vitesse_finale - self.vitesse_initiale) + self.vitesse_initiale
             position = (1-fonction_position_e((temps_simuation - self.temps_depart)/self.duree)) * abs(self.vitesse_finale - self.vitesse_initiale) * (temps_simuation - self.temps_depart) + min(self.vitesse_finale, self.vitesse_initiale) * (temps_simuation-self.temps_depart)      
@@ -43,7 +43,7 @@ class Courbe:
     def result_positif(self, temps_simuation):
         if temps_simuation > self.temps_depart + self.duree:
             vitesse = self.vitesse_finale
-            position = self.vitesse_finale * (temps_simuation - self.temps_depart) + self.last_position
+            position = self.vitesse_finale * (temps_simuation - self.temps_depart)  - self.last_position
         else:
             vitesse = fonction_vitesse_e((temps_simuation - self.temps_depart)/self.duree) * (self.vitesse_finale - self.vitesse_initiale) + self.vitesse_initiale
             position = fonction_position_e((temps_simuation - self.temps_depart)/self.duree) * abs(self.vitesse_finale - self.vitesse_initiale) * (temps_simuation - self.temps_depart) + min(self.vitesse_finale, self.vitesse_initiale) * (temps_simuation-self.temps_depart)      

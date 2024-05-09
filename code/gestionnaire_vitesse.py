@@ -35,13 +35,18 @@ class GestionnaireVitesse:
         
 
     def desactiver_courbes(self, nom_courbes: list[str]):
+        courbes_a_supprimer = []
         for nom_courbe in self.courbes.keys():
             for a_supprimer in nom_courbes:
                 if nom_courbe.startswith(a_supprimer) or a_supprimer == "ALL":
-                    if self.NOEUD in nom_courbe:
-                        del self.courbes[nom_courbe]
-                    else:
-                        self.courbes[nom_courbe] = []
+                    courbes_a_supprimer.append(nom_courbe)
+        
+        for courbe in courbes_a_supprimer:
+            if self.NOEUD in courbe:
+                del self.courbes[courbe]
+            else:
+                self.courbes[courbe] = []
+
     
     def cree_courbe(self, distance_finale: float, vitesse_initiale: float, vitesse_finale: float, acceleration: float = 8):
         print("Création courbe gestionnaire_vitese : ")
@@ -60,12 +65,16 @@ class GestionnaireVitesse:
     
     def genere_courbe_freinage(self, distance_finale: float, vitesse_finale: float, nom_courbe = FREINAGE):
         if vitesse_finale <= self.voiture.vitesse:
-            courbe = self.cree_courbe(self.voiture.position, distance_finale, self.voiture.vitesse, vitesse_finale, self.voiture.deceleration)
-            self.courbes[nom_courbe].append((courbe, self.voiture.position))
+            courbe = self.cree_courbe(distance_finale, self.voiture.vitesse, vitesse_finale, self.voiture.deceleration)
+            if nom_courbe == "FREINAGE":
+                self.courbes[nom_courbe].append((courbe, self.voiture.position))
+            else:
+                self.courbes[nom_courbe] =[(courbe, self.voiture.position)]
         else:
             return ValueError(f"Vous ne générez pas une courbe de freinage : not {vitesse_finale} <= {self.voiture.vitesse}")
     
     def genere_courbe_freinage_noeud(self, noeud_obstacle: Noeud):
+        print("Distance nécessaire pour décélérer de", self.voiture.vitesse, "à", noeud_obstacle.vitesse_max, ":", self.voiture.distance_deceleration(self.voiture.vitesse, noeud_obstacle.vitesse_max), "m")
         self.genere_courbe_freinage(self.voiture.distance_deceleration(self.voiture.vitesse, noeud_obstacle.vitesse_max), noeud_obstacle.vitesse_max, nom_courbe=self.FREINAGE+self.NOEUD+noeud_obstacle.nom)
 
     def genere_courbe_freinage_arete(self, arete: Arete):
@@ -73,7 +82,10 @@ class GestionnaireVitesse:
 
     def genere_courbe_acceleration(self, vitesse_finale: float, nom_courbe = ACCELERATION):
         courbe = self.cree_courbe(self.voiture.distance_acceleration(self.voiture.vitesse, vitesse_finale), self.voiture.vitesse, vitesse_finale, self.voiture.acceleration)
-        self.courbes[nom_courbe].append((courbe, self.voiture.position))
+        if nom_courbe == "ACCELERATION":
+            self.courbes[nom_courbe].append((courbe, self.voiture.position))
+        else:
+            self.courbes[nom_courbe] =[(courbe, self.voiture.position)]
     
     def genere_courbe_acceleration_arete(self, arete: Arete):
         self.genere_courbe_acceleration(arete.vitesse_max)
@@ -83,7 +95,10 @@ class GestionnaireVitesse:
 
     def genere_courbe_roule_vitesse_max(self, distance_finale: Vecteur2D, vitesse_max: float, nom_courbe = ROULE):
         courbe = self.cree_courbe(999999999, self.voiture.vitesse, vitesse_max)
-        self.courbes[nom_courbe].append((courbe, self.voiture.position))
+        if nom_courbe == "ROULE":
+            self.courbes[nom_courbe].append((courbe, self.voiture.position))
+        else:
+            self.courbes[nom_courbe] =[(courbe, self.voiture.position)]
 
     def genere_courbe_roule_arete(self, arete: Arete):
         self.genere_courbe_roule_vitesse_max((self.voiture.position - arete.position_arrivee).norme_manathan() + arete.size.x * 3, arete.vitesse_max)
@@ -93,10 +108,13 @@ class GestionnaireVitesse:
 
     def genere_courbe_arret(self, distance_finale: float, nom_courbe = ARRET):
         courbe = self.cree_courbe(distance_finale, self.voiture.vitesse, 0, self.voiture.deceleration)
-        self.courbes[nom_courbe].append((courbe, self.voiture.position))
+        if nom_courbe == "ARRET":
+            self.courbes[nom_courbe].append((courbe, self.voiture.position))
+        else:
+            self.courbes[nom_courbe] =[(courbe, self.voiture.position)]
 
     def genere_courbe_arret_noeud(self, distance_noeud: float, nom_noeud):
-        self.genere_courbe_arret(distance_noeud - Noeud.size, nom_courbe=self.ARRET+self.NOEUD+nom_noeud)
+        self.genere_courbe_arret(distance_noeud - Noeud.size.get_x(), nom_courbe=self.ARRET+self.NOEUD+nom_noeud)
 
     def trouver_etat_par_courbe(self, courbe: Courbe) -> str:
         for etat, tuples in self.courbes.items():

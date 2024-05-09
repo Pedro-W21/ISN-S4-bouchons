@@ -84,7 +84,6 @@ class Voiture:
 
         self.distance_voiture_obstacle: float = 0
         self.voiture_obstacle: Voiture = None
-        self.noeuds_obstacles_longueur: tuple[Noeud, float] = []
 
 
     def update(self, temps_simulation: float):
@@ -115,9 +114,9 @@ class Voiture:
         self.distance_voiture_obstacle = distance_voiture_obstacle
         self.voiture_obstacle = voiture_obstacle
         noeuds_obstacles_longueur: list[tuple[Noeud, float]] = self.trouver_noeuds_sur_mon_chemin()
-        self.noeuds_obstacles_longueur = noeuds_obstacles_longueur
+
         # Si il n'y pas d'obstacles
-        if not voiture_obstacle and (not noeuds_obstacles_longueur):
+        if not voiture_obstacle and not noeuds_obstacles_longueur:
              
             #Je desactive toutes les autres courbes
             desactiver_courbes = [GestionnaireVitesse.FREINAGE,
@@ -141,9 +140,7 @@ class Voiture:
                 if not self.gestionnaire_vitesse.courbe_est_active(self.gestionnaire_vitesse.FREINAGE):
                     self.gestionnaire_vitesse.genere_courbe_freinage_arete(self.arete_actuelle)
                     self.gestionnaire_vitesse.desactiver_courbes([GestionnaireVitesse.ACCELERATION, GestionnaireVitesse.ROULE])
-
-
-        
+     
         else:
             print("Voici mes obstacles :\nVoitures ? ", voiture_obstacle, distance_voiture_obstacle, "\nNoeuds ? ", noeuds_obstacles_longueur)
             # si il y a des obstacles
@@ -160,12 +157,15 @@ class Voiture:
 
             
             for i in range(len(noeuds_obstacles_longueur)):
+                print("Noeud obstacle", i)
                 # si c'est le premier noeud et que c'est une intersection
                 noeud_obstacle = noeuds_obstacles_longueur[i][0]
                 distance_noeud_obstacle = noeuds_obstacles_longueur[i][1]
                 
-                if i == 0 and type(noeud_obstacle) in (Intersection_X, Intersection_T):
+                if i == 0:
+                    print("Je suis dans une intersection")
                     # si je suis dans la zone de ping
+                    print("Distance noeud obstacle", self.distance_entite(noeud_obstacle.position), "Distance securite", noeud_obstacle.distance_securite)
                     if self.distance_entite(noeud_obstacle.position) < noeud_obstacle.distance_securite and not noeud_obstacle.est_un_usager(self):
                         
                         # je demande si je peux passer
@@ -173,12 +173,12 @@ class Voiture:
                         est_empruntee = noeud_obstacle.est_empruntee()
                         usagers_differents = self.ancient_usagers != noeud_obstacle.get_usagers()
                         voie_est_libre = usagers_differents and noeud_obstacle.voie_est_libre(self)
-                        
+                        print("Est empruntee", est_empruntee, "Voie est libre", voie_est_libre, "Usagers differents", usagers_differents)
                         #voie pas empruntée ou voie libre
                         if (not est_empruntee) or (voie_est_libre):
                         
                             self.gestionnaire_vitesse.desactiver_courbes([GestionnaireVitesse.ARRET])
-                            print("Je vais bientôt passer un noeud, je m'enregistre")
+                            print("Je vais bientôt passer un noeud, je m'enregistre comme usager")
                             noeud_obstacle.enregistrer_usager(self, self.direction, self.direction_prochain_chemin)
                             self.ancient_usagers = {}
 
@@ -194,11 +194,13 @@ class Voiture:
 
                         else:
                             #voie empruntée et/ou voie pas libre
+                            print("La voix est occupée")
                             if not self.gestionnaire_vitesse.courbe_est_active(self.gestionnaire_vitesse.ARRET+self.id_noeud(noeud_obstacle)):
                                 self.gestionnaire_vitesse.genere_courbe_arret_noeud(distance_noeud_obstacle, noeud_obstacle.nom)
-                            self.ancient_usagers = noeuds_obstacles_longueur[0].get_usagers().copy()
+                            self.ancient_usagers = noeud_obstacle.get_usagers().copy()
                     
                     else:
+                        print("Je ne suis pas dans la zone de ping, j'adapte mon allure")
                         if self.vitesse < noeud_obstacle.vitesse_max:
                             if not self.gestionnaire_vitesse.courbe_est_active(self.gestionnaire_vitesse.ACCELERATION+self.id_noeud(noeud_obstacle)):
                                 self.gestionnaire_vitesse.genere_courbe_acceleration_noeud(noeud_obstacle)
@@ -209,11 +211,11 @@ class Voiture:
                             if not self.gestionnaire_vitesse.courbe_est_active(self.gestionnaire_vitesse.FREINAGE+self.id_noeud(noeud_obstacle)):
                                 self.gestionnaire_vitesse.genere_courbe_freinage_noeud(noeud_obstacle)
 
-
                 # ce n'est pas le premier noeud
                 else:
-                    
+                    print("Autre noeud de type intersection")
                     # si je suis dans la zone de ping et que ma distance d'arret est superieure ou egale à ma distance de sécurité
+                    print("Distance noeud obstacle", distance_noeud_obstacle, "Distance securite", noeud_obstacle.distance_securite, "Distance arret", self.distance_arret())
                     if distance_noeud_obstacle < noeud_obstacle.distance_securite and self.distance_arret() <= distance_noeud_obstacle:
                         
                         if self.vitesse < noeud_obstacle.vitesse_max:
@@ -228,7 +230,8 @@ class Voiture:
                                 self.gestionnaire_vitesse.genere_courbe_freinage_noeud(noeud_obstacle)
                                 
             # si il n'y a pas d'obstacle noeud
-            else:
+            if len(noeuds_obstacles_longueur) == 0:
+                print("Aucun obstacle noeud")
                 desactiver_courbes = [GestionnaireVitesse.FREINAGE,
                                     GestionnaireVitesse.ARRET]
                 self.gestionnaire_vitesse.desactiver_courbes(desactiver_courbes)
@@ -550,13 +553,18 @@ class Voiture:
         noeuds: list[Noeud] = []
         longueur = 0
         for i in range(len(self.chemin)-1):
+            print("Trouver les noeuds sur mon chemin", i)
             noeud_devant = self.chemin[i]
             if i == 0:
                 longueur += (self.chemin[1].position - self.position).norme_manathan()
             else:
-                if longueur < self.distance_securite(self.vitesse):
-                    if noeud_devant.est_empruntee() and not noeud_devant.est_un_usager(self):
-                        noeuds.append((noeud_devant, longueur))
+                print("Distance securite", self.distance_securite(self.vitesse), longueur)
+                if isinstance(noeud_devant,(Intersection_X, Intersection_T)):
+                    if longueur < self.distance_securite(self.vitesse):
+                        print("Je suis dans la distance de securite")
+                        if noeud_devant.est_empruntee() and not noeud_devant.est_un_usager(self):
+                            print("J'append le noeud")
+                            noeuds.append((noeud_devant, longueur))
                 longueur += (self.chemin[i+1].position - self.chemin[i].position).norme_manathan()
         return noeuds
 

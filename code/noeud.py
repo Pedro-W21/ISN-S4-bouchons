@@ -16,9 +16,9 @@ class Noeud:
         self.nom = f"{position.get_x()},{position.get_y()}"
         # self.usagers: dict[Voiture : list[Vecteur2D, Vecteur2D]] = {}
         #                 {voiture : [orientation, direction_prochaine]}
-        self.vitesse_max = 0.25 # m/s
-        temps_deceleration = abs(0 - self.vitesse_max) / 8
-        self.distance_securite = 1/2 * (8 / 3.6) * temps_deceleration**2 + 0.5 * self.size.get_x()
+        self.vitesse_max = 0.1 # m/s
+        temps_deceleration = abs(0 - self.vitesse_max) / 2
+        self.distance_securite = 1/2 * (2 / 3.6) * temps_deceleration**2 + 0.5 * self.size.get_x()
         self.aretes = aretes
     
     def retirer_usager(self, voiture):
@@ -47,7 +47,8 @@ class Noeud:
         return True
     
     def est_empruntee(self) -> bool:
-        return len(self.usagers) > 0
+        return True ## TODO RETIRER, CEST POUR TESTER LES ARRETS AU NOEUD
+        # return len(self.usagers) > 0
     
     def est_un_usager(self, voiture) -> bool:
         return voiture in self.usagers

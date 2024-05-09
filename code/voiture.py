@@ -289,7 +289,7 @@ class Voiture:
                         #voie pas empruntée ou voie libre
                         if (not est_empruntee) or (voie_est_libre):
                         
-                            self.gestionnaire_vitesse.desactiver_courbes([GestionnaireVitesse.ARRET],[GestionnaireVitesse.ROULE])
+                            self.gestionnaire_vitesse.desactiver_courbes([GestionnaireVitesse.ARRET, GestionnaireVitesse.ROULE])
                             print("Je vais bientôt passer un noeud, je m'enregistre comme usager")
                             noeud_obstacle.enregistrer_usager(self, self.direction, self.direction_prochain_chemin)
                             self.ancient_usagers = {}
@@ -705,7 +705,9 @@ class Voiture:
                 if isinstance(noeud_devant,(Intersection_X, Intersection_T)):
                     if longueur < self.distance_securite(self.vitesse, self.marge_noeud):
                         print("Je suis dans la distance de securite")
-                        if noeud_devant.est_empruntee() and not noeud_devant.est_un_usager(self):
+                        # if noeud_devant.est_empruntee() and not noeud_devant.est_un_usager(self):
+
+                        if not noeud_devant.est_un_usager(self):
                             print("J'append le noeud")
                             noeuds.append((noeud_devant, longueur))
                 longueur += (self.chemin[i+1].position - self.chemin[i].position).norme_manathan()

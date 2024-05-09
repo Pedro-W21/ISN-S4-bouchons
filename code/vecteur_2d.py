@@ -67,6 +67,8 @@ class Vecteur2D:
         return f"x : {self.x}, y : {self.y}"
     
     def __eq__(self, rhs):
+        if type(rhs) != Vecteur2D:
+            return self.x == rhs[0] and self.y == rhs[1]
         return self.x == rhs.x and self.y == rhs.y
     
     def __abs__(self):

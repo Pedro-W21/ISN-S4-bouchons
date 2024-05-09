@@ -65,9 +65,9 @@ class Intersection_T(Noeud):
     
     def voie_est_libre(self, voiture):
         orientation, intention = voiture.intention()
-        from_right_to_left = [orientation[1],-orientation[0]]
-        from_left_to_right = [-orientation[1],orientation[0]]
-        from_front_to_me = [-orientation[0],-orientation[1]]
+        from_right_to_left = [orientation.y,-orientation.x]
+        from_left_to_right = [-orientation.y,orientation.x]
+        from_front_to_me = [-orientation.x,-orientation.y]
         from_me_to_front = orientation
         # nulle part [0, 0] 
         # selon x [1, 0]
@@ -122,9 +122,9 @@ class Intersection_X(Noeud):
     
     def voie_est_libre(self, voiture):
         orientation, intention = voiture.intention()
-        from_right_to_left = [orientation[1],-orientation[0]]
-        from_left_to_right = [-orientation[1],orientation[0]]
-        from_front_to_me = [-orientation[0],-orientation[1]]
+        from_right_to_left = [orientation.y,-orientation.x]
+        from_left_to_right = [-orientation.y,orientation.x]
+        from_front_to_me = [-orientation.x,-orientation.y]
         from_me_to_front = orientation
         # nulle part [0, 0] 
         # selon x [1, 0]

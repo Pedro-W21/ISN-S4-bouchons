@@ -24,7 +24,7 @@ class Courbe:
         self.vitesse_initiale = vitesse_initiale
         self.vitesse_finale = vitesse_finale
         self.duree = duree
-        self.temps_depart = temps_simulation
+        self.temps_depart = temps_simulation - 1/10
 
         self.last_position = 0
 

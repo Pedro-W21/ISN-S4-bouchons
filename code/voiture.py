@@ -328,7 +328,7 @@ class Voiture:
             if not self.gestionnaire_vitesse.courbe_est_active(GestionnaireVitesse.ARRET):
                 print("arret")
                 self.gestionnaire_vitesse.desactiver_toutes_courbes()
-                self.gestionnaire_vitesse.genere_courbe_arret(self.distance_securite(self.vitesse, 0))               
+                self.gestionnaire_vitesse.genere_courbe_arret()               
 
         
         
@@ -362,7 +362,7 @@ class Voiture:
                     self.gestionnaire_vitesse.genere_courbe_freinage_noeud(objet)
         if type == "arret_noeud":
             if not self.gestionnaire_vitesse.courbe_est_active(self.gestionnaire_vitesse.ARRET+self.id_noeud(objet)):
-                                    self.gestionnaire_vitesse.genere_courbe_arret_noeud(distance, objet.nom)
+                                    self.gestionnaire_vitesse.genere_courbe_arret_noeud(objet.nom)
 
     def id_noeud(self, noeud: Noeud):
         """
@@ -537,6 +537,12 @@ class Voiture:
     def temps_mouvement(self, vitesse_initiale, vitesse_finale, acceleration) -> float:
         return abs(vitesse_initiale - vitesse_finale) / acceleration
     
+    def temps_mouvement_deceleration(self, vitesse_initiale, vitesse_finale) -> float:
+        return self.temps_mouvement(vitesse_initiale, vitesse_finale, self.deceleration)
+    
+    def temps_mouvement_acceleration(self, vitesse_initiale, vitesse_finale) -> float:
+        return self.temps_mouvement(vitesse_initiale, vitesse_finale, self.acceleration)
+
     def distance_deceleration(self, vitesse_initiale, vitesse_finale) -> float:
         """
         Calcule la distance de décélération nécessaire pour passer d'une vitesse initiale à une vitesse finale.
@@ -549,7 +555,7 @@ class Voiture:
             float: La distance de décélération.
         """
         print()
-        temps_deceleration = self.temps_mouvement(vitesse_initiale, vitesse_finale, self.deceleration)
+        temps_deceleration = self.temps_mouvement_deceleration(vitesse_initiale, vitesse_finale)
         distance = 1/2 * self.deceleration * temps_deceleration**2 + vitesse_initiale * temps_deceleration
         # print("Distance nécessaire pour décélérer de", vitesse_initiale, "à", vitesse_finale, ":", distance, "m")
         return distance
@@ -565,7 +571,7 @@ class Voiture:
         Returns:
             float: La distance de décélération.
         """
-        temps_acceleration = self.temps_mouvement(vitesse_initiale, vitesse_finale, self.acceleration)
+        temps_acceleration = self.temps_mouvement_acceleration(vitesse_initiale, vitesse_finale)
         distance = 1/2 * self.acceleration * temps_acceleration**2 + vitesse_initiale * temps_acceleration
         return distance
 

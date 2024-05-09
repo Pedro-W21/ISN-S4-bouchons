@@ -7,7 +7,7 @@ import courbe
 # NE PAS MODIFIER
 
 if __name__ == "__main__":
-    test = "test4"
+    test = "test3"
     a = 2
     b = -1
     c = 2*np.exp(-1)
@@ -96,7 +96,6 @@ if __name__ == "__main__":
     elif test == "test3":
 
         t = np.linspace(0, 1, 100)
-        t = 0
         position = 1/(2*a*c) * ((a*c*d*t + np.exp(b+a*t)*(-1+b+a*t)) * (1 - np.sign(b + a*t)) + (a*c*d*t - np.exp(-b-a*t)* (1+b+a*t)) * (1 + np.sign(b + a*t))) + 1/2
         vitesse = (a*t+b)*np.exp(-np.abs(a*t+b)) / c + d
 
@@ -111,7 +110,7 @@ if __name__ == "__main__":
 
     elif test == "test4":
         
-        courbe = Courbe(0, 6, 0, 1, 0.5, 0)
+        courbe = Courbe(0, 10, 0, 10, -1, 0)
         t = 0
         start = t
 
@@ -122,10 +121,10 @@ if __name__ == "__main__":
         
         position = 0
         i = 0
+        
         while True:
-            vitesse, e, test = courbe.result_e_test(t)
+            vitesse, e, test = courbe.result_e_test_temps(t)
 
-            print("distance_parcourue", e)
             print("vitesse", vitesse)
             position += e
             temps.append(t - start)
@@ -133,7 +132,6 @@ if __name__ == "__main__":
             vitesses.append(vitesse)
 
 
-            
             if test:
                 i+=1
             if i > 6:
@@ -148,3 +146,18 @@ if __name__ == "__main__":
         plt.legend()
         plt.grid(True)
         plt.show()
+    elif test == "test5":
+
+        t = np.linspace(0, 1, 100)
+        position = 1/(2*a*c) * ((a*c*d*t + np.exp(b+a*t)*(-1+b+a*t)) * (1 - np.sign(b + a*t)) + (a*c*d*t - np.exp(-b-a*t)* (1+b+a*t)) * (1 + np.sign(b + a*t))) + 1/2
+        vitesse = (a*t+b)*np.exp(-np.abs(a*t+b)) / c + d
+
+        plt.plot(t, position, label='Position')
+        plt.plot(t, vitesse, label='Vitesse')
+        plt.xlabel('t')
+        plt.ylabel('position / vitesse')
+        plt.title('Évolution de la position et de la vitesse')
+        plt.legend()
+        plt.grid(True)
+        plt.show()
+

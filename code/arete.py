@@ -12,7 +12,7 @@ class Arete:
         self.position_depart = position_depart
         self.position_arrivee = position_arrivee
         self.vitesse_moyenne = 0.0
-        self.vitesse_max = 10.0 # m/s
+        self.vitesse_max = 1.0 # m/s
     
     def __str__(self):
         return f"Arete : {self.position_depart} -> {self.position_arrivee}"

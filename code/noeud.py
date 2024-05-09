@@ -10,20 +10,18 @@ class Noeud:
     ENTREE_SORTIE = "ENTREE_SORTIE"
 
     def __init__(self, position: Vecteur2D, aretes: list[Arete]):
-        #Implémentation données pour affichage
+        # Implémentation données pour affichage
         self.position = position
         self.usagers = {}
         self.nom = f"{position.get_x()},{position.get_y()}"
         # self.usagers: dict[Voiture : list[Vecteur2D, Vecteur2D]] = {}
         #                 {voiture : [orientation, direction_prochaine]}
-        self.vitesse_max = 0.1 # m/s
-        temps_deceleration = abs(0 - self.vitesse_max) / 2
-        self.distance_securite = 1/2 * (2 / 3.6) * temps_deceleration**2 + 0.5 * self.size.get_x()
+        self.vitesse_max = 5 # m/s
         self.aretes = aretes
     
     def retirer_usager(self, voiture):
         if self.usagers.get(voiture, False):
-            print(f"Retrait de {voiture.couleur} à {self.nom}")
+            # print(f"Retrait de {voiture.couleur} à {self.nom}")
             self.usagers.pop(voiture)
 
     def get_poids(self):
@@ -40,7 +38,7 @@ class Noeud:
         return self.usagers
     
     def enregistrer_usager(self, voiture, orientation, intention):
-        print(f"Ajout de {voiture.couleur} à {self.nom}")
+        # print(f"Ajout de {voiture.couleur} à {self.nom}")
         self.usagers[voiture] = [orientation, intention]
 
     def voie_est_libre(self):

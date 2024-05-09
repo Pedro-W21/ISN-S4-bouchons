@@ -81,8 +81,6 @@ class Voiture:
 
         self.etat = GestionnaireVitesse.ACCELERATION
 
-
-
         self.distance_voiture_obstacle: float = 0
         self.voiture_obstacle: Voiture = None
 
@@ -262,6 +260,7 @@ class Voiture:
 
         if not noeuds_obstacles_longueur:
             #Je desactive toutes les autres courbes
+            print("pas d'obstacle")
             desactiver_courbes = [GestionnaireVitesse.FREINAGE,GestionnaireVitesse.ARRET]
             self.gestionnaire_vitesse.desactiver_courbes(desactiver_courbes)
             # si on est pas à la vitesse max

@@ -496,6 +496,7 @@ class App(ctk.CTk):
             self.simulation = Simulation(carte, int(self.nombre_voiture_scale.get()), self.niveau_agressivite.get())
 
             self.mode_affichage = "simulation"
+            self.met_a_jour_infos_simu(True)
         else:
             messagebox.showinfo("Erreur de simulation", "La carte actuelle n'est pas utilisable pour une simulation")
 
@@ -578,6 +579,7 @@ class App(ctk.CTk):
         """
         if self.simulation != None and not self.simulation_en_cours:
             self.simulation.update(True, (1.0/self.iter_par_sec.get())*self.vitesse_de_simu.get())
+            self.met_a_jour_infos_simu(False)
 
     def recupere_nombre_entier(self, texte):
         """
@@ -692,6 +694,7 @@ class App(ctk.CTk):
         self.voitures = []
         self.lance_simu_button.configure(text="Lancer une simulation")
         self.simulation = None
+        self.met_a_jour_infos_simu(True)
 
     def afficher_scale_voitures(self, event):
         """
@@ -746,8 +749,28 @@ class App(ctk.CTk):
             self.bool_carte_affichee = False
 
 
+    def met_a_jour_infos_simu(self, moment_de_changement):
+        """
+        met à jour et affiche le frame d'informations de la simulation si la simulation est là
+        input : moment_de_changement, booléen indiquant si c'est un moment où la frame (pas son contenu) doit être caché ou montré
+        return : rien
 
-######### canvas du milieu ###############
+        effets secondaires : modification de l'affichage de la frame d'infos
+        """
+        if self.simulation != None:
+            if moment_de_changement:
+                self.canvas_affichage.pack_forget()
+                self.frame_infos.pack(fill="x")
+                self.canvas_affichage.pack(fill="both", expand=True)
+            self.label_info_temps.configure(text=f"Temps : {int(self.simulation.temps_simulation * 100.0)/100.0}")
+            self.label_info_voitures.configure(text=f"Voitures visibles : {len(self.voitures)}")
+
+        else:
+            if moment_de_changement:
+                self.frame_infos.pack_forget()
+
+
+    ######### canvas du milieu ###############
 
     def setup_frame_canvas(self):
         """
@@ -761,6 +784,16 @@ class App(ctk.CTk):
 
         self.label_affichage = ctk.CTkLabel(master =self.frame_carte, text="Affichage de la carte et de la simulation")
         self.label_affichage.pack(fill="x")
+        self.frame_infos = ctk.CTkFrame(master=self.frame_carte)
+        self.frame_infos.columnconfigure(0, weight=1, uniform='a')
+        self.frame_infos.columnconfigure(1, weight=1, uniform='a')
+        self.frame_infos.columnconfigure(2, weight=1, uniform='a')
+        self.frame_infos.columnconfigure(3, weight=1, uniform='a')
+        self.frame_infos.rowconfigure(0, weight=1, uniform='a')
+        self.label_info_temps = ctk.CTkLabel(self.frame_infos, text=f"Temps : {0.0}")
+        self.label_info_temps.grid(column=0, row=0, sticky="W", padx=5)
+        self.label_info_voitures = ctk.CTkLabel(self.frame_infos, text=f"Voitures visibles : {0}")
+        self.label_info_voitures.grid(column=1, row=0, sticky="W", padx=5)
         self.largeur_canvas = 100
         self.hauteur_canvas = 100
         self.xo = 0
@@ -829,6 +862,7 @@ class App(ctk.CTk):
             if self.simulation_en_cours:
                 self.simulation.update(True, (1.0/self.iter_par_sec.get())*self.vitesse_de_simu.get())
             self.affiche_sim()
+            self.met_a_jour_infos_simu(False)
         duree = int((time.monotonic() - debut) * 1000.0)
         ms_jusquau_prochain = 1
         if duree < self.ms_entre_update:

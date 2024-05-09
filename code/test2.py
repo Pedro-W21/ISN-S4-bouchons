@@ -111,8 +111,8 @@ if __name__ == "__main__":
 
     elif test == "test4":
         
-        courbe = Courbe(0, 6, 0, 1, 0.5)
-        t = time.time()
+        courbe = Courbe(0, 6, 0, 1, 0.5, 0)
+        t = 0
         start = t
 
 
@@ -132,14 +132,13 @@ if __name__ == "__main__":
             positions.append(position)
             vitesses.append(vitesse)
 
-            time.sleep(1/60)
 
-            t = time.time()
+            
             if test:
                 i+=1
             if i > 6:
                 break
-
+            t += 1/60
         
         plt.plot(temps, vitesses, label='Vitesse')
         plt.plot(temps, positions, label='Position')

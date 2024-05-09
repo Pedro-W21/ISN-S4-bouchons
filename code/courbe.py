@@ -64,7 +64,7 @@ class Courbe:
         
         if temps_normalise > 1:
             print("erreur")
-            return self.vitesse_finale, self.position_finale - self.last_position
+            return self.vitesse_finale, self.position_finale - self.last_position, True
         
         vitesse_normalise = fonction_vitesse_e(temps_normalise)
         position_normalise = fonction_position_e(temps_normalise)
@@ -76,7 +76,7 @@ class Courbe:
         print("position", position)
         self.last_position += position
 
-        return vitesse, position
+        return vitesse, position, False
     
     def result_e_test(self, t: float) -> tuple[float, float]:
         temps_normalise = (t - self.t0) / self.plage_t

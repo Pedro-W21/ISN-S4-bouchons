@@ -30,6 +30,7 @@ NOIR = from_rgb((0,0,0))
 ROUGE = from_rgb((255,0,0))
 VERT = from_rgb((0,255,0))
 BLUE = from_rgb((170, 170, 255))
+DARK_BLUE = from_rgb((0, 0, 170))
 
 class App(ctk.CTk):
 
@@ -541,9 +542,9 @@ class App(ctk.CTk):
         self.iter_par_sec_stringvar.trace_add("write", self.affiche_entry_ips)
         self.iter_par_sec_entry = ctk.CTkEntry(master=self.parametres, textvariable=self.iter_par_sec_stringvar)
         self.iter_par_sec_entry.pack(side=TOP)
-        self.iter_par_sec_entry.insert(0, "10")
+        self.iter_par_sec_entry.insert(0, "20")
         self.iter_par_sec = ctk.CTkSlider(master=self.parametres, from_=5, to=30, command=self.afficher_scale_voitures)
-        self.iter_par_sec.set(10)
+        self.iter_par_sec.set(20)
         self.iter_par_sec.pack(side=TOP, expand=True, fill="x")
 
         self.vitesse_de_simu_Label = ctk.CTkLabel(master=self.parametres, text="Vitesse de simulation")
@@ -569,6 +570,93 @@ class App(ctk.CTk):
         self.bind("<space>", self.frame_by_frame)
 
         self.bool_carte_affichee = False
+
+    def selectionne_voiture(self, event=None):
+        """
+        permet de sélectionner une voiture et d'afficher ses caractéristiques
+        input : event, utile pour retrouver l'ID du canvas de la voiture en question
+        return : rien
+
+        effets secondaires : modification de l'affichage
+        """
+        voiture_cliquee = event.widget.find_withtag("current")[0]
+        i = 0
+        while i < len(self.voitures_canvas) and voiture_cliquee != self.voitures_canvas[i]:
+            i += 1
+        self.voiture_select = self.voitures[i]
+        self.label_info_id_select.configure(text=f"ID de la voiture : {self.voiture_select.id}")
+        self.label_info_id_select.grid(column=2, row=0, sticky="W", padx=5)
+        pos, angle = self.voiture_select.recuperer_position()
+        xv, yv = pos.get_x() / Noeud.size.get_x(), pos.get_y() / Noeud.size.get_y()
+        pos_voiture = self.grille_to_canvas_pos(xv, yv)
+        rayon_cercle = self.echelle * 0.4 * (min(Voiture.size.get_x(), Voiture.size.get_y())/Noeud.size.get_x())
+        if self.selection_voiture_select != None:
+            self.canvas_affichage.delete(self.selection_voiture_select)
+        self.selection_voiture_select = self.canvas_affichage.create_oval(pos_voiture[0] - rayon_cercle, pos_voiture[1] - rayon_cercle, pos_voiture[0] + rayon_cercle, pos_voiture[1] + rayon_cercle, outline=NOIR, fill=BLANC)
+        self.label_info_pos_select.grid(column=3, row=0, sticky="W", padx=5)
+        self.label_info_vitesse_select.grid(column=4, row=0, sticky="W", padx=5)
+
+    def update_affichage_voiture_select(self):
+        """
+        met à jour les labels et les objets de canvas liés à la voiture sélectionnée
+
+        input:rien
+        return:rien
+
+        effets secondaires : mise à jour de l'interface
+        """
+        if self.voiture_select != None:
+            if self.voiture_select.affiche:
+                self.label_info_pos_select.configure(text=f"Position : {(int(self.voiture_select.position.get_x() * 100.0/Noeud.size.get_x())/100.0, int(self.voiture_select.position.get_y() * 100.0/Noeud.size.get_y())/100.0)}")
+                self.label_info_vitesse_select.configure(text=f"Vitesse : {int(self.voiture_select.vitesse * 100.0/Noeud.size.get_x()) / 100.0}")
+                if self.last_chemin_len != len(self.voiture_select.chemin):
+                    for fleche in self.chemin_voiture_select:
+                        self.canvas_affichage.delete(fleche)
+                    self.chemin_voiture_select = []
+                    for i in range(len(self.voiture_select.chemin) - 1):
+                        start_node = self.voiture_select.chemin[i]
+                        start_node_pos = self.grille_to_canvas_pos(start_node.position.get_x()/Noeud.size.get_x(), start_node.position.get_y()/Noeud.size.get_y())
+                        end_node = self.voiture_select.chemin[i + 1]
+                        end_node_pos = self.grille_to_canvas_pos(end_node.position.get_x()/Noeud.size.get_x(), end_node.position.get_y()/Noeud.size.get_y())
+                        self.chemin_voiture_select.append(self.canvas_affichage.create_line(start_node_pos[0] + 0.5 * self.echelle, start_node_pos[1] + 0.5 * self.echelle, end_node_pos[0] + 0.5 * self.echelle, end_node_pos[1] + 0.5 * self.echelle, arrow="last", fill=BLUE))
+                    self.last_chemin_len = len(self.voiture_select.chemin)
+                else:
+                    for (i,fleche) in enumerate(self.chemin_voiture_select):
+                        start_node = self.voiture_select.chemin[i]
+                        start_node_pos = self.grille_to_canvas_pos(start_node.position.get_x()/Noeud.size.get_x(), start_node.position.get_y()/Noeud.size.get_y())
+                        end_node = self.voiture_select.chemin[i + 1]
+                        end_node_pos = self.grille_to_canvas_pos(end_node.position.get_x()/Noeud.size.get_x(), end_node.position.get_y()/Noeud.size.get_y())
+                        self.canvas_affichage.coords(fleche, start_node_pos[0] + 0.5 * self.echelle, start_node_pos[1] + 0.5 * self.echelle, end_node_pos[0] + 0.5 * self.echelle, end_node_pos[1] + 0.5 * self.echelle)
+                        
+                pos, angle = self.voiture_select.recuperer_position()
+                xv, yv = pos.get_x() / Noeud.size.get_x(), pos.get_y() / Noeud.size.get_y()
+                pos_voiture = self.grille_to_canvas_pos(xv, yv)
+                rayon_cercle = 0.4 * self.echelle * min(Voiture.size.get_x(), Voiture.size.get_y())/Noeud.size.get_x()
+                self.canvas_affichage.coords(self.selection_voiture_select, pos_voiture[0] - rayon_cercle, pos_voiture[1] - rayon_cercle, pos_voiture[0] + rayon_cercle, pos_voiture[1] + rayon_cercle)
+                self.canvas_affichage.tag_raise(self.selection_voiture_select)
+            else:
+                self.deselectionne_voiture()
+
+    def deselectionne_voiture(self, event=None):
+        """
+        fait disparaître tous les affichages liés à une voiture sélectionnée
+
+        input : event, inutilisé mais nécessaire pour utiliser cette fonction en callback
+        return : rien
+
+        effets secondaires : modifie l'affichage dans le canvas
+        """
+        self.label_info_id_select.grid_forget()
+        self.label_info_pos_select.grid_forget()
+        self.label_info_vitesse_select.grid_forget()
+        for fleche in self.chemin_voiture_select:
+            self.canvas_affichage.delete(fleche)
+        self.chemin_voiture_select = []
+        self.canvas_affichage.delete(self.selection_voiture_select)
+        self.selection_voiture_select = None
+        self.voiture_select = None
+        self.last_chemin_len = -1
+
     def frame_by_frame(self, event=None):
         """
         avance la simulation d'une itération si elle est existante et en pause
@@ -695,6 +783,7 @@ class App(ctk.CTk):
         self.lance_simu_button.configure(text="Lancer une simulation")
         self.simulation = None
         self.met_a_jour_infos_simu(True)
+        self.deselectionne_voiture()
 
     def afficher_scale_voitures(self, event):
         """
@@ -784,16 +873,29 @@ class App(ctk.CTk):
 
         self.label_affichage = ctk.CTkLabel(master =self.frame_carte, text="Affichage de la carte et de la simulation")
         self.label_affichage.pack(fill="x")
+
+
         self.frame_infos = ctk.CTkFrame(master=self.frame_carte)
         self.frame_infos.columnconfigure(0, weight=1, uniform='a')
         self.frame_infos.columnconfigure(1, weight=1, uniform='a')
         self.frame_infos.columnconfigure(2, weight=1, uniform='a')
         self.frame_infos.columnconfigure(3, weight=1, uniform='a')
+        self.frame_infos.columnconfigure(4, weight=1, uniform='a')
         self.frame_infos.rowconfigure(0, weight=1, uniform='a')
+
         self.label_info_temps = ctk.CTkLabel(self.frame_infos, text=f"Temps : {0.0}")
         self.label_info_temps.grid(column=0, row=0, sticky="W", padx=5)
         self.label_info_voitures = ctk.CTkLabel(self.frame_infos, text=f"Voitures visibles : {0}")
         self.label_info_voitures.grid(column=1, row=0, sticky="W", padx=5)
+        self.label_info_id_select = ctk.CTkLabel(self.frame_infos, text="", bg_color=DARK_BLUE)
+        self.label_info_vitesse_select = ctk.CTkLabel(self.frame_infos, text="", bg_color=DARK_BLUE)
+        self.label_info_pos_select = ctk.CTkLabel(self.frame_infos, text="", bg_color=DARK_BLUE)
+
+        self.voiture_select = None
+        self.chemin_voiture_select = []
+        self.selection_voiture_select = None
+        self.last_chemin_len = -1
+
         self.largeur_canvas = 100
         self.hauteur_canvas = 100
         self.xo = 0
@@ -863,6 +965,7 @@ class App(ctk.CTk):
                 self.simulation.update(True, (1.0/self.iter_par_sec.get())*self.vitesse_de_simu.get())
             self.affiche_sim()
             self.met_a_jour_infos_simu(False)
+            self.update_affichage_voiture_select()
         duree = int((time.monotonic() - debut) * 1000.0)
         ms_jusquau_prochain = 1
         if duree < self.ms_entre_update:
@@ -921,7 +1024,9 @@ class App(ctk.CTk):
                 xv, yv = pos.get_x() / sx, pos.get_y() / sy
                 x_aff, y_aff = self.grille_to_canvas_pos(xv, yv)
                 rtx, rty = self.get_transformed_car_coords(tx, ty, angle)
-                self.voitures_canvas.append(self.canvas_affichage.create_rectangle(x_aff - rtx, y_aff - rty, x_aff + rtx, y_aff + rty, fill=voiture.couleur, state=self.aff_to_state_voiture(voiture)))
+                voit = self.canvas_affichage.create_rectangle(x_aff - rtx, y_aff - rty, x_aff + rtx, y_aff + rty, fill=voiture.couleur, state=self.aff_to_state_voiture(voiture))
+                self.canvas_affichage.tag_bind(voit, "<Button-1>", self.selectionne_voiture)
+                self.voitures_canvas.append(voit)
         elif len(self.voitures_canvas) == len(self.voitures):
             for (i, voiture) in enumerate(self.voitures):
                 pos, angle = voiture.recuperer_position()
@@ -1069,13 +1174,17 @@ class App(ctk.CTk):
                 self.yo += self.canvas_affichage.winfo_height()//2 - self.canvas_affichage.winfo_width()//2
 
             if len(self.grille_canvas) != self.largeur_carte * self.hauteur_carte:
+                for ligne in self.grille_canvas:
+                    for carre in self.grille_canvas:
+                        self.canvas_affichage.delete(carre)
                 self.grille_canvas = []
-                self.canvas_affichage.delete('all')
                 nx = np.ones(self.largeur_carte+1) * self.xo + np.arange(0, self.largeur_carte+1) * self.echelle
                 ny = np.ones(self.hauteur_carte+1) * self.yo + np.arange(0, self.hauteur_carte+1) * self.echelle
                 for y in range(self.hauteur_carte):
                     for x in range(self.largeur_carte):
-                        self.grille_canvas.append(self.canvas_affichage.create_rectangle(nx[x], ny[y], nx[x+1], ny[y+1], fill=self.couleur_de_case(x, y), outline=from_rgb((0,0,0))))
+                        case_canvas = self.canvas_affichage.create_rectangle(nx[x], ny[y], nx[x+1], ny[y+1], fill=self.couleur_de_case(x, y), outline=from_rgb((0,0,0)))
+                        self.canvas_affichage.tag_bind(case_canvas, "<Button-1>", self.deselectionne_voiture)
+                        self.grille_canvas.append(case_canvas)
             else:
                 nx = np.ones(self.largeur_carte+1) * self.xo + np.arange(0, self.largeur_carte+1) * self.echelle
                 ny = np.ones(self.hauteur_carte+1) * self.yo + np.arange(0, self.hauteur_carte+1) * self.echelle

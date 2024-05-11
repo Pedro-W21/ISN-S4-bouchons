@@ -34,6 +34,16 @@ class Courbe:
 
 
     def result_negatif(self, temps_simuation):
+        """
+        Calcule la vitesse et le déplacement pour un differentiel de vitesse négatif 
+        à un certain temps de simulation.
+
+        Args:
+            temps_simulation (float): Le temps de simulation.
+
+        Returns:
+            tuple: Un tuple contenant la vitesse(float) et le déplacement(float).
+        """
         if temps_simuation > self.temps_depart + self.duree:
             vitesse = self.vitesse_finale
             position = self.last_deplacement + self.last_position
@@ -47,6 +57,16 @@ class Courbe:
         return vitesse, deplacement
     
     def result_positif(self, temps_simuation):
+        """
+        Calcule la vitesse et le déplacement pour un differentiel de vitesse positif 
+        à un certain temps de simulation.
+
+        Args:
+            temps_simulation (float): Le temps de simulation.
+
+        Returns:
+            tuple: Un tuple contenant la vitesse(float) et le déplacement(float).
+        """
         if temps_simuation > self.temps_depart + self.duree:
             vitesse = self.vitesse_finale
             position = self.last_deplacement + self.last_position
@@ -60,6 +80,15 @@ class Courbe:
         return abs(vitesse), abs(deplacement)
 
     def result(self, temps_simuation):
+        """
+        Calcule la vitesse et le déplacement à un certain temps de simulation.
+
+        Args:
+            temps_simulation (float): Le temps de simulation.
+
+        Returns:
+            tuple: Un tuple contenant la vitesse(float) et le déplacement(float).
+        """
         if self.vitesse_finale - self.vitesse_initiale < 0:
             return self.result_negatif(temps_simuation)
         else:

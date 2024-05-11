@@ -546,16 +546,16 @@ class Carte:
                     carte = Carte(largeur, hauteur, grille_route)
                     
         except FileNotFoundError:
-            print("Le fichier n'existe pas !!!! petit malin.................")
+            print("Le fichier n'existe pas !")
         
         except KeyError:
-            print("LE FICHIER EST MAL FORMATE, C'EST LA FIN DU MONDE !!!!!!")
+            print("Le fichier est mal formatté.")
 
         except TypeError:
-            print("vraiment, quelqu'un a mis le mauvais type dans ce fichier ? bizarre bizarre....")
+            print("Le fichier contient les mauvais types de données")
 
         except Exception:
-            print("là c'est quoi cte merde par contre")
+            print("Erreur inconnue de parsing")
 
         return carte
     
@@ -579,6 +579,6 @@ class Carte:
                 }
                 json.dump(dico, file)
         except Exception:
-            print("gros problème !!!!!")
+            print("n'a pas réussi à sauvegarder la carte")
 
 

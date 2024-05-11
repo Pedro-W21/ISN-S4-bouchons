@@ -2,16 +2,15 @@ import customtkinter as ctk
 from customtkinter import TOP, BOTH, BOTTOM, RIGHT, LEFT, INSERT, EXTENDED, END
 from PIL import Image as PILImage
 import os
-from os.path import abspath, dirname
 import numpy as np
 import tkinter as tk
 from tkinter import messagebox
 import math
-from carte import Carte
-from noeud import Noeud
-from arete import Arete
-from simulation import Simulation
-from voiture import Voiture
+from generation.carte import Carte
+from simulation.noeud import Noeud
+from simulation.arete import Arete
+from simulation.simulation import Simulation
+from simulation.voiture import Voiture
 import time
 
 def from_rgb(rgb):
@@ -1356,8 +1355,3 @@ class App(ctk.CTk):
         carte.filtre_correction_carte()
         return (carte.grille != np.zeros((self.largeur_carte, self.hauteur_carte))).any()
 
-if __name__ == "__main__":
-    os.chdir(dirname(abspath(__file__)))
-
-    app = App()
-    app.mainloop()

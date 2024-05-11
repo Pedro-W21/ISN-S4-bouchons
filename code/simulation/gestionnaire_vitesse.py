@@ -1,7 +1,7 @@
-from courbe import Courbe
+from utils.courbe import Courbe
 from vecteur_2d import Vecteur2D
-from noeud import Noeud
-from arete import Arete
+from simulation.noeud import Noeud
+from simulation.arete import Arete
 
 class RangeError(Exception):
     

@@ -1,8 +1,8 @@
 import math
-from arete import Arete
+from simulation.arete import Arete
 from vecteur_2d import Vecteur2D
-from noeud import Noeud, Virage, Intersection_T, Intersection_X, EntreeSortie
-from gestionnaire_vitesse import GestionnaireVitesse
+from simulation.noeud import Noeud, Virage, Intersection_T, Intersection_X, EntreeSortie
+from simulation.gestionnaire_vitesse import GestionnaireVitesse
 
 class Voiture:
 

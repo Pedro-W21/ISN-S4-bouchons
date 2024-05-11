@@ -1,4 +1,4 @@
-from arete import Arete
+from simulation.arete import Arete
 from vecteur_2d import Vecteur2D
 
 class Noeud:

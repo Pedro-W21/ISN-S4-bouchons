@@ -100,6 +100,11 @@ class App(ctk.CTk):
             for route in fichiers:
                 self.routes.append(route)
             self.nom_route_combox.configure(values=self.routes)
+            if self.nom_route_combox.get() not in self.routes:
+                self.nom_route_combox.set("Choisissez ici")
+                self.bouton_chargement.grid_forget()
+                self.bouton_supprimer.grid_forget()
+                self.carte_choisie_bool = False
         self.after(2000, self.ajout_routes)
 
 
@@ -136,7 +141,7 @@ class App(ctk.CTk):
         self.modele.rowconfigure(0, weight=1, uniform='a')
         self.modele.rowconfigure(1, weight=1, uniform='a')
         self.modele.rowconfigure(2, weight=1, uniform='a')
-        self.modele.rowconfigure(2, weight=1, uniform='a')
+        self.modele.rowconfigure(3, weight=1, uniform='a')
 
 
 
@@ -151,19 +156,46 @@ class App(ctk.CTk):
         self.image_sauvegarde = ctk.CTkImage(light_image=PILImage.open('../photos/sauvegarde.png'), size=(30, 30))
 
         self.bouton_valider = ctk.CTkButton(master=self.modele, text="   sauvegarder la carte", image=self.image_sauvegarde, compound="left")
-        self.bouton_valider.grid(row=2, column=0, padx=10)
+        self.bouton_valider.grid(row=3, column=0, padx=10)
         #self.bouton_valider.pack(side=BOTTOM, expand=True, fill="x")
         self.bouton_valider.bind("<Button-1>", self.topLevel_validation_carte)
+        
+
+        self.bouton_chargement = ctk.CTkButton(master=self.modele, text="charger la carte choisie")
+        
+        self.bouton_chargement.bind("<Button-1>", self.charge_carte)
+
+        self.bouton_supprimer = ctk.CTkButton(master=self.modele, text="Supprimer la carte")
+        #self.bouton_supprimer.grid(row=3, column=0, padx=10)
+        self.bouton_supprimer.bind("<Button-1>", self.supprime_carte)
 
         self.ajout_routes()
 
+    def supprime_carte(self, event=None):
+        """
+        supprime la carte choisie dans la combobox
+
+        input : event, inutilisé mais indispensable pour utiliser cette fonction en callback
+        return : rien
+
+        effets secondaires : suppression de fichier
+        """
+        if self.nom_route_combox.get() != "Choisissez ici":
+            try:
+                os.remove("../routes/" + self.nom_route_combox.get())
+            except Exception:
+                print("erreur pour supprimer")
+
     def afficher_bouton_valider(self,event=None):
         if self.nom_route_combox.get() != "Choisissez ici" and not self.carte_choisie_bool:
-            self.bouton_chargement = ctk.CTkButton(master=self.modele, text="charger la carte choisie")
             self.bouton_chargement.grid(row=1, column=0, padx=10)
-            #self.bouton_chargement.pack(side=TOP, expand=True, fill="x")
-            self.bouton_chargement.bind("<Button-1>", self.charge_carte)
+            self.bouton_supprimer.grid(row=2, column=0, padx=10)
             self.carte_choisie_bool = True
+        elif self.nom_route_combox.get() == "Choisissez ici":
+            self.bouton_chargement.grid_forget()
+            self.bouton_supprimer.grid_forget()
+            self.carte_choisie_bool = False
+
 
 
 

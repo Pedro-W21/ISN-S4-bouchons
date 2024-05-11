@@ -128,7 +128,7 @@ class Voiture:
                 noeud_obstacle = noeuds_obstacles_longueur[i][0]
                 distance_noeud_obstacle = noeuds_obstacles_longueur[i][1]
                 if i == 0:
-                    if not noeud_obstacle.est_un_usager(self) and self.distance_securite(noeud_obstacle.vitesse_max, self.marge_noeud) > distance_noeud_obstacle:
+                    if not noeud_obstacle.est_un_usager(self) and self.distance_securite(noeud_obstacle.vitesse_max, self.marge_noeud*1.1) > distance_noeud_obstacle:
                         # La voiture demande si elle peut passer
                         est_empruntee = noeud_obstacle.est_empruntee()
                         usagers_differents = self.ancient_usagers != noeud_obstacle.get_usagers()
@@ -515,7 +515,7 @@ class Voiture:
         Returns:
             tuple: Une paire contenant la voiture obstacle et la distance jusqu'à elle, si elle existe. Sinon, une paire de None.
         """
-
+        print("Je suis la voiture :", self.id)
         longueur = 0
         dist_secu = self.distance_securite(self.vitesse,self.distance_marge_securite)
         for i in range(len(self.chemin)-1):
@@ -529,17 +529,16 @@ class Voiture:
                         if voiture_obstacle != self:
                             longueur += (noeud_depart.position - voiture_obstacle.position).norme_manathan()
                             if longueur < dist_secu:
+                                print("1, Je renvoie : ", voiture_obstacle.id, longueur)
                                 return voiture_obstacle, longueur
                         elif len(arete.voitures)>1:
                             voiture_obstacle = arete.voitures[arete.voitures.index(self)-1]
                             if voiture_obstacle != self:
                                 longueur += (noeud_depart.position - voiture_obstacle.position).norme_manathan()
                                 if longueur < dist_secu:
+                                    print("2, Je renvoie : ", voiture_obstacle.id, longueur)
                                     return voiture_obstacle, longueur
-                        else:
-                            longueur += arete.longueur-0.5*Noeud.size.get_x()
-                    else:
-                        longueur += arete.longueur-0.5*Noeud.size.get_x()
+                    longueur += arete.longueur-0.5*Noeud.size.get_x()
                 else:
                     return None, None
             else:
@@ -550,9 +549,9 @@ class Voiture:
                         voiture_obstacle = arete.voitures[myposition-1]
                         distance_a_voiture = (self.position - voiture_obstacle.position).norme_manathan()
                         if distance_a_voiture < dist_secu:
+                            print("1, Je renvoie : ", voiture_obstacle.id, distance_a_voiture)
                             return voiture_obstacle, distance_a_voiture
-                else:
-                    longueur += (self.position - noeud_arrivee.position).norme_manathan()-0.5*Noeud.size.get_x()
+                longueur += (self.position - noeud_arrivee.position).norme_manathan()-0.5*Noeud.size.get_x()
         return None, None
 
     def trouver_noeuds_sur_mon_chemin(self):

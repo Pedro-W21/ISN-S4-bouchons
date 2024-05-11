@@ -11,10 +11,8 @@ class Noeud:
 
     def __init__(self, position: Vecteur2D, aretes: list[Arete]):
         self.position = position
-        self.usagers = {}
+        self.usagers = {} #: dict[Voiture : list[direction: Vecteur2D, direction_prochain_chemin: Vecteur2D]]
         self.nom = f"{position.get_x()},{position.get_y()}"
-        # self.usagers: dict[Voiture : list[Vecteur2D, Vecteur2D]] = {}
-        #                 {voiture : [orientation, direction_prochaine]}
         self.vitesse_max = 3.5 # m/s
         self.aretes = aretes
     
@@ -36,7 +34,6 @@ class Noeud:
         return self.usagers
     
     def enregistrer_usager(self, voiture, orientation, intention):
-        print(f"Ajout de {voiture.couleur} à {self.nom}")
         self.usagers[voiture] = [orientation, intention]
 
     def voie_est_libre(self):
@@ -63,55 +60,50 @@ class Intersection_T(Noeud):
     
     def voie_est_libre(self, voiture):
         orientation, intention = voiture.intention()
-        from_right_to_left = Vecteur2D(orientation.y,-orientation.x)
-        from_left_to_right = Vecteur2D(-orientation.y,orientation.x)
-        from_front_to_me = Vecteur2D(-orientation.x,-orientation.y)
-        from_me_to_front = orientation
-        # nulle part [0, 0] 
+        from_right_to_left = Vecteur2D(orientation.y,-orientation.x) #vient de ma droite / va à ma gauche
+        from_left_to_right = Vecteur2D(-orientation.y,orientation.x) #vient de ma gauche / va à ma droite
+        from_front_to_me = Vecteur2D(-orientation.x,-orientation.y) #vient d'en face et va tout droit
+        from_me_to_front = orientation #va ou vient de la même direction que moi
         # selon x [1, 0]
         # selon y [0, 1]
         # selon -x [-1, 0]
         # selon -y [0, -1]
-        #vient de ma droite / va à ma gauche
-        #vient de ma gauche / va à ma droite
-        #vient d'en face / va vers moi
-        #vient de ma voix / va en face de moi
         libre = True
-        print("On me ping", self.usagers)
         for usager, intentions in self.usagers.items():
-            print("On me ping", usager.id)
             orientation_usager, intention_usager = intentions
             if usager.id != voiture.id:
-                if intention == orientation: #Je vais tout droit
+                if intention == orientation: 
+                    #Je vais tout droit
                     if orientation_usager == from_right_to_left and intention_usager in [intention, from_front_to_me, from_right_to_left]:
-                        #Personne à ma droite ne doit tourner sur ma trajectoire ou la couper   
+                        #Si la personne à ma droite tourne sur ma trajectoire ou la coupe  
                         libre = False
                     if orientation_usager == from_left_to_right and intention_usager in [intention, from_left_to_right]:
-                        #Personne à ma gauche ne tourne sur ma trajectoire
+                        #Si la personne à ma gauche tourne sur ma trajectoire ou la coupe
                         libre = False
                     if orientation_usager == from_front_to_me and intention_usager == from_left_to_right:
-                        #Personne en face tourne à sa gauche
+                        #Si la personne en face de moi tourne à sa gauche
                         libre = False 
-                elif intention == from_left_to_right:#Je vais sur ma droite
+                elif intention == from_left_to_right:
+                    #Je vais sur ma droite
                     if orientation_usager == from_front_to_me and intention_usager == from_left_to_right:
-                        #Personne en face tourne à sa gauche
+                        #Si la personne en face de moi tourne à sa gauche
                         libre = False
                     if orientation_usager == from_left_to_right and intention_usager == from_left_to_right:
-                        #Personne à ma gauche tourne à sa gauche
+                        #Si la personne à ma gauche tourne à sa gauche
                         libre = False
-                elif intention == from_right_to_left:#Je vais sur ma gauche
+                elif intention == from_right_to_left:
+                    #Je vais sur ma gauche
                     if orientation_usager == from_right_to_left and intention_usager in [from_front_to_me, intention, from_me_to_front]:
-                        #Personne à ma droite tourne
+                        #Si la personne à ma droite tourne quelque part
                         libre = False
                     if orientation_usager == from_left_to_right and intention_usager in [from_left_to_right, from_me_to_front]:
-                        #Personne à ma gauche tourne à sa gauche
+                        #Si la personne à ma gauche tourne à sa gauche
                         libre = False
                     if orientation_usager == from_front_to_me and intention_usager in [from_front_to_me, from_right_to_left, from_left_to_right]:
-                        #Personne en face va tout droit
+                        #Si la personne en face tourne quelque part
                         libre = False  
         if libre:
             self.enregistrer_usager(voiture, orientation, intention)
-
         return libre
 
 class Intersection_X(Noeud):
@@ -122,52 +114,51 @@ class Intersection_X(Noeud):
     
     def voie_est_libre(self, voiture):
         orientation, intention = voiture.intention()
-        from_right_to_left = [orientation.y,-orientation.x]
-        from_left_to_right = [-orientation.y,orientation.x]
-        from_front_to_me = [-orientation.x,-orientation.y]
-        from_me_to_front = orientation
-        # nulle part [0, 0] 
+        from_right_to_left = Vecteur2D(orientation.y,-orientation.x) #vient de ma droite / va à ma gauche
+        from_left_to_right = Vecteur2D(-orientation.y,orientation.x) #vient de ma gauche / va à ma droite
+        from_front_to_me = Vecteur2D(-orientation.x,-orientation.y) #vient d'en face et va tout droit
+        from_me_to_front = orientation #va ou vient de la même direction que moi
         # selon x [1, 0]
         # selon y [0, 1]
         # selon -x [-1, 0]
         # selon -y [0, -1]
-        #vient de ma droite / va à ma gauche
-        #vient de ma gauche / va à ma droite
-        #vient d'en face / va vers moi
-        #vient de ma voix / va en face de moi
-
+        libre = True
         for usager, intentions in self.usagers.items():
             orientation_usager, intention_usager = intentions
             if usager.id != voiture.id:
-                if intention == orientation: #Je vais tout droit
+                if intention == orientation: 
+                    #Je vais tout droit
                     if orientation_usager == from_right_to_left and intention_usager in [intention, from_front_to_me, from_right_to_left]:
-                        #Personne à ma droite ne doit tourner sur ma trajectoire ou la couper   
-                        return False
+                        #Si la personne à ma droite tourne sur ma trajectoire ou la coupe  
+                        libre = False
                     if orientation_usager == from_left_to_right and intention_usager in [intention, from_left_to_right]:
-                        #Personne à ma gauche ne tourne sur ma trajectoire
-                        return False
+                        #Si la personne à ma gauche tourne sur ma trajectoire ou la coupe
+                        libre = False
                     if orientation_usager == from_front_to_me and intention_usager == from_left_to_right:
-                        #Personne en face tourne à sa gauche
-                        return False 
-                elif intention == from_left_to_right:#Je vais sur ma droite
+                        #Si la personne en face de moi tourne à sa gauche
+                        libre = False 
+                elif intention == from_left_to_right:
+                    #Je vais sur ma droite
                     if orientation_usager == from_front_to_me and intention_usager == from_left_to_right:
-                        #Personne en face tourne à sa gauche
-                        return False
+                        #Si la personne en face de moi tourne à sa gauche
+                        libre = False
                     if orientation_usager == from_left_to_right and intention_usager == from_left_to_right:
-                        #Personne à ma gauche tourne à sa gauche
-                        return False
-                elif intention == from_right_to_left:#Je vais sur ma gauche
+                        #Si la personne à ma gauche tourne à sa gauche
+                        libre = False
+                elif intention == from_right_to_left:
+                    #Je vais sur ma gauche
                     if orientation_usager == from_right_to_left and intention_usager in [from_front_to_me, intention, from_me_to_front]:
-                        #Personne à ma droite tourne
-                        return False
+                        #Si la personne à ma droite tourne quelque part
+                        libre = False
                     if orientation_usager == from_left_to_right and intention_usager in [from_left_to_right, from_me_to_front]:
-                        #Personne à ma gauche tourne à sa gauche
-                        return False
+                        #Si la personne à ma gauche tourne à sa gauche
+                        libre = False
                     if orientation_usager == from_front_to_me and intention_usager in [from_front_to_me, from_right_to_left, from_left_to_right]:
-                        #Personne en face va tout droit
-                        return False  
-        self.enregistrer_usager(voiture, orientation, intention)
-        return True
+                        #Si la personne en face tourne quelque part
+                        libre = False  
+        if libre:
+            self.enregistrer_usager(voiture, orientation, intention)
+        return libre
 
 class EntreeSortie(Noeud):
 

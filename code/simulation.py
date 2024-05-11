@@ -192,7 +192,6 @@ class Simulation:
         Courbe.delta_temps_simulation = delta_temps_simulation
         self.iteration+=1
         GestionnaireVitesse.temps_simulation = self.temps_simulation
-        self.i+=1
         if environnement_actif:
             voitures_actives = self.recuperer_voitures()
             if self.nombre_voiture > len(self.voitures) or len(voitures_actives) < len(self.voitures):

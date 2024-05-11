@@ -65,7 +65,6 @@ class GestionnaireVitesse:
 
     def genere_courbe_suivie_voiture(self, voiture_obstacle, distance_voiture_obstacle_initiale: float):
         courbe = self.cree_courbe(self.voiture.vitesse, 0, self.voiture.deceleration)
-
         
         """deplacement_total = voiture_obstacle.gestionnaire_vitesse.courbe_courante.result()
         temps_depart = voiture_obstacle.gestionnaire_vitesse.courbe_courante.temps_depart

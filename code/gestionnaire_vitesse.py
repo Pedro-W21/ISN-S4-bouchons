@@ -18,6 +18,7 @@ class GestionnaireVitesse:
     ROULE = "ROULE"
     NOEUD = "NOEUD"
 
+
     def __init__(self, voiture):
 
         self.courbes = {

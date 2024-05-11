@@ -20,11 +20,15 @@ def fonction_position_lineaire(t):
     return (1/2) * (t**2)
 
 class Courbe:
+    
+    delta_temps_simulation = 0
+
+
     def __init__(self, vitesse_initiale, vitesse_finale, duree, temps_simulation) -> None:
         self.vitesse_initiale = vitesse_initiale
         self.vitesse_finale = vitesse_finale
         self.duree = abs(duree)
-        self.temps_depart = temps_simulation - 1/30
+        self.temps_depart = temps_simulation - self.delta_temps_simulation
 
         self.last_position = 0
         self.last_deplacement = 0

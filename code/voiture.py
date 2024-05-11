@@ -9,7 +9,7 @@ class Voiture:
     #size = Vecteur2D(3.86, 2.14) # m [longueur, largeur]
     size = Vecteur2D(2, 1.75) # m [longueur, largeur]
     
-    distance_marge_securite = (size.x + size.y)*1.6
+    distance_marge_securite = (size.x + size.y)*1.5
     marge_noeud = (size.x+Noeud.size.get_x())/2
     def __init__(self, graphe: dict):
         self.affiche = False
@@ -525,9 +525,9 @@ class Voiture:
                                     print("Voiture obstacle trouvée, dans les arêtes suivantes", voiture_obstacle.id, longueur)
                                     return voiture_obstacle, longueur
                         else:
-                            longueur += arete.longueur
+                            longueur += arete.longueur-0.5*Noeud.size.get_x()
                     else:
-                        longueur += arete.longueur
+                        longueur += arete.longueur-0.5*Noeud.size.get_x()
                 else:
                     return None, None
             else:
@@ -541,7 +541,7 @@ class Voiture:
                         # print("Voiture obstacle trouvée, dans le noeud de départ", voiture_obstacle, longueur)
                             return voiture_obstacle, distance_a_voiture
                 else:
-                    longueur += (self.position - noeud_arrivee.position).norme_manathan()
+                    longueur += (self.position - noeud_arrivee.position).norme_manathan()-0.5*Noeud.size.get_x()
         return None, None
 
     def trouver_noeuds_sur_mon_chemin(self):

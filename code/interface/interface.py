@@ -38,7 +38,7 @@ class App(ctk.CTk):
 
         self.geometry('1200x850')
         self.minsize(1000, 800)
-        self.title('Interface du début')
+        self.title('Aggloméramax Pro')
         #self.bind('<Motion>', self.motion)
 
         # Calculer la taille du cadre en fonction des dimensions de l'écran mais marche pas

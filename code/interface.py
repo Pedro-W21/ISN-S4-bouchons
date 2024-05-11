@@ -585,7 +585,7 @@ class App(ctk.CTk):
             i += 1
         self.voiture_select = self.voitures[i]
         self.label_info_id_select.configure(text=f"ID de la voiture : {self.voiture_select.id}")
-        self.label_info_id_select.grid(column=2, row=0, sticky="W", padx=5)
+        self.label_info_id_select.grid(column=1, row=0, sticky="W", padx=5)
         pos, angle = self.voiture_select.recuperer_position()
         xv, yv = pos.get_x() / Noeud.size.get_x(), pos.get_y() / Noeud.size.get_y()
         pos_voiture = self.grille_to_canvas_pos(xv, yv)
@@ -593,8 +593,11 @@ class App(ctk.CTk):
         if self.selection_voiture_select != None:
             self.canvas_affichage.delete(self.selection_voiture_select)
         self.selection_voiture_select = self.canvas_affichage.create_oval(pos_voiture[0] - rayon_cercle, pos_voiture[1] - rayon_cercle, pos_voiture[0] + rayon_cercle, pos_voiture[1] + rayon_cercle, outline=NOIR, fill=BLANC)
-        self.label_info_pos_select.grid(column=3, row=0, sticky="W", padx=5)
-        self.label_info_vitesse_select.grid(column=4, row=0, sticky="W", padx=5)
+        self.label_info_pos_select.grid(column=2, row=0, sticky="W", padx=5)
+        self.label_info_vitesse_select.grid(column=3, row=0, sticky="W", padx=5)
+        self.label_info_distance_obstacles.grid(column=4, row=0, sticky="W", padx=5)
+        self.label_info_obstacles_noeuds.grid(column=1, columnspan=3, row=1, sticky="W", padx=5)
+        self.label_info_obstacles_voitures.grid(column=4, columnspan=1, row=1, sticky="W", padx=5)
 
     def update_affichage_voiture_select(self):
         """
@@ -634,6 +637,20 @@ class App(ctk.CTk):
                 rayon_cercle = 0.4 * self.echelle * min(Voiture.size.get_x(), Voiture.size.get_y())/Noeud.size.get_x()
                 self.canvas_affichage.coords(self.selection_voiture_select, pos_voiture[0] - rayon_cercle, pos_voiture[1] - rayon_cercle, pos_voiture[0] + rayon_cercle, pos_voiture[1] + rayon_cercle)
                 self.canvas_affichage.tag_raise(self.selection_voiture_select)
+                if self.voiture_select.voiture_obstacle != None:
+                    self.label_info_distance_obstacles.configure(text=f"Distance à voiture : {(int(self.voiture_select.distance_voiture_obstacle/100.0)*100.0)/Noeud.size.get_x()}")
+                    self.label_info_obstacles_voitures.configure(text=f"ID voiture obstacle : {self.voiture_select.voiture_obstacle.id}")
+                else:
+                    self.label_info_distance_obstacles.configure(text=f"Pas de voiture obstacle")
+                    self.label_info_obstacles_voitures.configure(text=f"Pas de voiture obstacle")
+                positions_distances_noeuds_obstacles = []
+                for (noeud, distance) in self.voiture_select.noeuds_obstacles_longueur:
+                    position = (noeud.position.get_x()/Noeud.size.get_x(), noeud.position.get_y()/Noeud.size.get_y())
+                    positions_distances_noeuds_obstacles.append((position, int((distance/Noeud.size.get_x()) * 100.0)/100.0))
+                if len(positions_distances_noeuds_obstacles) > 0:
+                    self.label_info_obstacles_noeuds.configure(text=f"Noeuds obstacles : {positions_distances_noeuds_obstacles}")
+                else:
+                    self.label_info_obstacles_noeuds.configure(text=f"Pas de Noeuds obstacles")
             else:
                 self.deselectionne_voiture()
 
@@ -649,6 +666,9 @@ class App(ctk.CTk):
         self.label_info_id_select.grid_forget()
         self.label_info_pos_select.grid_forget()
         self.label_info_vitesse_select.grid_forget()
+        self.label_info_distance_obstacles.grid_forget()
+        self.label_info_obstacles_noeuds.grid_forget()
+        self.label_info_obstacles_voitures.grid_forget()
         for fleche in self.chemin_voiture_select:
             self.canvas_affichage.delete(fleche)
         self.chemin_voiture_select = []
@@ -880,15 +900,20 @@ class App(ctk.CTk):
         self.frame_infos.columnconfigure(2, weight=1, uniform='a')
         self.frame_infos.columnconfigure(3, weight=1, uniform='a')
         self.frame_infos.columnconfigure(4, weight=1, uniform='a')
+
         self.frame_infos.rowconfigure(0, weight=1, uniform='a')
+        self.frame_infos.rowconfigure(1, weight=1, uniform='a')
 
         self.label_info_temps = ctk.CTkLabel(self.frame_infos, text=f"Temps : {0.0}")
         self.label_info_temps.grid(column=0, row=0, sticky="W", padx=5)
         self.label_info_voitures = ctk.CTkLabel(self.frame_infos, text=f"Voitures visibles : {0}")
-        self.label_info_voitures.grid(column=1, row=0, sticky="W", padx=5)
+        self.label_info_voitures.grid(column=0, row=1, sticky="W", padx=5)
         self.label_info_id_select = ctk.CTkLabel(self.frame_infos, text="", bg_color=DARK_BLUE)
         self.label_info_vitesse_select = ctk.CTkLabel(self.frame_infos, text="", bg_color=DARK_BLUE)
         self.label_info_pos_select = ctk.CTkLabel(self.frame_infos, text="", bg_color=DARK_BLUE)
+        self.label_info_distance_obstacles = ctk.CTkLabel(self.frame_infos, text="", bg_color=DARK_BLUE)
+        self.label_info_obstacles_voitures = ctk.CTkLabel(self.frame_infos, text="", bg_color=DARK_BLUE)
+        self.label_info_obstacles_noeuds = ctk.CTkLabel(self.frame_infos, text="", bg_color=DARK_BLUE)
 
         self.voiture_select = None
         self.chemin_voiture_select = []

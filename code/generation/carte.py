@@ -1,6 +1,6 @@
 from simulation.arete import Arete
 from simulation.noeud import Noeud, Intersection_T, Intersection_X, EntreeSortie, Virage
-from vecteur_2d import Vecteur2D
+from utils.vecteur_2d import Vecteur2D
 from random import randint, choice
 import numpy as np
 import json

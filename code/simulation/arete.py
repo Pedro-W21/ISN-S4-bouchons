@@ -1,4 +1,4 @@
-from vecteur_2d import Vecteur2D
+from utils.vecteur_2d import Vecteur2D
 
 
 class Arete:

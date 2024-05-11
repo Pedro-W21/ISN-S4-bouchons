@@ -10,7 +10,7 @@ class RangeError(Exception):
 
 class GestionnaireVitesse:
 
-    # sert à savoir l'etat d'une voiture notamment pour les voitures de derrière
+    # Différents états possibles d'une voiture
     ACCELERATION = "ACCELERATION"
     FREINAGE = "FREINAGE"
     SUIVRE_VOITURE = "SUIVRE_VOITURE"

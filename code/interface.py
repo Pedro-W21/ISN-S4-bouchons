@@ -135,6 +135,7 @@ class App(ctk.CTk):
         self.modele.rowconfigure(0, weight=1, uniform='a')
         self.modele.rowconfigure(1, weight=1, uniform='a')
         self.modele.rowconfigure(2, weight=1, uniform='a')
+        self.modele.rowconfigure(2, weight=1, uniform='a')
 
 
 
@@ -1198,9 +1199,7 @@ class App(ctk.CTk):
                 self.yo += self.canvas_affichage.winfo_height()//2 - self.canvas_affichage.winfo_width()//2
 
             if len(self.grille_canvas) != self.largeur_carte * self.hauteur_carte:
-                for ligne in self.grille_canvas:
-                    for carre in self.grille_canvas:
-                        self.canvas_affichage.delete(carre)
+                self.canvas_affichage.delete(*self.grille_canvas)
                 self.grille_canvas = []
                 nx = np.ones(self.largeur_carte+1) * self.xo + np.arange(0, self.largeur_carte+1) * self.echelle
                 ny = np.ones(self.hauteur_carte+1) * self.yo + np.arange(0, self.hauteur_carte+1) * self.echelle

@@ -198,8 +198,10 @@ class Simulation:
                 self.activer_voitures()
             for voiture in voitures_actives:
                 entrees_libres = self.trouver_entrees_libres()
-                print("\n\n===============================\nTOUR DE ", voiture.couleur, voiture.id, voiture.affiche)
+                print("\n====================\nTOUR DE", voiture.couleur, voiture.id, voiture.affiche)
                 voiture.update(self.temps_simulation)
+                if voiture.chemin == []:
+                    print("GROSSE ERREUR")
         else:
             pass
         # if self.iteration == 25:

@@ -83,7 +83,7 @@ class Voiture:
 
         self.distance_voiture_obstacle: float = 0
         self.voiture_obstacle: Voiture = None
-
+        self.noeuds_obstacles_longueur = []
 
     def update(self, temps_simulation: float):
         """
@@ -105,15 +105,14 @@ class Voiture:
             None
         """
         # identification des obstacles dans ma zone de sécurité
-        voiture_obstacle: Voiture = None
-        distance_voiture_obstacle: float = None
 
-        
         voiture_obstacle, distance_voiture_obstacle = self.trouver_voiture_sur_mon_chemin()
         self.distance_voiture_obstacle = distance_voiture_obstacle
         self.voiture_obstacle = voiture_obstacle
 
         noeuds_obstacles_longueur: list[tuple[Noeud, float]] = self.trouver_noeuds_sur_mon_chemin()
+
+        self.noeuds_obstacles_longueur = noeuds_obstacles_longueur
 
         if not voiture_obstacle:
             self.gestionnaire_vitesse.desactiver_courbes([GestionnaireVitesse.SUIVRE_VOITURE]) 
@@ -286,10 +285,12 @@ class Voiture:
             noeud_a_depasser = self.chemin[1]
         else:
             return
-        decalage = self.direction.abs()*(-self.direction.valeur_projetee()*self.direction_prochain_chemin.valeur_projetee())
-        decalage = 0
-        vecteur = (self.chemin[1].position+ decalage*Noeud.size.get_x()/4 - self.position).unitaire()
-        if vecteur != self.direction:
+        # decalage = self.direction.abs()*(-self.direction.valeur_projetee()*self.direction_prochain_chemin.valeur_projetee())
+        # decalage = 0
+        # vecteur = (self.chemin[1].position+ decalage*Noeud.size.get_x()/4 - self.position).unitaire()
+        # if vecteur != self.direction:
+        if self.depassement_noeud(noeud_a_depasser):
+            print("J'update l'orientation")
             self.update_orientation()
             
             chemin, distances = self.recherche_chemin(noeud_a_depasser)
@@ -297,19 +298,38 @@ class Voiture:
             self.distances = distances
 
             if noeud_a_depasser != self.noeud_depart and chemin[0] != self.noeud_arrivee:
+                print("oui 1", chemin[0], chemin[1])
                 self.ancienne_arete = self.arete_actuelle
                 self.arete_actuelle = self.trouver_arete_entre_noeuds(self.chemin[0], self.chemin[1])
                 if self.vitesse == self.arete_actuelle.vitesse_max:
+                    print("oui 2")
                     self.gestionnaire_vitesse.desactiver_courbes([GestionnaireVitesse.ROULE])
                     self.gestionnaire_vitesse.genere_courbe_roule_arete(self.arete_actuelle)
                 if type(self.chemin[1]) != EntreeSortie:
+                        print("oui 3")
                         self.prochaine_arete = self.trouver_arete_entre_noeuds(self.chemin[1], self.chemin[2])
                         self.update_orientation_prochain_chemin()
                 else:
+                    print("oui 4")
                     self.prochaine_arete = None
 
                 self.arete_actuelle.push_voiture(self)
                 self.ancienne_arete.voitures.remove(self)
+
+    def depassement_noeud(self, noeud_a_depasser):
+        if self.direction_prochain_chemin == Vecteur2D(1, 0):
+            if self.position.x >= noeud_a_depasser.position.x + noeud_a_depasser.size.x:
+                return True
+        elif self.direction_prochain_chemin == Vecteur2D(-1, 0):
+            if self.position.x < noeud_a_depasser.position.x - noeud_a_depasser.size.x:
+                return True
+        elif self.direction_prochain_chemin == Vecteur2D(0, 1):
+            if self.position.y > noeud_a_depasser.position.y + noeud_a_depasser.size.y:
+                return True
+        elif self.direction_prochain_chemin == Vecteur2D(0, -1):
+            if self.position.y < noeud_a_depasser.position.y - noeud_a_depasser.size.y:
+                return True
+        return False
 
     def usage_noeuds(self):
         """
@@ -375,7 +395,7 @@ class Voiture:
             parcours.append(noeud)
             noeud = noeud_parent[noeud]
         parcours.append(noeud_depart)
-        
+        print("Nouveau chemin :", parcours[::-1])
         return parcours[::-1], distances
 
     def distance_securite(self, vitesse: float, marge:float) -> float:

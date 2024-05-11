@@ -7,6 +7,8 @@ import numpy as np
 from carte import Carte
 from random import choice, shuffle, random
 
+from courbe import Courbe
+
 class Simulation:
 
     VIRAGE = "VIRAGE"
@@ -184,7 +186,7 @@ class Simulation:
         """
         #Si on veut générer + de voitures
         self.temps_simulation += delta_temps_simulation
-
+        Courbe.delta_temps_simulation = self.delta_temps_simulation
         self.i+=1
         if environnement_actif:
             voitures_actives = self.recuperer_voitures()

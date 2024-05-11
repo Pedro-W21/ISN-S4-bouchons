@@ -23,7 +23,7 @@ class Courbe:
     def __init__(self, vitesse_initiale, vitesse_finale, duree, temps_simulation) -> None:
         self.vitesse_initiale = vitesse_initiale
         self.vitesse_finale = vitesse_finale
-        self.duree = duree
+        self.duree = abs(duree)
         self.temps_depart = temps_simulation - 1/10
 
         self.last_position = 0
@@ -33,8 +33,8 @@ class Courbe:
             vitesse = self.vitesse_finale
             position = self.vitesse_finale * (temps_simuation - self.temps_depart) - self.last_position
         else:
-            vitesse = fonction_vitesse_e((temps_simuation - self.temps_depart)/self.duree) * (self.vitesse_finale - self.vitesse_initiale) + self.vitesse_initiale
-            position = (1-fonction_position_e((temps_simuation - self.temps_depart)/self.duree)) * abs(self.vitesse_finale - self.vitesse_initiale) * (temps_simuation - self.temps_depart) + min(self.vitesse_finale, self.vitesse_initiale) * (temps_simuation-self.temps_depart)      
+            vitesse = fonction_vitesse_e(abs(temps_simuation - self.temps_depart)/self.duree) * (self.vitesse_finale - self.vitesse_initiale) + self.vitesse_initiale
+            position = (1-fonction_position_e(abs(temps_simuation - self.temps_depart)/self.duree)) * abs(self.vitesse_finale - self.vitesse_initiale) * abs(temps_simuation - self.temps_depart) + min(self.vitesse_finale, self.vitesse_initiale) * abs(temps_simuation-self.temps_depart)      
         
         deplacement = position - self.last_position
         self.last_position = position
@@ -43,10 +43,10 @@ class Courbe:
     def result_positif(self, temps_simuation):
         if temps_simuation > self.temps_depart + self.duree:
             vitesse = self.vitesse_finale
-            position = self.vitesse_finale * (temps_simuation - self.temps_depart)  - self.last_position
+            position = self.vitesse_finale * abs(temps_simuation - self.temps_depart)  - self.last_position
         else:
-            vitesse = fonction_vitesse_e((temps_simuation - self.temps_depart)/self.duree) * (self.vitesse_finale - self.vitesse_initiale) + self.vitesse_initiale
-            position = fonction_position_e((temps_simuation - self.temps_depart)/self.duree) * abs(self.vitesse_finale - self.vitesse_initiale) * (temps_simuation - self.temps_depart) + min(self.vitesse_finale, self.vitesse_initiale) * (temps_simuation-self.temps_depart)      
+            vitesse = fonction_vitesse_e(abs(temps_simuation - self.temps_depart)/self.duree) * (self.vitesse_finale - self.vitesse_initiale) + self.vitesse_initiale
+            position = fonction_position_e(abs(temps_simuation - self.temps_depart)/self.duree) * abs(self.vitesse_finale - self.vitesse_initiale) * abs(temps_simuation - self.temps_depart) + min(self.vitesse_finale, self.vitesse_initiale) * abs(temps_simuation-self.temps_depart)      
         
         deplacement = position - self.last_position
         self.last_position = position

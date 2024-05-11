@@ -3,7 +3,7 @@ import numpy as np
 import simulation.voiture as voit
 import simulation.noeud as nd
 import simulation.arete as art
-import vecteur_2d as vec2
+import utils.vecteur_2d as vec2
 import generation.carte as carte
 import interface.interface as inter
 import utils.courbe as cr

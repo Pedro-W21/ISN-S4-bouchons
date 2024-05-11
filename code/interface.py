@@ -60,6 +60,7 @@ class App(ctk.CTk):
         self.routes = []
         self.simulation = None
         self.simulation_en_cours = False
+        self.max_voitures = 50
         self.mode_avant = "rien"
         self.mode_affichage = "edition"
         self.largeur_carte = 10
@@ -519,7 +520,7 @@ class App(ctk.CTk):
         self.nombre_voitures_entry.insert(0, "1")
         # self.nombre_voitures_Label_affichees = ctk.CTkLabel(master=self.parametres, text=f"{1}")
         # self.nombre_voitures_Label_affichees.pack(side=TOP, expand=True, fill="x")
-        self.nombre_voiture_scale = ctk.CTkSlider(master=self.parametres, from_=1, to=25, command=self.afficher_scale_voitures)
+        self.nombre_voiture_scale = ctk.CTkSlider(master=self.parametres, from_=1, to=self.max_voiture, command=self.afficher_scale_voitures)
         self.nombre_voiture_scale.pack(side=TOP, expand=True, fill="x")
         self.nombre_voiture_scale.set(1)
 
@@ -718,7 +719,7 @@ class App(ctk.CTk):
         texte = self.nombre_voitures_stringvar.get()
         resultat = self.recupere_nombre_entier(texte)
         try:
-            resultat = str(min(25, int(resultat)))
+            resultat = str(min(self.max_voiture, int(resultat)))
             self.nombre_voitures_stringvar.set(resultat)
             nb_voitures = int(resultat)
             self.nombre_voiture_scale.set(nb_voitures)

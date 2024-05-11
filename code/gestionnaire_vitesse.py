@@ -18,6 +18,7 @@ class GestionnaireVitesse:
     ROULE = "ROULE"
     NOEUD = "NOEUD"
 
+    temps_simulation = 0
 
     def __init__(self, voiture):
 
@@ -62,13 +63,19 @@ class GestionnaireVitesse:
             duree = self.voiture.temps_mouvement(vitesse_initiale, vitesse_finale, acceleration)
         return Courbe(vitesse_initiale, vitesse_finale, duree, self.voiture.temps_simulation)
 
-    """def genere_courbe_suivie_voiture(self, voiture_obstacle, distance_voiture_obstacle_initiale: float):
-        vitesse, position = voiture_obstacle.gestionnaire_vitesse.courbe_courante.result_e(self.voiture.temps_simulation)
+    def genere_courbe_suivie_voiture(self, voiture_obstacle, distance_voiture_obstacle_initiale: float):
+        courbe = self.cree_courbe(self.voiture.vitesse, 0, self.voiture.deceleration)
+
+        
+        """deplacement_total = voiture_obstacle.gestionnaire_vitesse.courbe_courante.result()
+        temps_depart = voiture_obstacle.gestionnaire_vitesse.courbe_courante.temps_depart
+
+
         deplacement_voiture_obstacle_total_depuis_t = voiture_obstacle.gestionnaire_vitesse.courbe_courante.position_finale - position
         distance = deplacement_voiture_obstacle_total_depuis_t + distance_voiture_obstacle_initiale - self.voiture.distance_securite(voiture_obstacle.gestionnaire_vitesse.courbe_courante.vitesse_finale)
-        courbe = self.cree_courbe(distance, self.voiture.vitesse, voiture_obstacle.gestionnaire_vitesse.courbe_courante.vitesse_finale)
-        self.courbes[self.SUIVRE_VOITURE+voiture_obstacle.id] = [(courbe, self.voiture.position)]
-    """
+        courbe = self.cree_courbe(distance, self.voiture.vitesse, voiture_obstacle.gestionnaire_vitesse.courbe_courante.vitesse_finale)"""
+        self.courbes[self.SUIVRE_VOITURE+voiture_obstacle+voiture_obstacle.etat] = [(courbe, self.voiture.position)]
+    
     def genere_courbe_freinage(self, vitesse_finale: float, nom_courbe = FREINAGE):
         if vitesse_finale <= self.voiture.vitesse:
             courbe = self.cree_courbe(self.voiture.vitesse, vitesse_finale, self.voiture.deceleration)
@@ -133,7 +140,6 @@ class GestionnaireVitesse:
     def recuperer_position_etat(self) -> tuple[float, float, str]:
         vitesses: dict[float: Courbe] = {}
         for courbe in self.liste_courbes():
-            print("oui1")
             vitesse, position = courbe.result(self.voiture.temps_simulation)
             vitesses[vitesse] = courbe, position
         if list(vitesses.keys()) != []:

@@ -1,5 +1,6 @@
 import json
 from arete import Arete
+from gestionnaire_vitesse import GestionnaireVitesse
 from voiture import Voiture
 from noeud import Intersection_T, Intersection_X, Virage, Noeud, EntreeSortie
 from vecteur_2d import Vecteur2D
@@ -188,6 +189,7 @@ class Simulation:
         #Si on veut générer + de voitures
         self.temps_simulation += delta_temps_simulation
         Courbe.delta_temps_simulation = delta_temps_simulation
+        GestionnaireVitesse.temps_simulation = self.temps_simulation
         self.i+=1
         if environnement_actif:
             voitures_actives = self.recuperer_voitures()

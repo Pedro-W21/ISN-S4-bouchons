@@ -35,13 +35,10 @@ class Courbe:
 
 
     def result_negatif(self, temps_simuation):
-        print("oui3")
         if temps_simuation > self.temps_depart + self.duree:
-            print("oui5")
             vitesse = self.vitesse_finale
             position = self.last_deplacement + self.last_position
         else:
-            print("oui6")
             vitesse = fonction_vitesse_e(abs(temps_simuation - self.temps_depart)/self.duree) * (self.vitesse_finale - self.vitesse_initiale) + self.vitesse_initiale
             position = (1-fonction_position_e(abs(temps_simuation - self.temps_depart)/self.duree)) * abs(self.vitesse_finale - self.vitesse_initiale) * abs(temps_simuation - self.temps_depart) + min(self.vitesse_finale, self.vitesse_initiale) * abs(temps_simuation-self.temps_depart)      
         
@@ -51,13 +48,10 @@ class Courbe:
         return vitesse, deplacement
     
     def result_positif(self, temps_simuation):
-        print("oui4")
         if temps_simuation > self.temps_depart + self.duree:
-            print("oui5")
             vitesse = self.vitesse_finale
             position = self.last_deplacement + self.last_position
         else:
-            print("oui6")
             vitesse = fonction_vitesse_e(abs(temps_simuation - self.temps_depart)/self.duree) * (self.vitesse_finale - self.vitesse_initiale) + self.vitesse_initiale
             position = fonction_position_e(abs(temps_simuation - self.temps_depart)/self.duree) * abs(self.vitesse_finale - self.vitesse_initiale) * abs(temps_simuation - self.temps_depart) + min(self.vitesse_finale, self.vitesse_initiale) * abs(temps_simuation-self.temps_depart)      
         
@@ -67,7 +61,6 @@ class Courbe:
         return abs(vitesse), abs(deplacement)
 
     def result(self, temps_simuation):
-        print("oui2")
         if self.vitesse_finale - self.vitesse_initiale < 0:
             return self.result_negatif(temps_simuation)
         else:

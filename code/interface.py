@@ -60,7 +60,7 @@ class App(ctk.CTk):
         self.routes = []
         self.simulation = None
         self.simulation_en_cours = False
-        self.max_voitures = 50
+        self.max_voiture = 50
         self.mode_avant = "rien"
         self.mode_affichage = "edition"
         self.largeur_carte = 10

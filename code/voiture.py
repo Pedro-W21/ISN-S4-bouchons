@@ -6,7 +6,6 @@ from gestionnaire_vitesse import GestionnaireVitesse
 
 class Voiture:
 
-    #size = Vecteur2D(3.86, 2.14) # m [longueur, largeur]
     size = Vecteur2D(2, 1.75) # m [longueur, largeur]
     
     distance_marge_securite = (size.x + size.y)*1.5
@@ -173,19 +172,17 @@ class Voiture:
                 elif distance_noeud_obstacle < self.distance_securite(noeud_obstacle.vitesse_max, self.marge_noeud):
                         self.generation_courbe(noeud_obstacle)
     
-    def update_vitesse_test(self):
-        if self.vitesse == 0:
-            if not self.gestionnaire_vitesse.courbe_est_active(GestionnaireVitesse.ACCELERATION):
-                self.gestionnaire_vitesse.desactiver_toutes_courbes()
-                self.gestionnaire_vitesse.genere_courbe_acceleration_arete(self.arete_actuelle)
-        elif self.vitesse == self.arete_actuelle.vitesse_max:
-            if not self.gestionnaire_vitesse.courbe_est_active(GestionnaireVitesse.ARRET):
-                self.gestionnaire_vitesse.desactiver_toutes_courbes()
-                self.gestionnaire_vitesse.genere_courbe_arret()               
-
-        
-        
     def generation_courbe(self, objet, arret=False):
+        """
+        Génère une courbe de vitesse en fonction de l'objet et du besoin ciblé.
+
+        Args:
+            objet: L'objet (Arete ou Noeud) pour lequel générer la courbe de vitesse.
+            arret (bool, optional): Indique si l'arrêt est en cours. Par défaut False.
+
+        Returns:
+            None
+        """
         if arret:
             if not self.gestionnaire_vitesse.courbe_est_active(self.gestionnaire_vitesse.ARRET+self.id_noeud(objet)):
                 self.gestionnaire_vitesse.genere_courbe_arret_noeud(objet.nom)
@@ -415,16 +412,46 @@ class Voiture:
         Returns:
             float: La distance de sécurité.
         """
-        distance_vitesse = self.distance_deceleration(vitesse, 0)
         return self.distance_deceleration(vitesse, 0) + marge
     
     def temps_mouvement(self, vitesse_initiale, vitesse_finale, acceleration) -> float:
+        """
+        Calcule le temps nécessaire pour passer d'une vitesse initiale à une vitesse finale avec une accélération constante.
+
+        Args:
+            vitesse_initiale (float): La vitesse initiale.
+            vitesse_finale (float): La vitesse finale.
+            acceleration (float): L'accélération utilisée pour le mouvement.
+
+        Returns:
+            float: Le temps nécessaire pour effectuer le mouvement.
+        """
         return abs(vitesse_initiale - vitesse_finale) / acceleration
     
     def temps_mouvement_deceleration(self, vitesse_initiale, vitesse_finale) -> float:
+        """
+        Calcule le temps nécessaire pour passer d'une vitesse initiale à une vitesse finale en décélération.
+
+        Args:
+            vitesse_initiale (float): La vitesse initiale.
+            vitesse_finale (float): La vitesse finale.
+
+        Returns:
+            float: Le temps nécessaire pour effectuer le mouvement en décélération.
+        """
         return self.temps_mouvement(vitesse_initiale, vitesse_finale, self.deceleration)
     
     def temps_mouvement_acceleration(self, vitesse_initiale, vitesse_finale) -> float:
+        """
+        Calcule le temps nécessaire pour passer d'une vitesse initiale à une vitesse finale en accélération.
+
+        Args:
+            vitesse_initiale (float): La vitesse initiale.
+            vitesse_finale (float): La vitesse finale.
+
+        Returns:
+            float: Le temps nécessaire pour effectuer le mouvement en accélération.
+        """
         return self.temps_mouvement(vitesse_initiale, vitesse_finale, self.acceleration)
 
     def distance_deceleration(self, vitesse_initiale, vitesse_finale) -> float:
@@ -523,7 +550,6 @@ class Voiture:
         Returns:
             tuple: Une paire contenant la voiture obstacle et la distance jusqu'à elle, si elle existe. Sinon, une paire de None.
         """
-        # renvoie ou pas une voiture qui est dans ma distance de securite et sur mon chemin
 
         longueur = 0
         dist_secu = self.distance_securite(self.vitesse,self.distance_marge_securite)

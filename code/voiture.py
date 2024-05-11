@@ -254,9 +254,12 @@ class Voiture:
         # Si il n'y pas d'obstacles
         if not voiture_obstacle:
             self.gestionnaire_vitesse.desactiver_courbes([GestionnaireVitesse.SUIVRE_VOITURE]) 
-        elif not self.gestionnaire_vitesse.courbe_est_active(self.id_voiture(voiture_obstacle)):
-            self.gestionnaire_vitesse.desactiver_courbes([GestionnaireVitesse.SUIVRE_VOITURE]) 
-            self.gestionnaire_vitesse.genere_courbe_suivie_voiture(voiture_obstacle, distance_voiture_obstacle)
+        else:
+            print("Voiture obstacle", voiture_obstacle.id, "Distance", distance_voiture_obstacle)
+            if not self.gestionnaire_vitesse.courbe_est_active(self.id_voiture(voiture_obstacle)):
+                print("On génère une courbe de suivi de voiture")
+                self.gestionnaire_vitesse.desactiver_courbes([GestionnaireVitesse.SUIVRE_VOITURE]) 
+                self.gestionnaire_vitesse.genere_courbe_suivie_voiture(voiture_obstacle, distance_voiture_obstacle)
 
         if not noeuds_obstacles_longueur:
             #Je desactive toutes les autres courbes
@@ -300,7 +303,6 @@ class Voiture:
                             self.ancient_usagers = noeud_obstacle.get_usagers().copy()
                     
                     else:
-                        print("Je ne suis pas dans la zone de ping, j'adapte mon allure")
                         self.generation_courbe("regulation_noeud", noeud_obstacle)
 
                 # ce n'est pas le premier noeud
@@ -698,11 +700,10 @@ class Voiture:
                 longueur += (self.chemin[1].position - self.position).norme_manathan()
             else:
                 if isinstance(noeud_devant,(Intersection_X, Intersection_T)):
-                    if longueur < self.distance_securite(self.vitesse, self.marge_noeud):
+                    if longueur <= self.distance_securite(self.vitesse, self.marge_noeud*1.1):
                         # if noeud_devant.est_empruntee() and not noeud_devant.est_un_usager(self):
-
-                        if not noeud_devant.est_un_usager(self):
-                            noeuds.append((noeud_devant, longueur))
+                        # if not noeud_devant.est_un_usager(self):
+                        noeuds.append((noeud_devant, longueur))
                 longueur += (self.chemin[i+1].position - self.chemin[i].position).norme_manathan()
         return noeuds
 

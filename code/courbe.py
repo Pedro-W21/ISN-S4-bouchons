@@ -27,7 +27,7 @@ class Courbe:
         self.temps_depart = temps_simulation - 1/30
 
         self.last_position = 0
-        self.last_deplcement = 0
+        self.last_deplacement = 0
 
 
     def result_negatif(self, temps_simuation):

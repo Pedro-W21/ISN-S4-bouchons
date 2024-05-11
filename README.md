@@ -35,7 +35,7 @@ Aggloméramax Pro est un projet Python qui permet de créer des routes personnal
 - Simulation de la circulation de voitures autonomes
 - Pas de collision de voiture réelles (les collisions observées notamment aux intersections sont dues à un compromis dans le développement de l'affichage)
 - virages, intersection T (à 3 voies) et intersections X (à 4 voies) gérés
-- accélération et freinage de chaque voiture contrôlé indiciduellement
+- accélération et freinage de chaque voiture contrôlé individuellement
 - recherche de plus court chemin pondéré par le nombre de voitures sur celui-ci au fil du temps
 - Gestion des embouteillages et d'autres situations de circulation
 

@@ -49,7 +49,6 @@ class Voiture:
         self.deceleration_demarage = 0.6 #m/s^2 -> acceleration pour passer de 0 à 0.01 m/s en 1/60s
         self.acceleration_demarage = 0.6 #m/s^2 -> acceleration pour passer de 0 à 0.01 m/s en 1/60s
 
-        #Variables primaires (ne changeront plus)
         self.couleur = couleur
         chemin, distances = self.recherche_chemin(noeud_depart)
         self.chemin: list[Noeud] = chemin
@@ -103,7 +102,6 @@ class Voiture:
         Returns:
             None
         """
-        # identification des obstacles dans ma zone de sécurité
 
         voiture_obstacle, distance_voiture_obstacle = self.trouver_voiture_sur_mon_chemin()
         self.distance_voiture_obstacle = distance_voiture_obstacle
@@ -128,10 +126,8 @@ class Voiture:
                 self.gestionnaire_vitesse.desactiver_courbes(desactiver_courbes)
 
         if not noeuds_obstacles_longueur:
-            #Je desactive toutes les autres courbes
             desactiver_courbes = [GestionnaireVitesse.FREINAGE,GestionnaireVitesse.ARRET]
             self.gestionnaire_vitesse.desactiver_courbes(desactiver_courbes)
-            # si on est pas à la vitesse max7
             if not voiture_obstacle:
                 self.generation_courbe(self.arete_actuelle)
         else: 
@@ -140,19 +136,14 @@ class Voiture:
             self.gestionnaire_vitesse.desactiver_courbes(desactiver_courbes)
             
             for i in range(len(noeuds_obstacles_longueur)):
-                # si c'est le premier noeud et que c'est une intersection
                 noeud_obstacle = noeuds_obstacles_longueur[i][0]
                 distance_noeud_obstacle = noeuds_obstacles_longueur[i][1]
-                
                 if i == 0:
-                    # si je ne suis pas un usager
                     if not noeud_obstacle.est_un_usager(self) and self.distance_securite(noeud_obstacle.vitesse_max, self.marge_noeud) > distance_noeud_obstacle:
                         # je demande si je peux passer
-                        # ceci est optimise pour ne pas faire de calcul inutile
                         est_empruntee = noeud_obstacle.est_empruntee()
                         usagers_differents = self.ancient_usagers != noeud_obstacle.get_usagers()
                         voie_est_libre = usagers_differents and noeud_obstacle.voie_est_libre(self)
-                        #voie pas empruntée ou voie libre
                         if (not est_empruntee) or (voie_est_libre):
                             self.gestionnaire_vitesse.desactiver_courbes([GestionnaireVitesse.ARRET, GestionnaireVitesse.ROULE])
                             noeud_obstacle.enregistrer_usager(self, self.direction, self.direction_prochain_chemin)
@@ -160,15 +151,11 @@ class Voiture:
 
                             self.generation_courbe(noeud_obstacle)
                         else:
-                            #voie empruntée et/ou voie pas libre
                             self.generation_courbe(noeud_obstacle, arret=True)
-                            
                             self.ancient_usagers = noeud_obstacle.get_usagers().copy()
-                    
                     else:
                         self.generation_courbe(noeud_obstacle)
 
-                # ce n'est pas le premier noeud
                 elif distance_noeud_obstacle < self.distance_securite(noeud_obstacle.vitesse_max, self.marge_noeud):
                         self.generation_courbe(noeud_obstacle)
     
@@ -195,8 +182,7 @@ class Voiture:
                 if not self.gestionnaire_vitesse.courbe_est_active(self.gestionnaire_vitesse.ROULE):
                     self.gestionnaire_vitesse.genere_courbe_roule_arete(objet)
                     self.gestionnaire_vitesse.desactiver_courbes([GestionnaireVitesse.ACCELERATION, GestionnaireVitesse.FREINAGE])
-            else:
-                if not self.gestionnaire_vitesse.courbe_est_active(self.gestionnaire_vitesse.FREINAGE):
+            elif not self.gestionnaire_vitesse.courbe_est_active(self.gestionnaire_vitesse.FREINAGE):
                     self.gestionnaire_vitesse.genere_courbe_freinage_arete(objet)
                     self.gestionnaire_vitesse.desactiver_courbes([GestionnaireVitesse.ACCELERATION, GestionnaireVitesse.ROULE])
         elif isinstance(objet, Noeud):
@@ -210,8 +196,7 @@ class Voiture:
             elif self.vitesse == objet.vitesse_max:
                 if not self.gestionnaire_vitesse.courbe_est_active(self.gestionnaire_vitesse.ROULE+self.id_noeud(objet)):
                     self.gestionnaire_vitesse.genere_courbe_roule_noeud(objet)
-            else:
-                if not self.gestionnaire_vitesse.courbe_est_active(self.gestionnaire_vitesse.FREINAGE+self.id_noeud(objet)):
+            elif not self.gestionnaire_vitesse.courbe_est_active(self.gestionnaire_vitesse.FREINAGE+self.id_noeud(objet)):
                     self.gestionnaire_vitesse.genere_courbe_freinage_noeud(objet)
 
     def id_noeud(self, noeud: Noeud):
@@ -260,9 +245,7 @@ class Voiture:
         self.vitesse, distance_parcourue, self.etat = self.gestionnaire_vitesse.recuperer_position_etat()
         if self.vitesse == 0 and self.etat.startswith(self.gestionnaire_vitesse.SUIVRE_VOITURE):
             distance_parcourue  = 0
-        distance_au_point = (self.arete_actuelle.position_arrivee - self.position).norme_manathan()
-
-        
+        distance_au_point = (self.arete_actuelle.position_arrivee - self.position).norme_manathan()        
         if distance_parcourue >= distance_au_point:
             self.reste_distance = distance_parcourue - distance_au_point
             distance_parcourue = distance_au_point
@@ -285,10 +268,6 @@ class Voiture:
             noeud_a_depasser = self.chemin[1]
         else:
             return
-        # decalage = self.direction.abs()*(-self.direction.valeur_projetee()*self.direction_prochain_chemin.valeur_projetee())
-        # decalage = 0
-        # vecteur = (self.chemin[1].position+ decalage*Noeud.size.get_x()/4 - self.position).unitaire()
-        # if vecteur != self.direction:
         if self.depassement_noeud(noeud_a_depasser):
             self.ancienne_direction = self.direction
             
@@ -302,14 +281,12 @@ class Voiture:
                 self.update_orientation()
                 if self.vitesse == self.arete_actuelle.vitesse_max:
                     self.gestionnaire_vitesse.desactiver_courbes([GestionnaireVitesse.ROULE])
-                    self.gestionnaire_vitesse.genere_courbe_roule_arete(self.arete_actuelle)
-                    
+                    self.gestionnaire_vitesse.genere_courbe_roule_arete(self.arete_actuelle) 
                 if type(self.chemin[1]) != EntreeSortie:
                         self.prochaine_arete = self.trouver_arete_entre_noeuds(self.chemin[1], self.chemin[2])
                         self.update_orientation_prochain_chemin()
                 else:
                     self.prochaine_arete = None
-
                 self.arete_actuelle.push_voiture(self)
                 self.ancienne_arete.voitures.remove(self)
 

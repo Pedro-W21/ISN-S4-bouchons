@@ -506,23 +506,19 @@ class Voiture:
             noeud_arrivee = self.chemin[i+1]
             if i != 0:
                 arete = self.trouver_arete_entre_noeuds(noeud_depart, noeud_arrivee)
-                print("Arete considérée", arete)
                 if longueur < dist_secu:
                     if arete.a_des_voitures():
                         # print("Voitures dans l'arête suivante :", arete.voitures)
                         voiture_obstacle = arete.voitures[-1]
-                        print("Voiture obstacle considérée sur la prochaine arrete", voiture_obstacle.id)
                         if voiture_obstacle != self:
                             longueur += (noeud_depart.position - voiture_obstacle.position).norme_manathan()
                             if longueur < dist_secu:
-                                print("Voiture obstacle trouvée, dans les arêtes suivantes", voiture_obstacle.id, longueur)
                                 return voiture_obstacle, longueur
                         elif len(arete.voitures)>1:
                             voiture_obstacle = arete.voitures[arete.voitures.index(self)-1]
                             if voiture_obstacle != self:
                                 longueur += (noeud_depart.position - voiture_obstacle.position).norme_manathan()
                                 if longueur < dist_secu:
-                                    print("Voiture obstacle trouvée, dans les arêtes suivantes", voiture_obstacle.id, longueur)
                                     return voiture_obstacle, longueur
                         else:
                             longueur += arete.longueur-0.5*Noeud.size.get_x()

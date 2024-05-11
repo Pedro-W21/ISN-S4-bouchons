@@ -111,25 +111,14 @@ class Voiture:
 
         self.noeuds_obstacles_longueur = noeuds_obstacles_longueur
 
-        if not voiture_obstacle:
-            self.gestionnaire_vitesse.desactiver_courbes([GestionnaireVitesse.SUIVRE_VOITURE]) 
-        else:
-            desactiver_courbes = [GestionnaireVitesse.ROULE,GestionnaireVitesse.ACCELERATION]
-
-            if not self.gestionnaire_vitesse.courbe_est_active(self.id_voiture(voiture_obstacle)):
-                desactiver_courbes.append(GestionnaireVitesse.SUIVRE_VOITURE)
-
-                self.gestionnaire_vitesse.desactiver_courbes(desactiver_courbes) 
-                
-                self.gestionnaire_vitesse.genere_courbe_suivie_voiture(voiture_obstacle)
-            else:
-                self.gestionnaire_vitesse.desactiver_courbes(desactiver_courbes)
-
         if not noeuds_obstacles_longueur:
             desactiver_courbes = [GestionnaireVitesse.FREINAGE,GestionnaireVitesse.ARRET]
             self.gestionnaire_vitesse.desactiver_courbes(desactiver_courbes)
-            if not voiture_obstacle:
+            if voiture_obstacle:
+                self.generation_courbe(voiture_obstacle)
+            else:
                 self.generation_courbe(self.arete_actuelle)
+                self.gestionnaire_vitesse.desactiver_courbes([GestionnaireVitesse.SUIVRE_VOITURE]) 
         else: 
             desactiver_courbes = [GestionnaireVitesse.ROULE,
                                     GestionnaireVitesse.ACCELERATION]
@@ -158,7 +147,15 @@ class Voiture:
 
                 elif distance_noeud_obstacle < self.distance_securite(noeud_obstacle.vitesse_max, self.marge_noeud):
                         self.generation_courbe(noeud_obstacle)
-    
+
+            if voiture_obstacle:
+                noeud_obstacle = noeuds_obstacles_longueur[i][0]
+                distance_noeud_obstacle = noeuds_obstacles_longueur[i][1]
+                if not self.gestionnaire_vitesse.courbe_est_active(self.gestionnaire_vitesse.ARRET+self.id_noeud(noeud_obstacle)) or distance_voiture_obstacle < distance_noeud_obstacle:
+                    self.generation_courbe(voiture_obstacle)
+            else:
+                self.gestionnaire_vitesse.desactiver_courbes([GestionnaireVitesse.SUIVRE_VOITURE]) 
+
     def generation_courbe(self, objet, arret=False):
         """
         Génère une courbe de vitesse en fonction de l'objet et du besoin ciblé.
@@ -198,6 +195,14 @@ class Voiture:
                     self.gestionnaire_vitesse.genere_courbe_roule_noeud(objet)
             elif not self.gestionnaire_vitesse.courbe_est_active(self.gestionnaire_vitesse.FREINAGE+self.id_noeud(objet)):
                     self.gestionnaire_vitesse.genere_courbe_freinage_noeud(objet)
+        elif isinstance(objet, Voiture):
+            desactiver_courbes = [GestionnaireVitesse.ROULE,GestionnaireVitesse.ACCELERATION]
+            if not self.gestionnaire_vitesse.courbe_est_active(self.id_voiture(objet)):
+                desactiver_courbes.append(GestionnaireVitesse.SUIVRE_VOITURE)
+                self.gestionnaire_vitesse.desactiver_courbes(desactiver_courbes) 
+                self.gestionnaire_vitesse.genere_courbe_suivie_voiture(objet)
+            else:
+                self.gestionnaire_vitesse.desactiver_courbes(desactiver_courbes)
 
     def id_noeud(self, noeud: Noeud):
         """
@@ -245,6 +250,7 @@ class Voiture:
         self.vitesse, distance_parcourue, self.etat = self.gestionnaire_vitesse.recuperer_position_etat()
         if self.vitesse == 0 and self.etat.startswith(self.gestionnaire_vitesse.SUIVRE_VOITURE):
             distance_parcourue  = 0
+            self.chemin[1].retirer_usager(self)
         distance_au_point = (self.arete_actuelle.position_arrivee - self.position).norme_manathan()        
         if distance_parcourue >= distance_au_point:
             self.reste_distance = distance_parcourue - distance_au_point

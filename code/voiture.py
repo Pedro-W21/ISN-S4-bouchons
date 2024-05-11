@@ -317,17 +317,17 @@ class Voiture:
                 self.ancienne_arete.voitures.remove(self)
 
     def depassement_noeud(self, noeud_a_depasser):
-        if self.direction_prochain_chemin == Vecteur2D(1, 0):
-            if self.position.x >= noeud_a_depasser.position.x + noeud_a_depasser.size.x:
+        if self.direction == Vecteur2D(1, 0):
+            if self.position.x >= noeud_a_depasser.position.x:
                 return True
-        elif self.direction_prochain_chemin == Vecteur2D(-1, 0):
-            if self.position.x < noeud_a_depasser.position.x - noeud_a_depasser.size.x:
+        elif self.direction == Vecteur2D(-1, 0):
+            if self.position.x <= noeud_a_depasser.position.x:
                 return True
-        elif self.direction_prochain_chemin == Vecteur2D(0, 1):
-            if self.position.y > noeud_a_depasser.position.y + noeud_a_depasser.size.y:
+        elif self.direction == Vecteur2D(0, 1):
+            if self.position.y >= noeud_a_depasser.position.y:
                 return True
-        elif self.direction_prochain_chemin == Vecteur2D(0, -1):
-            if self.position.y < noeud_a_depasser.position.y - noeud_a_depasser.size.y:
+        elif self.direction == Vecteur2D(0, -1):
+            if self.position.y <= noeud_a_depasser.position.y:
                 return True
         return False
 

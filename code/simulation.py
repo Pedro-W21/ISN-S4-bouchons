@@ -186,21 +186,17 @@ class Simulation:
         Returns:
             None
         """
-        #Si on veut générer + de voitures
         self.temps_simulation += delta_temps_simulation
         Courbe.delta_temps_simulation = delta_temps_simulation
         self.iteration+=1
         GestionnaireVitesse.temps_simulation = self.temps_simulation
         if environnement_actif:
             voitures_actives = self.recuperer_voitures()
+            #Si on veut générer + de voitures
             if self.nombre_voiture > len(self.voitures) or len(voitures_actives) < len(self.voitures):
                 self.activer_voitures()
             for voiture in voitures_actives:
-                entrees_libres = self.trouver_entrees_libres()
-                print("\n====================\nTOUR DE", voiture.couleur, voiture.id, voiture.affiche)
                 voiture.update(self.temps_simulation)
-                if voiture.chemin == []:
-                    print("GROSSE ERREUR")
         else:
             pass
         # if self.iteration == 25:
@@ -216,7 +212,6 @@ class Simulation:
         Returns:
             None
         """
-        # agressivite de 0 à 1
         self.moyenne_agressivite = min(max(0.0,agressivite),1.0)
 
     def mettre_a_jour_nombre_voiture(self, nombre_voiture: int):

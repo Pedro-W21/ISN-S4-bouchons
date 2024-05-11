@@ -17,8 +17,8 @@ class Simulation:
     ENTREE_SORTIE = "ENTREE_SORTIE"
 
     def __init__(self, carte: Carte, nombre_voiture: float, agressivite: float) -> None:
-        self.i = 0
-        
+        self.iteration = 0
+        self.id = 0
         self.noeuds: list[Noeud] = carte.into_aretes_noeuds()
         self.couleurs = ['red', 'blue', 'green', 'yellow', 'orange', 'purple', 'pink', 'brown', 'cyan', 'magenta']
         self.aretes: list[Arete] = []
@@ -52,7 +52,7 @@ class Simulation:
 
         #Si on a besoin de créer de nouvelles voitures
         for i in range(max(0,self.nombre_voiture-len(self.voitures))):
-            nouvelle_voiture = Voiture(self.genere_id(), self.graphe)
+            nouvelle_voiture = Voiture(self.graphe)
             self.voitures.append(nouvelle_voiture)
         
         voitures_non_active = self.recuperer_voitures_non_actives()
@@ -65,7 +65,7 @@ class Simulation:
             sorties.remove(entree)
             sortie = choice(sorties)
             couleur = self.genere_couleur()
-            voiture.demarrage(self.genere_agressivite(), entree, sortie, couleur, self.temps_simulation)
+            voiture.demarrage(self.genere_id(), self.genere_agressivite(), entree, sortie, couleur, self.temps_simulation)
             nb_voitures_active+=1
 
     def genere_id(self) -> int:
@@ -75,7 +75,8 @@ class Simulation:
         Returns:
             int: L'identifiant unique généré.
         """
-        return len(self.voitures)
+        self.id+=1
+        return self.id
     
     def genere_couleur(self):
         """
@@ -188,7 +189,7 @@ class Simulation:
         #Si on veut générer + de voitures
         self.temps_simulation += delta_temps_simulation
         Courbe.delta_temps_simulation = delta_temps_simulation
-        self.i+=1
+        self.iteration+=1
         if environnement_actif:
             voitures_actives = self.recuperer_voitures()
             if self.nombre_voiture > len(self.voitures) or len(voitures_actives) < len(self.voitures):
@@ -199,7 +200,7 @@ class Simulation:
                 voiture.update(self.temps_simulation)
         else:
             pass
-        # if self.i == 25:
+        # if self.iteration == 25:
             # exit()
     
     def mettre_a_jour_agressivite(self, agressivite: float):

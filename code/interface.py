@@ -837,7 +837,6 @@ class App(ctk.CTk):
 
             self.bool_carte_affichee = False
 
-
     def met_a_jour_infos_simu(self, moment_de_changement):
         """
         met à jour et affiche le frame d'informations de la simulation si la simulation est là

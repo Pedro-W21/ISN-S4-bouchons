@@ -70,7 +70,7 @@ Interagissez directement avec la fenêtre pour dessiner, générer ou importer v
 ## Captures d'écran
 
 ![Exemple d'usage](photos/exemple.png)
-**
+*Cette carte est intégrée dans le projet, vous pouvez l'utiliser*
 
 ## Licence
 

@@ -107,8 +107,7 @@ class Simulation:
             float: Le niveau d'agressivité généré.
         """
         agressivite = np.random.normal(self.moyenne_agressivite, self.ecart_type_agressivite)
-        # return min(max(0.0,agressivite),1.0)
-        return 0.5
+        return min(max(0.0,agressivite),1.0)
 
     def import_configuration_carte(self, file_path: str):
         """

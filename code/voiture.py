@@ -13,8 +13,7 @@ class Voiture:
     marge_noeud = (size.x+Noeud.size.get_x())/2
     def __init__(self, graphe: dict):
         self.affiche = False
-        self.graphe = graphe
-        
+        self.graphe = graphe 
 
     def demarrage(self, id, agressivite: float, noeud_depart: Noeud, noeud_arrivee: Noeud, couleur: str, temps_simulation):
         """
@@ -39,7 +38,8 @@ class Voiture:
         self.noeud_arrivee: Noeud = noeud_arrivee
         
         self.vitesse = 0
-
+        self.reste_distance = 0
+        
         self.agressivite = agressivite # compris entre 0 et 1
         
         self.modulation_acceleration = 0.1 * agressivite
@@ -264,16 +264,19 @@ class Voiture:
         if self.vitesse == 0 and self.etat.startswith(self.gestionnaire_vitesse.SUIVRE_VOITURE):
             distance_parcourue  = 0
         distance_au_point = (self.arete_actuelle.position_arrivee - self.position).norme_manathan()
-        reste_distance = 0
 
         print("vitesse", self.vitesse, "distance parcourue", distance_parcourue, self.etat)
         
         if distance_parcourue >= distance_au_point:
-            reste_distance = distance_parcourue - distance_au_point
+            self.reste_distance = distance_parcourue - distance_au_point
             distance_parcourue = distance_au_point
-            self.position = self.arete_actuelle.position_arrivee + (self.direction_prochain_chemin * reste_distance)
+            if len(self.chemin) == 1:
+                self.position += self.direction * (self.reste_distance+distance_parcourue)
+            else:
+                self.position = self.arete_actuelle.position_arrivee
         else:
-            self.position = self.position + (self.direction * distance_parcourue)
+            self.position += (self.direction+self.reste_distance) * distance_parcourue
+            self.reste_distance = 0
     
     def depasse_noeud(self):
         """
@@ -292,8 +295,8 @@ class Voiture:
         # if vecteur != self.direction:
         if self.depassement_noeud(noeud_a_depasser):
             print("J'update l'orientation")
-            self.update_orientation()
-            print("Voici mes nouvelles orientations", self.direction, self.direction_prochain_chemin)
+            self.ancienne_direction = self.direction
+            
             chemin, distances = self.recherche_chemin(noeud_a_depasser)
             self.chemin: list[Noeud] = chemin
             self.distances = distances
@@ -302,9 +305,11 @@ class Voiture:
                 print("oui 1", chemin[0], chemin[1])
                 self.ancienne_arete = self.arete_actuelle
                 self.arete_actuelle = self.trouver_arete_entre_noeuds(self.chemin[0], self.chemin[1])
+                self.update_orientation()
                 if self.vitesse == self.arete_actuelle.vitesse_max:
                     self.gestionnaire_vitesse.desactiver_courbes([GestionnaireVitesse.ROULE])
                     self.gestionnaire_vitesse.genere_courbe_roule_arete(self.arete_actuelle)
+                    
                 if type(self.chemin[1]) != EntreeSortie:
                         self.prochaine_arete = self.trouver_arete_entre_noeuds(self.chemin[1], self.chemin[2])
                         print("Ma nouvelle prochaine arete", self.prochaine_arete)
@@ -320,16 +325,16 @@ class Voiture:
     def depassement_noeud(self, noeud_a_depasser):
         print("Ma direction :", self.direction)
         if self.direction == Vecteur2D(1, 0):
-            if self.position.x > noeud_a_depasser.position.x:
+            if self.position.x >= noeud_a_depasser.position.x:
                 return True
         elif self.direction == Vecteur2D(-1, 0):
-            if self.position.x < noeud_a_depasser.position.x:
+            if self.position.x <= noeud_a_depasser.position.x:
                 return True
         elif self.direction == Vecteur2D(0, 1):
-            if self.position.y > noeud_a_depasser.position.y:
+            if self.position.y >= noeud_a_depasser.position.y:
                 return True
         elif self.direction == Vecteur2D(0, -1):
-            if self.position.y < noeud_a_depasser.position.y:
+            if self.position.y <= noeud_a_depasser.position.y:
                 return True
         return False
 
@@ -468,8 +473,7 @@ class Voiture:
         Returns:
             None
         """
-        self.ancienne_direction = self.direction
-        self.direction = self.direction_prochain_chemin
+        self.direction = (self.arete_actuelle.position_arrivee - self.arete_actuelle.position_depart).unitaire()
 
     def update_orientation_prochain_chemin(self):
         """

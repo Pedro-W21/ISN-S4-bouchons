@@ -132,6 +132,7 @@ class GestionnaireVitesse:
     def recuperer_position_etat(self) -> tuple[float, float, str]:
         vitesses: dict[float: Courbe] = {}
         for courbe in self.liste_courbes():
+            print("oui1")
             vitesse, position = courbe.result(self.voiture.temps_simulation)
             vitesses[vitesse] = courbe, position
         if list(vitesses.keys()) != []:

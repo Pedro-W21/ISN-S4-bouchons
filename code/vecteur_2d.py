@@ -4,6 +4,8 @@ class Vecteur2D:
     def __init__(self, x:float, y:float):
         self.x = x
         self.y = y
+    def __str__(self):
+        return f"[{self.x},{self.y}]"
     
     def get_x(self):
         return self.x
@@ -63,9 +65,6 @@ class Vecteur2D:
         else:
             raise TypeError("GROSSE ERREUR DE TYPE ICI AUSSI")
 
-    def __str__(self):
-        return f"x : {self.x}, y : {self.y}"
-    
     def __eq__(self, rhs):
         if type(rhs) != Vecteur2D:
             return self.x == rhs[0] and self.y == rhs[1]

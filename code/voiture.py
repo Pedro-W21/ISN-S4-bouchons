@@ -271,8 +271,9 @@ class Voiture:
         if distance_parcourue >= distance_au_point:
             reste_distance = distance_parcourue - distance_au_point
             distance_parcourue = distance_au_point
-
-        self.position = self.position + (self.direction * distance_parcourue) + (self.direction_prochain_chemin * reste_distance)
+            self.position = self.arete_actuelle.position_arrivee + (self.direction_prochain_chemin * reste_distance)
+        else:
+            self.position = self.position + (self.direction * distance_parcourue)
     
     def depasse_noeud(self):
         """
@@ -292,7 +293,7 @@ class Voiture:
         if self.depassement_noeud(noeud_a_depasser):
             print("J'update l'orientation")
             self.update_orientation()
-            
+            print("Voici mes nouvelles orientations", self.direction, self.direction_prochain_chemin)
             chemin, distances = self.recherche_chemin(noeud_a_depasser)
             self.chemin: list[Noeud] = chemin
             self.distances = distances
@@ -302,32 +303,33 @@ class Voiture:
                 self.ancienne_arete = self.arete_actuelle
                 self.arete_actuelle = self.trouver_arete_entre_noeuds(self.chemin[0], self.chemin[1])
                 if self.vitesse == self.arete_actuelle.vitesse_max:
-                    print("oui 2")
                     self.gestionnaire_vitesse.desactiver_courbes([GestionnaireVitesse.ROULE])
                     self.gestionnaire_vitesse.genere_courbe_roule_arete(self.arete_actuelle)
                 if type(self.chemin[1]) != EntreeSortie:
-                        print("oui 3")
                         self.prochaine_arete = self.trouver_arete_entre_noeuds(self.chemin[1], self.chemin[2])
+                        print("Ma nouvelle prochaine arete", self.prochaine_arete)
                         self.update_orientation_prochain_chemin()
+                        print("Ma nouvelle orientation prochaine", self.direction_prochain_chemin)
                 else:
-                    print("oui 4")
+                    print("Pas de prochaine arête")
                     self.prochaine_arete = None
 
                 self.arete_actuelle.push_voiture(self)
                 self.ancienne_arete.voitures.remove(self)
 
     def depassement_noeud(self, noeud_a_depasser):
+        print("Ma direction :", self.direction)
         if self.direction == Vecteur2D(1, 0):
-            if self.position.x >= noeud_a_depasser.position.x:
+            if self.position.x > noeud_a_depasser.position.x:
                 return True
         elif self.direction == Vecteur2D(-1, 0):
-            if self.position.x <= noeud_a_depasser.position.x:
+            if self.position.x < noeud_a_depasser.position.x:
                 return True
         elif self.direction == Vecteur2D(0, 1):
-            if self.position.y >= noeud_a_depasser.position.y:
+            if self.position.y > noeud_a_depasser.position.y:
                 return True
         elif self.direction == Vecteur2D(0, -1):
-            if self.position.y <= noeud_a_depasser.position.y:
+            if self.position.y < noeud_a_depasser.position.y:
                 return True
         return False
 

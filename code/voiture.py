@@ -9,7 +9,7 @@ class Voiture:
     #size = Vecteur2D(3.86, 2.14) # m [longueur, largeur]
     size = Vecteur2D(2, 1.75) # m [longueur, largeur]
     
-    distance_marge_securite = (size.x + size.y)*1.75
+    distance_marge_securite = (size.x + size.y)*1.6
     marge_noeud = (size.x+Noeud.size.get_x())/2
     def __init__(self, graphe: dict):
         self.affiche = False
@@ -506,21 +506,23 @@ class Voiture:
             noeud_arrivee = self.chemin[i+1]
             if i != 0:
                 arete = self.trouver_arete_entre_noeuds(noeud_depart, noeud_arrivee)
+                print("Arete considérée", arete)
                 if longueur < dist_secu:
                     if arete.a_des_voitures():
                         # print("Voitures dans l'arête suivante :", arete.voitures)
                         voiture_obstacle = arete.voitures[-1]
+                        print("Voiture obstacle considérée sur la prochaine arrete", voiture_obstacle.id)
                         if voiture_obstacle != self:
                             longueur += (noeud_depart.position - voiture_obstacle.position).norme_manathan()
                             if longueur < dist_secu:
-                                # print("Voiture obstacle trouvée, dans les arêtes suivantes", voiture_obstacle, longueur)
+                                print("Voiture obstacle trouvée, dans les arêtes suivantes", voiture_obstacle.id, longueur)
                                 return voiture_obstacle, longueur
                         elif len(arete.voitures)>1:
                             voiture_obstacle = arete.voitures[arete.voitures.index(self)-1]
                             if voiture_obstacle != self:
                                 longueur += (noeud_depart.position - voiture_obstacle.position).norme_manathan()
                                 if longueur < dist_secu:
-                                    # print("Voiture obstacle trouvée, dans les arêtes suivantes", voiture_obstacle, longueur)
+                                    print("Voiture obstacle trouvée, dans les arêtes suivantes", voiture_obstacle.id, longueur)
                                     return voiture_obstacle, longueur
                         else:
                             longueur += arete.longueur
@@ -538,7 +540,6 @@ class Voiture:
                         if distance_a_voiture < dist_secu:
                         # print("Voiture obstacle trouvée, dans le noeud de départ", voiture_obstacle, longueur)
                             return voiture_obstacle, distance_a_voiture
-                    return None, None
                 else:
                     longueur += (self.position - noeud_arrivee.position).norme_manathan()
         return None, None

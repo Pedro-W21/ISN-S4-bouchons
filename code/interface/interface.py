@@ -389,10 +389,6 @@ class App(ctk.CTk):
         self.filtre_route = ctk.CTkButton(master=self.creation, text="appliquer le filtre")
         self.filtre_route.pack(side=TOP, expand=True, fill="x")
         self.filtre_route.bind('<Button-1>', self.filtre_correction_carte)
-
-        self.transforme_into_noeuds = ctk.CTkButton(master=self.creation, text="tester la conversion")
-        self.transforme_into_noeuds.pack(side=TOP, expand=True, fill="x")
-        self.transforme_into_noeuds.bind('<Button-1>', self.test_transforme)
     
     def generer_carte_test(self, event=None):
         """
@@ -413,14 +409,6 @@ class App(ctk.CTk):
             self.grille_route = carte.grille
             self.affiche_carte_dans_canvas()
 
-
-    def test_transforme(self, event=None):
-        carte = Carte(self.largeur_carte,self.hauteur_carte,self.grille_route)
-        noeuds:list[Noeud] = carte.into_aretes_noeuds()
-        for noeud in noeuds:
-            for arete in noeud.aretes:
-                self.affiche_arete(arete)
-
     def grille_to_canvas_pos(self, xc, yc):
         """
         transforme une position dans la grille entière en position d'affichage utilisable dans la création ou la modifications d'objets du canvas
@@ -430,22 +418,6 @@ class App(ctk.CTk):
 
         """
         return (int(self.xo + xc * self.echelle), int(self.yo + yc * self.echelle))
-
-    def affiche_arete(self, arete: Arete):
-        """
-        Affiche l'arête donnée sur le canvas d'affichage au bon endroit
-
-        input : arete de type Arete
-        return : rien
-
-        effets secondaires : changement de l'affichage dans le canvas
-        """
-        sx = Noeud.size.get_x()
-        sy = Noeud.size.get_y()
-        x0, y0 = self.grille_to_canvas_pos(arete.position_depart.get_x() / sx, arete.position_depart.get_y() / sy)
-        x1, y1 = self.grille_to_canvas_pos(arete.position_arrivee.get_x() / sx, arete.position_arrivee.get_y() / sy)
-        decalage = int(self.echelle * 0.5)
-        self.canvas_affichage.create_line(x0 + decalage, y0 + decalage, x1 + decalage, y1 + decalage, arrow="first",fill=BLUE)
 
     def afficher_scale_generation(self, event):
         """
@@ -758,8 +730,9 @@ class App(ctk.CTk):
             if self.simulation != None:
                 self.simulation.mettre_a_jour_nombre_voiture(nb_voitures)
         except Exception:
-            if resultat != "":
-                print("problémo dans affiche_entry_voitures")
+            pass
+            # if resultat != "":
+            #     print("problémo dans affiche_entry_voitures")
     
     def affiche_entry_agressivite(self, event=None, arg2=None, arg3=None):
         """
@@ -779,8 +752,9 @@ class App(ctk.CTk):
             if self.simulation != None:
                 self.simulation.mettre_a_jour_agressivite(agressivite)
         except Exception:
-            if resultat != "":
-                print("problémo dans affiche_entry_agressivite")
+            pass
+            # if resultat != "":
+            #    print("problémo dans affiche_entry_agressivite")
 
     def affiche_entry_ips(self, event=None, arg2=None, arg3=None):
         """
@@ -797,8 +771,9 @@ class App(ctk.CTk):
             self.iter_par_sec_stringvar.set(resultat)
             self.iter_par_sec.set(int( resultat))
         except Exception:
-            if resultat != "":
-                print("problémo dans affiche_entry_agressivite")
+            pass
+            # if resultat != "":
+            #    print("problémo dans affiche_entry_agressivite")
 
     def pause_play_simulation(self, event):
         """

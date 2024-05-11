@@ -1,6 +1,6 @@
 import math
 from simulation.arete import Arete
-from vecteur_2d import Vecteur2D
+from utils.vecteur_2d import Vecteur2D
 from simulation.noeud import Noeud, Virage, Intersection_T, Intersection_X, EntreeSortie
 from simulation.gestionnaire_vitesse import GestionnaireVitesse
 
@@ -140,7 +140,7 @@ class Voiture:
                 distance_noeud_obstacle = noeuds_obstacles_longueur[i][1]
                 if i == 0:
                     if not noeud_obstacle.est_un_usager(self) and self.distance_securite(noeud_obstacle.vitesse_max, self.marge_noeud) > distance_noeud_obstacle:
-                        # je demande si je peux passer
+                        # La voiture demande si elle peut passer
                         est_empruntee = noeud_obstacle.est_empruntee()
                         usagers_differents = self.ancient_usagers != noeud_obstacle.get_usagers()
                         voie_est_libre = usagers_differents and noeud_obstacle.voie_est_libre(self)

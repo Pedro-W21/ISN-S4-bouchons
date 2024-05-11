@@ -3,7 +3,7 @@ from simulation.arete import Arete
 from simulation.gestionnaire_vitesse import GestionnaireVitesse
 from simulation.voiture import Voiture
 from simulation.noeud import Intersection_T, Intersection_X, Virage, Noeud, EntreeSortie
-from vecteur_2d import Vecteur2D
+from utils.vecteur_2d import Vecteur2D
 import numpy as np
 from generation.carte import Carte
 from random import choice, shuffle, random

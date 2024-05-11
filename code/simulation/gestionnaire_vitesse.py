@@ -1,5 +1,5 @@
 from utils.courbe import Courbe
-from vecteur_2d import Vecteur2D
+from utils.vecteur_2d import Vecteur2D
 from simulation.noeud import Noeud
 from simulation.arete import Arete
 

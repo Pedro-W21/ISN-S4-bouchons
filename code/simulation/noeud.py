@@ -1,5 +1,5 @@
 from simulation.arete import Arete
-from vecteur_2d import Vecteur2D
+from utils.vecteur_2d import Vecteur2D
 
 class Noeud:
     size = Vecteur2D(6, 6)

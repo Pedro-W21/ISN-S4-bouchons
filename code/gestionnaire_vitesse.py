@@ -73,7 +73,7 @@ class GestionnaireVitesse:
         deplacement_voiture_obstacle_total_depuis_t = voiture_obstacle.gestionnaire_vitesse.courbe_courante.position_finale - position
         distance = deplacement_voiture_obstacle_total_depuis_t + distance_voiture_obstacle_initiale - self.voiture.distance_securite(voiture_obstacle.gestionnaire_vitesse.courbe_courante.vitesse_finale)
         courbe = self.cree_courbe(distance, self.voiture.vitesse, voiture_obstacle.gestionnaire_vitesse.courbe_courante.vitesse_finale)"""
-        self.courbes[self.SUIVRE_VOITURE+voiture_obstacle+voiture_obstacle.etat] = [(courbe, self.voiture.position)]
+        self.courbes[self.SUIVRE_VOITURE+str(voiture_obstacle.id)+voiture_obstacle.etat] = [(courbe, self.voiture.position)]
     
     def genere_courbe_freinage(self, vitesse_finale: float, nom_courbe = FREINAGE):
         if vitesse_finale <= self.voiture.vitesse:

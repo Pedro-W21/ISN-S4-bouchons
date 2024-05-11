@@ -10,7 +10,6 @@ class Noeud:
     ENTREE_SORTIE = "ENTREE_SORTIE"
 
     def __init__(self, position: Vecteur2D, aretes: list[Arete]):
-        # Implémentation données pour affichage
         self.position = position
         self.usagers = {}
         self.nom = f"{position.get_x()},{position.get_y()}"
@@ -21,7 +20,6 @@ class Noeud:
     
     def retirer_usager(self, voiture):
         if self.usagers.get(voiture, False):
-            # print(f"Retrait de {voiture.couleur} à {self.nom}")
             self.usagers.pop(voiture)
 
     def get_poids(self):

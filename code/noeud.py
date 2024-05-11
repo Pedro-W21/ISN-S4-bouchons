@@ -38,7 +38,7 @@ class Noeud:
         return self.usagers
     
     def enregistrer_usager(self, voiture, orientation, intention):
-        # print(f"Ajout de {voiture.couleur} à {self.nom}")
+        print(f"Ajout de {voiture.couleur} à {self.nom}")
         self.usagers[voiture] = [orientation, intention]
 
     def voie_est_libre(self):
@@ -65,9 +65,9 @@ class Intersection_T(Noeud):
     
     def voie_est_libre(self, voiture):
         orientation, intention = voiture.intention()
-        from_right_to_left = [orientation.y,-orientation.x]
-        from_left_to_right = [-orientation.y,orientation.x]
-        from_front_to_me = [-orientation.x,-orientation.y]
+        from_right_to_left = Vecteur2D(orientation.y,-orientation.x)
+        from_left_to_right = Vecteur2D(-orientation.y,orientation.x)
+        from_front_to_me = Vecteur2D(-orientation.x,-orientation.y)
         from_me_to_front = orientation
         # nulle part [0, 0] 
         # selon x [1, 0]
@@ -79,7 +79,9 @@ class Intersection_T(Noeud):
         #vient d'en face / va vers moi
         #vient de ma voix / va en face de moi
         libre = True
+        print("On me ping", self.usagers)
         for usager, intentions in self.usagers.items():
+            print("On me ping", usager.id)
             orientation_usager, intention_usager = intentions
             if usager.id != voiture.id:
                 if intention == orientation: #Je vais tout droit

@@ -192,8 +192,7 @@ class Simulation:
                 self.activer_voitures()
             for voiture in voitures_actives:
                 entrees_libres = self.trouver_entrees_libres()
-                # print("\n\n===============================\nTOUR DE ", voiture.couleur, voiture.id, voiture.affiche)
-                # print("Vitesse :", voiture.vitesse)
+                print("\n\n===============================\nTOUR DE ", voiture.couleur, voiture.id, voiture.affiche)
                 voiture.update(self.temps_simulation)
         else:
             pass

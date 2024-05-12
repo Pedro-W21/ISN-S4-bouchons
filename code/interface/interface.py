@@ -643,7 +643,7 @@ class App(ctk.CTk):
                 self.canvas_affichage.coords(self.selection_voiture_select, pos_voiture[0] - rayon_cercle, pos_voiture[1] - rayon_cercle, pos_voiture[0] + rayon_cercle, pos_voiture[1] + rayon_cercle)
                 self.canvas_affichage.tag_raise(self.selection_voiture_select)
                 if self.voiture_select.voiture_obstacle != None:
-                    self.label_info_distance_obstacles.configure(text=f"Distance à voiture : {(int(self.voiture_select.distance_voiture_obstacle*100.0)/100.0)/Noeud.size.get_x()}")
+                    self.label_info_distance_obstacles.configure(text=f"Distance à voiture : {(int((self.voiture_select.distance_voiture_obstacle/Noeud.size.get_x())*100.0)/100.0)}")
                     self.label_info_obstacles_voitures.configure(text=f"ID voiture obstacle : {self.voiture_select.voiture_obstacle.id}")
                 else:
                     self.label_info_distance_obstacles.configure(text=f"Pas de voiture obstacle")

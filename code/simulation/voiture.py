@@ -238,8 +238,6 @@ class Voiture:
         self.depasse_noeud()
         self.usage_noeuds()
         
-
-
     def update_position(self):
         """
         Met à jour la position du véhicule en fonction de sa vitesse et de son état actuel.
@@ -406,19 +404,6 @@ class Voiture:
         """
         return self.temps_mouvement(vitesse_initiale, vitesse_finale, self.deceleration)
     
-    def temps_mouvement_acceleration(self, vitesse_initiale, vitesse_finale) -> float:
-        """
-        Calcule le temps nécessaire pour passer d'une vitesse initiale à une vitesse finale en accélération.
-
-        Args:
-            vitesse_initiale (float): La vitesse initiale.
-            vitesse_finale (float): La vitesse finale.
-
-        Returns:
-            float: Le temps nécessaire pour effectuer le mouvement en accélération.
-        """
-        return self.temps_mouvement(vitesse_initiale, vitesse_finale, self.acceleration)
-
     def distance_deceleration(self, vitesse_initiale, vitesse_finale) -> float:
         """
         Calcule la distance de décélération nécessaire pour passer d'une vitesse initiale à une vitesse finale.
@@ -434,30 +419,6 @@ class Voiture:
         distance = 1/2 * self.deceleration * temps_deceleration**2 + vitesse_initiale * temps_deceleration
         return distance
     
-    def distance_acceleration(self, vitesse_initiale, vitesse_finale) -> float:
-        """
-        Calcule la distance d'accélération nécessaire pour passer d'une vitesse initiale à une vitesse finale.
-
-        Args:
-            vitesse_initiale (float): La vitesse initiale du véhicule en m/s.
-            vitesse_finale (float): La vitesse finale du véhicule en m/s.
-
-        Returns:
-            float: La distance de décélération.
-        """
-        temps_acceleration = self.temps_mouvement_acceleration(vitesse_initiale, vitesse_finale)
-        distance = 1/2 * self.acceleration * temps_acceleration**2 + vitesse_initiale * temps_acceleration
-        return distance
-
-    def intention(self):
-        """
-        Retourne les intentions de déplacement du véhicule.
-
-        Returns:
-            tuple: Une paire contenant la direction actuelle et la direction vers la prochaine destination.
-        """
-        return self.direction, self.direction_prochain_chemin
-            
     def update_orientation(self):
         """
         Met à jour les directions en partant du principe qu'on vient de changer d'arête
@@ -495,18 +456,6 @@ class Voiture:
                 if arete.is_equal(arete2, inverted=True):
                     return arete
         return None
-
-    def distance_entite(self, position_entite: Vecteur2D):
-        """
-        Calcule la distance entre la position actuelle du véhicule et une entité donnée.
-
-        Args:
-            position_entite (Vecteur2D): La position de l'entité.
-
-        Returns:
-            float: La distance entre le véhicule et l'entité.
-        """
-        return (position_entite - self.position).norme_manathan()
 
     def trouver_voiture_sur_mon_chemin(self):
         """

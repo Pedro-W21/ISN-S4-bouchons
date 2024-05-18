@@ -20,7 +20,7 @@ Aggloméramax Pro est un projet Python qui permet de créer des routes personnal
 - Filtrage de la carte active pour faire respecter les règles de créations pour une carte utilisable en simulation :
     - Pas de bloc 2x2 de routes
     - Système de route connexe
-    - Au moins une entrée/sortie
+    - Au moins 2 entrées/sorties (cases sur le bord)
     - Pas de cul-de-sac
 
 #### Génération

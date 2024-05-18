@@ -82,8 +82,6 @@ class App(ctk.CTk):
         #cree la tabview parametres
         self.tabview_parametres_voitures()
 
-        
-
         self.grille_affichee = False #initialisation de l'affichage grille
 
 
@@ -1337,5 +1335,11 @@ class App(ctk.CTk):
         """
         carte = Carte(self.largeur_carte, self.hauteur_carte, self.grille_route.copy())
         carte.filtre_correction_carte()
-        return (carte.grille != np.zeros((self.largeur_carte, self.hauteur_carte))).any()
+        nombre_es = 0
+        for x in range(self.largeur_carte):
+            for y in range(self.hauteur_carte):
+                if carte.sur_le_bord(x, y) and carte.get_at_or_0(x, y) == 1:
+                    nombre_es += 1
+                
+        return (carte.grille != np.zeros((self.largeur_carte, self.hauteur_carte))).any() and nombre_es >= 2
 

@@ -464,7 +464,6 @@ class Voiture:
         Returns:
             tuple: Une paire contenant la voiture obstacle et la distance jusqu'à elle, si elle existe. Sinon, une paire de None.
         """
-        print("Je suis la voiture :", self.id)
         longueur = 0
         dist_secu = self.distance_securite(self.vitesse,self.distance_marge_securite)
         for i in range(len(self.chemin)-1):
@@ -478,14 +477,12 @@ class Voiture:
                         if voiture_obstacle != self:
                             longueur += (noeud_depart.position - voiture_obstacle.position).norme_manathan()
                             if longueur < dist_secu:
-                                print("1, Je renvoie : ", voiture_obstacle.id, longueur)
                                 return voiture_obstacle, longueur
                         elif len(arete.voitures)>1:
                             voiture_obstacle = arete.voitures[arete.voitures.index(self)-1]
                             if voiture_obstacle != self:
                                 longueur += (noeud_depart.position - voiture_obstacle.position).norme_manathan()
                                 if longueur < dist_secu:
-                                    print("2, Je renvoie : ", voiture_obstacle.id, longueur)
                                     return voiture_obstacle, longueur
                     longueur += arete.longueur-0.5*Noeud.size.get_x()
                 else:
@@ -498,7 +495,6 @@ class Voiture:
                         voiture_obstacle = arete.voitures[myposition-1]
                         distance_a_voiture = (self.position - voiture_obstacle.position).norme_manathan()
                         if distance_a_voiture < dist_secu:
-                            print("1, Je renvoie : ", voiture_obstacle.id, distance_a_voiture)
                             return voiture_obstacle, distance_a_voiture
                 longueur += (self.position - noeud_arrivee.position).norme_manathan()-0.5*Noeud.size.get_x()
         return None, None

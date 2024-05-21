@@ -8,15 +8,51 @@ c = 2*np.exp(-1)
 d = 1/2
 
 def fonction_vitesse_e(t):
-    return (a*t+b)*np.exp(-np.abs(a*t+b)) / c + d
+    """
+    Calcule la vitesse normalisée en fonction du temps par une courbe exponentielle de transfert.
+    
+    Args:
+        t (float): Le temps.
+        
+    Returns:
+        float: La vitesse normalisée calculée.
+    """
+    return (a*t+b)*np.exp(-np.abs(a*t+b))
 
 def fonction_vitesse_lineaire(t):
+    """
+    Fonction qui représente la courbe linéaire de transfert de vitesse normalisée.
+    
+    Args:
+        t (float): Le temps.
+    
+    Returns:
+        float: La vitesse linéaire normalisée.
+    """
     return t
 
 def fonction_position_e(t):
+    """
+    Calcule de position normalisée via une courbe exponentielle.
+
+    Args:
+        t (float): Valeur du temps.
+
+    Returns:
+        float: Valeur de la courbe exponentielle de position normalisée.
+    """
     return (1/(2*a*c) * ((a*c*d*t + np.exp(b+a*t)*(-1+b+a*t)) * (1 - np.sign(b + a*t)) + (a*c*d*t - np.exp(-b-a*t)* (1+b+a*t)) * (1 + np.sign(b + a*t))) +1/2)
 
 def fonction_position_lineaire(t):
+    """
+    Calcule la position normalisée via une courbe carre.
+
+    Args:
+        t (float): Valeur du temps.
+
+    Returns:
+        float: Valeur de la courbe exponentielle de position normalisée.
+    """
     return (1/2) * (t**2)
 
 class Courbe:
@@ -93,7 +129,3 @@ class Courbe:
             return self.result_negatif(temps_simuation)
         else:
             return self.result_positif(temps_simuation)
-
-if __name__ == "__main__":
-
-    pass

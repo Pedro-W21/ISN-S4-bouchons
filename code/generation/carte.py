@@ -305,17 +305,6 @@ class Carte:
                     if not trouve:
                         trouve = self.est_noeud(px, py)
                 i += 1
-        # start_x = xc - distance
-        # stop_x = xc + distance
-        # y = yc - distance
-        # stop_y = yc + distance
-        # while not trouve and y <= stop_y:
-        #     x = start_x
-        #     while not trouve and x <= stop_x:
-        #         if self.est_noeud(x, y):
-        #             trouve = True
-        #         x += 1
-        #     y += 1
         return trouve
 
     def genere_aleatoirement(largeur:int, hauteur:int, nombre_de_noeuds:int = 100, distance_minimale_entre_noeuds:int = 1):

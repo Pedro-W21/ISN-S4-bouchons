@@ -41,10 +41,10 @@ Aggloméramax Pro est un projet Python qui permet de créer des routes personnal
 
 #### Simulation dans l'interface
 - Possible de mettre en pause la simulation une fois lancée
-    - Lorsque la simulation est en pause, appuyez sur la barre espace pour avancer d'une seule 1 mise à jour de simulation
+    - Lorsque la simulation est en pause, appuyez sur la barre espace pour avancer d'une seule mise à jour de simulation
 - L'arrêt complet de la simulation en cours permet de retourner sur l'éditeur de carte
 - Cliquer sur une voiture affiche son chemin, ses obstacles ainsi que sa vitesse
-- Choix du nombre de voitures maximum sur la route et de leur niveau d'agressivité moyen
+- Choix du nombre de voitures maximum sur la route et de leur niveau d'agressivité moyen (avant ou pendant la simulation)
 - Choix du nombre de mises à jour de simulation par seconde voulu (coûteux en calcul, la vitesse demandée ne peut pas forcément être garantie)
 - Choix de la vitesse d'écoulement du temps dans la simulation (aucun impact sur la performance)
 

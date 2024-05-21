@@ -39,7 +39,6 @@ class App(ctk.CTk):
         self.geometry('1200x850')
         self.minsize(1000, 800)
         self.title('Aggloméramax Pro')
-        #self.bind('<Motion>', self.motion)
 
         # Calculer la taille du cadre en fonction des dimensions de l'écran mais marche pas
         self.columnconfigure(0, weight=1, uniform='a')
@@ -55,6 +54,7 @@ class App(ctk.CTk):
 
         self.frame_carte = ctk.CTkFrame(self, fg_color='#4C6085')
         self.frame_carte.grid(row=0, column=1, rowspan=2, pady=5, padx=5, sticky='nsew')
+
         #initialisation des routes
         self.routes = []
         self.simulation = None
@@ -89,7 +89,7 @@ class App(ctk.CTk):
         """
         Ajout des routes sauvegardées dans la liste des routes
         paramètres : aucun
-        :return: aucun (actualise le dictionnaire "routes")
+        return: aucun (actualise le dictionnaire "routes")
         """
         fichiers = os.listdir("../routes")
         if self.routes != fichiers:
@@ -109,7 +109,7 @@ class App(ctk.CTk):
         """
         Création des Tabview pour les différents onglets relatifs aux paramètres de la simulation
         paramètres : aucun
-        :return:  aucun
+        return:  aucun
         """
         self.tabview_model = ctk.CTkTabview(self.frame_modele, border_color='#32322C', border_width=2)
         self.tabview_model.pack(fill=BOTH, expand=True, padx=5, pady=5)
@@ -131,7 +131,7 @@ class App(ctk.CTk):
         """
         Importation/ creation modèle de route
         paramètres : aucun
-        :return: la route choisie sous forme de ?
+        return: la route choisie sous forme de ?
         """
 
         self.modele.columnconfigure(0, weight=1, uniform='a')
@@ -140,30 +140,19 @@ class App(ctk.CTk):
         self.modele.rowconfigure(2, weight=1, uniform='a')
         self.modele.rowconfigure(3, weight=1, uniform='a')
 
-
-
         self.carte_choisie_bool = False
         self.nom_route_combox = ctk.CTkComboBox(master=self.modele, values=["Choisissez ici"], command= self.afficher_bouton_valider, width=150)
         self.nom_route_combox.grid(row=0, column=0)
-        #self.nom_route_combox.pack(side=TOP,expand=True, fill="x")
-
-
-
 
         self.image_sauvegarde = ctk.CTkImage(light_image=PILImage.open('../photos/sauvegarde.png'), size=(30, 30))
-
         self.bouton_valider = ctk.CTkButton(master=self.modele, text="   sauvegarder la carte", image=self.image_sauvegarde, compound="left")
         self.bouton_valider.grid(row=3, column=0, padx=10)
-        #self.bouton_valider.pack(side=BOTTOM, expand=True, fill="x")
-        self.bouton_valider.bind("<Button-1>", self.topLevel_validation_carte)
-        
+        self.bouton_valider.bind("<Button-1>", self.topLevel_sauvegarde_carte)
 
         self.bouton_chargement = ctk.CTkButton(master=self.modele, text="charger la carte choisie")
-        
         self.bouton_chargement.bind("<Button-1>", self.charge_carte)
 
         self.bouton_supprimer = ctk.CTkButton(master=self.modele, text="Supprimer la carte")
-        #self.bouton_supprimer.grid(row=3, column=0, padx=10)
         self.bouton_supprimer.bind("<Button-1>", self.supprime_carte)
 
         self.ajout_routes()
@@ -184,6 +173,14 @@ class App(ctk.CTk):
                 print("erreur pour supprimer")
 
     def afficher_bouton_valider(self,event=None):
+        """
+        affiche le bouton de validation si une carte est choisie
+
+        input : event, inutilisé mais indispensable pour utiliser cette fonction en callback
+        return : rien
+
+        effets secondaires : affichage du bouton de validation (caché par défaut)
+        """
         if self.nom_route_combox.get() != "Choisissez ici" and not self.carte_choisie_bool:
             self.bouton_chargement.grid(row=1, column=0, padx=10)
             self.bouton_supprimer.grid(row=2, column=0, padx=10)
@@ -194,12 +191,14 @@ class App(ctk.CTk):
             self.carte_choisie_bool = False
 
 
-
-
-
-    def topLevel_validation_carte(self, event=None):
+    def topLevel_sauvegarde_carte(self, event=None):
         """
-        Crée une fenêtre de validation de la carte
+        pop up pour sauvergarder la carte créée
+
+        input : event, inutilisé mais indispensable pour utiliser cette fonction en callback
+        return : rien
+
+        effets secondaires : sauvegarde la carte
         """
 
         self.toplevel = ctk.CTkToplevel()
@@ -214,8 +213,6 @@ class App(ctk.CTk):
         self.bouton_sauvegarde = ctk.CTkButton(master=self.toplevel, text="sauvegarder la carte actuelle")
         self.bouton_sauvegarde.pack(side=TOP, pady=10)
         self.bouton_sauvegarde.bind("<Button-1>", self.sauvegarde_carte)
-
-
 
 
 
@@ -263,8 +260,6 @@ class App(ctk.CTk):
             print('non valide')
             self.entree_sauvegarde.delete(0, END)
             messagebox.showinfo("Information", "Le nom du fichier ne doit pas contenir de caractères spéciaux")
-            # self.entree_sauvegarde.delete(0, END)
-            # self.entree_sauvegarde.insert(INSERT, "Nom invalide")
 
     def charge_carte(self, event=None):
         """
@@ -324,7 +319,6 @@ class App(ctk.CTk):
         self.largeur_x_scale_gen.set(self.largeur_carte)
         self.largeur_x_scale_gen.pack(side=TOP, expand=True, fill="x")
 
-
         self.hauteur_y_Label_gen = ctk.CTkLabel(master=self.generation, text="hauteur (y)")
         self.hauteur_y_Label_gen.pack(side=TOP, expand=True, fill="x")
         self.hauteur_y_Label_affichees_gen = ctk.CTkLabel(master=self.generation, text=f"{self.hauteur_carte}", text_color="white")
@@ -348,8 +342,7 @@ class App(ctk.CTk):
         self.dst_noeuds_scale_gen = ctk.CTkSlider(master=self.generation, progress_color="white", from_=1, to=min(self.largeur_carte, self.hauteur_carte) - 2, command=self.afficher_scale_generation)
         self.dst_noeuds_scale_gen.set(1)
         self.dst_noeuds_scale_gen.pack(side=TOP, expand=True, fill="x")
-
-
+        
         self.generer_carte = ctk.CTkButton(master=self.generation, text="générer une carte aléatoirement")
         self.generer_carte.pack(side=TOP, expand=True, fill="x")
         self.generer_carte.bind("<Button-1>", self.generer_carte_test)
@@ -370,7 +363,6 @@ class App(ctk.CTk):
         self.largeur_x_scale = ctk.CTkSlider(master=self.creation, progress_color="white", from_=10, to=50, command=self.afficher_scale_creation)
         self.largeur_x_scale.set(self.largeur_carte)
         self.largeur_x_scale.pack(side=TOP, expand=True, fill="x")
-
 
         self.hauteur_y_Label = ctk.CTkLabel(master=self.creation, text="hauteur (y)")
         self.hauteur_y_Label.pack(side=TOP, expand=True, fill="x")
@@ -448,7 +440,7 @@ class App(ctk.CTk):
         """
         Récupère la valeur des sliders relatifs à la taille de l'écran
         :param event:
-        :return: aucun (affiche la valeur des sliders)
+        return: aucun (affiche la valeur des sliders)
         """
         largeur_x = self.largeur_x_scale.get()
         hauteur_y = self.hauteur_y_scale.get()
@@ -462,9 +454,8 @@ class App(ctk.CTk):
         """
         Création d'une nouvelle carte
         paramètres : aucun
-        :return: aucun
+        return: aucun
         """
-        #print(f"longueur {int(self.largeur_x_scale.get())}, largeur : {int(self.hauteur_y_scale.get())}")
         self.stop_simulation()
         if not self.en_train_dafficher :
 
@@ -510,7 +501,7 @@ class App(ctk.CTk):
         Création des paramètres pour les voitures (nombre de voitures, niveau d'agressivité)
         paramètres : aucun
 
-        :return: aucun
+        return: aucun
         """
         
         self.nombre_voitures_Label = ctk.CTkLabel(master=self.parametres, text="nb voitures selectionnées")
@@ -520,8 +511,6 @@ class App(ctk.CTk):
         self.nombre_voitures_entry = ctk.CTkEntry(master=self.parametres, textvariable=self.nombre_voitures_stringvar)
         self.nombre_voitures_entry.pack(side=TOP)
         self.nombre_voitures_entry.insert(0, "1")
-        # self.nombre_voitures_Label_affichees = ctk.CTkLabel(master=self.parametres, text=f"{1}")
-        # self.nombre_voitures_Label_affichees.pack(side=TOP, expand=True, fill="x")
         self.nombre_voiture_scale = ctk.CTkSlider(master=self.parametres, from_=1, to=self.max_voiture, command=self.afficher_scale_voitures)
         self.nombre_voiture_scale.pack(side=TOP, expand=True, fill="x")
         self.nombre_voiture_scale.set(1)
@@ -533,8 +522,6 @@ class App(ctk.CTk):
         self.niveau_agressivite_entry = ctk.CTkEntry(master=self.parametres, textvariable=self.niveau_agressivite_stringvar)
         self.niveau_agressivite_entry.pack(side=TOP)
         self.niveau_agressivite_entry.insert(0, "10")
-        # self.niveau_agressivite_Label_affichees = ctk.CTkLabel(master=self.parametres, text=f"{10}")
-        # self.niveau_agressivite_Label_affichees.pack(side=TOP, expand=True, fill="x")
         self.niveau_agressivite = ctk.CTkSlider(master=self.parametres, from_=1, to=100, command=self.afficher_scale_voitures)
         self.niveau_agressivite.set(10)
         self.niveau_agressivite.pack(side=TOP, expand=True, fill="x")
@@ -566,13 +553,8 @@ class App(ctk.CTk):
         self.stop_simu_button.pack(side=TOP, expand=True, fill="x")
         self.stop_simu_button.bind("<Button-1>", self.stop_simulation)
 
-        self.carte_france_button = ctk.CTkButton(master=self.parametres, text="carte de France de l'agressivité")
-        # self.carte_france_button.pack(side=TOP, expand=True, fill="x")
-        self.carte_france_button.bind('<Button-1>', self.affichage_france)
-
         self.bind("<space>", self.frame_by_frame)
 
-        self.bool_carte_affichee = False
 
     def selectionne_voiture(self, event=None):
         """
@@ -824,7 +806,7 @@ class App(ctk.CTk):
         """
         Récupère la valeur des sliders relatifs aux voitures
         :param event:
-        :return: aucun (affiche la valeur des sliders)
+        return: aucun (affiche la valeur des sliders)
         """
         nb_voitures = self.nombre_voiture_scale.get()
         niveau_agressivite = self.niveau_agressivite.get()
@@ -846,31 +828,7 @@ class App(ctk.CTk):
         if self.simulation != None:
             self.simulation.mettre_a_jour_nombre_voiture(int(nb_voitures))
             self.simulation.mettre_a_jour_agressivite(niveau_agressivite/100.0)
-        
-    def affichage_france(self, event):
-        """
-        Affichage de la carte de France de l'agressivité
-        :param event:
-        :return: aucun (affiche la carte de France)
-        """
-        if not self.bool_carte_affichee :
 
-            self.bool_carte_affichee = True
-
-
-            self.france_topLevel= ctk.CTkToplevel(master=self)
-            self.france_topLevel.geometry('500x500')
-            self.france_topLevel.title("carte de France de l'agressivité")
-
-            carte_France = ctk.CTkImage(light_image=Image.open('../photos/carte France.jpg'), size=(500, 500))
-            carte_France_Label = ctk.CTkLabel(master=self.france_topLevel, image= carte_France, text="")
-            carte_France_Label.pack(fill=BOTH, expand=True)
-
-
-            # wait plutot que mainloop pour pouvoir changer ensuite le booleen et réafficher le booleen si désiré
-            self.france_topLevel.wait_window()
-
-            self.bool_carte_affichee = False
 
     def met_a_jour_infos_simu(self, moment_de_changement):
         """
@@ -907,7 +865,6 @@ class App(ctk.CTk):
 
         self.label_affichage = ctk.CTkLabel(master =self.frame_carte, text="Affichage de la carte et de la simulation")
         self.label_affichage.pack(fill="x")
-
 
         self.frame_infos = ctk.CTkFrame(master=self.frame_carte)
         self.frame_infos.columnconfigure(0, weight=1, uniform='a')
@@ -973,6 +930,7 @@ class App(ctk.CTk):
 
         elif self.mode_affichage == "simulation":
             pass
+
     def fonction_clique_droit_canvas(self, event=None):
         """
         gère le clique droit dans le canvas en fonction du mode d'affichage de celui-ci
@@ -1093,6 +1051,7 @@ class App(ctk.CTk):
                     self.routes_placees += 1
                 self.grille_route[xc,yc] = 1
                 self.canvas_affichage.itemconfigure(self.grille_canvas[yc * self.largeur_carte + xc], fill=self.couleur_de_case(xc, yc))
+
     def enleve_route_click(self, event=None):
         """
         enlève une route et affiche le changement en dessous du curseur sur la carte actuelle
@@ -1292,24 +1251,6 @@ class App(ctk.CTk):
         dimension_minimum_canvas = min(self.largeur_canvas, self.hauteur_canvas)
         dimension_maximum_carte = max(self.largeur_carte, self.hauteur_carte)
         self.echelle = max(2, int(math.floor(dimension_minimum_canvas/dimension_maximum_carte)))
-
-    def affichage_route3(self, liste_route):
-        route_types = {
-            "route_vertical": "../photos/route_vertical.png",
-            "route_horizontal": "../photos/route_horizontal.png",
-            "route_haut_gauche": "../photos/route_gauche.png",
-            "route_bas_droite": "../photos/route_bas_droite.png",
-            "croix": "../photos/route_croix.png"
-        }
-
-        self.images = {
-            type_route:ImageTk.PhotoImage(Image.open(route_path)) for type_route, route_path in route_types.items()
-        }
-        for name, positions in liste_route.items():
-            for position in positions:
-                self.canvas_affichage.create_image(position[0], position[1], image=self.images[name], anchor=tk.NW)
-        self.update()
-        self.update_idletasks()
 
     def filtre_correction_carte(self, event=None):
         """

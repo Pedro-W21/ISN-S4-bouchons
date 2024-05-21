@@ -17,7 +17,7 @@ def fonction_vitesse_e(t):
     Returns:
         float: La vitesse normalisée calculée.
     """
-    return (a*t+b)*np.exp(-np.abs(a*t+b))
+    return (a*t+b)*np.exp(-np.abs(a*t+b)) / c + d
 
 def fonction_vitesse_lineaire(t):
     """

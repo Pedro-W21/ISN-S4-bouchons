@@ -29,6 +29,7 @@ class Voiture:
         """
         self.id = id
 
+        self.immobile = 0
         self.temps_simulation = temps_simulation
         self.temps_demarage = temps_simulation
         self.affiche = True
@@ -241,25 +242,29 @@ class Voiture:
     def update_position(self):
         """
         Met à jour la position du véhicule en fonction de sa vitesse et de son état actuel.
+        Gérer les cas d'immobilité du véhicule pour différents cas afin de libérer une intersection ou un bouchon
 
         Returns:
             None
         """
         self.vitesse, distance_parcourue, self.etat = self.gestionnaire_vitesse.recuperer_position_etat()
-        if self.vitesse == 0 and self.etat.startswith(self.gestionnaire_vitesse.SUIVRE_VOITURE):
-            distance_parcourue  = 0
-            self.chemin[1].retirer_usager(self)
-        distance_au_point = (self.arete_actuelle.position_arrivee - self.position).norme_manathan()        
-        if distance_parcourue >= distance_au_point:
-            self.reste_distance = distance_parcourue - distance_au_point
-            distance_parcourue = distance_au_point
-            if len(self.chemin) == 1:
-                self.position += self.direction * (self.reste_distance+distance_parcourue)
-            else:
-                self.position = self.arete_actuelle.position_arrivee
-        else:
-            self.position += (self.direction+self.reste_distance) * distance_parcourue
-            self.reste_distance = 0
+        if self.vitesse == 0:
+            self.immobile += 1
+            distance_parcourue = 0
+            noeud_obstacle = self.chemin[1]
+            distance_noeud_obstacle = (noeud_obstacle.position - self.position).norme_manathan()
+            if self.etat.startswith(self.gestionnaire_vitesse.SUIVRE_VOITURE) and distance_noeud_obstacle > self.marge_noeud:
+                noeud_obstacle.retirer_usager(self)
+        self.position += (self.direction) * distance_parcourue
+        if self.vitesse != 0:
+            self.immobile = 0
+        #Fixé de manière indicative pour 25 secondes d'immobilité maximum
+        if self.immobile > 750:
+            self.affiche = False
+            self.arete_actuelle.voitures.remove(self)
+            self.chemin[0].retirer_usager(self)
+            if len(self.chemin) > 1:
+                self.chemin[1].retirer_usager(self)
     
     def depasse_noeud(self):
         """
@@ -295,17 +300,24 @@ class Voiture:
                 self.ancienne_arete.voitures.remove(self)
 
     def depassement_noeud(self, noeud_a_depasser):
+        marge_sup_x = (self.size.x/2+(Noeud.size.x/2-self.size.x)/2)*self.direction_prochain_chemin.y*self.direction.x
+        marge_sup_y = (self.size.x/2+(Noeud.size.x/2-self.size.x)/2)*self.direction_prochain_chemin.x*self.direction.y
         if self.direction == Vecteur2D(1, 0):
-            if self.position.x >= noeud_a_depasser.position.x:
+            if self.position.x >= noeud_a_depasser.position.x-marge_sup_x:
+                self.position.x = noeud_a_depasser.position.x
                 return True
         elif self.direction == Vecteur2D(-1, 0):
-            if self.position.x <= noeud_a_depasser.position.x:
+            if self.position.x <= noeud_a_depasser.position.x+marge_sup_x:
+                self.position.x = noeud_a_depasser.position.x
                 return True
+            
         elif self.direction == Vecteur2D(0, 1):
-            if self.position.y >= noeud_a_depasser.position.y:
+            if self.position.y >= noeud_a_depasser.position.y+marge_sup_y:
+                self.position.y = noeud_a_depasser.position.y
                 return True
         elif self.direction == Vecteur2D(0, -1):
-            if self.position.y <= noeud_a_depasser.position.y:
+            if self.position.y <= noeud_a_depasser.position.y-marge_sup_y:
+                self.position.y = noeud_a_depasser.position.y
                 return True
         return False
 

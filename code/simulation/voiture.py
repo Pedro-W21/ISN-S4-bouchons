@@ -300,6 +300,16 @@ class Voiture:
                 self.ancienne_arete.voitures.remove(self)
 
     def depassement_noeud(self, noeud_a_depasser):
+        """
+        Vérifie si l'objet courant a dépassé un nœud spécifié, ajuste sa position en conséquence 
+        et renvoie le signal approprié pour mettre à jour les paramètres de la voiture.
+
+        Parameters:
+        noeud_a_depasser (Noeud): Le nœud que l'objet courant doit dépasser.
+
+        Returns:
+        bool: True si l'objet courant a dépassé le nœud et sa position a été ajustée, sinon False.
+        """
         marge_sup_x = (self.size.x/2+(Noeud.size.x/2-self.size.x)/2)*self.direction_prochain_chemin.y*self.direction.x
         marge_sup_y = (self.size.x/2+(Noeud.size.x/2-self.size.x)/2)*self.direction_prochain_chemin.x*self.direction.y
         if self.direction == Vecteur2D(1, 0):
@@ -310,7 +320,6 @@ class Voiture:
             if self.position.x <= noeud_a_depasser.position.x+marge_sup_x:
                 self.position.x = noeud_a_depasser.position.x
                 return True
-            
         elif self.direction == Vecteur2D(0, 1):
             if self.position.y >= noeud_a_depasser.position.y+marge_sup_y:
                 self.position.y = noeud_a_depasser.position.y

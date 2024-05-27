@@ -41,7 +41,6 @@ class App(ctk.CTk):
         self.title('Aggloméramax Pro')
 
         # Calculer la taille du cadre en fonction des dimensions de l'écran mais marche pas
-        self.columnconfigure(0, weight=1, uniform='a')
         self.columnconfigure(1, weight=3, uniform='a')
         self.rowconfigure(0, weight=1, uniform='a')
         self.rowconfigure(1, weight=1, uniform='a')
@@ -67,6 +66,7 @@ class App(ctk.CTk):
         self.ms_entre_update = 50
         self.fini_affichage = False
         self.en_train_dafficher = False
+        self.axe_echelle = "aucun"
 
 
         self.setup_frame_canvas()
@@ -1119,7 +1119,7 @@ class App(ctk.CTk):
         xc, yc = xs // self.echelle, ys // self.echelle
         ret = None
         if 0 <= xc < self.largeur_carte and 0 <= yc < self.hauteur_carte:
-            ret = (xc, yc)
+            ret = (int(xc), int(yc))
         return ret
 
     def couleur_de_case(self, xc:int, yc:int) -> str:
@@ -1165,11 +1165,11 @@ class App(ctk.CTk):
             self.voitures_canvas = []
             self.fini_affichage = True
             self.calcul_echelle()
-            self.xo, self.yo = (max(self.hauteur_carte - self.largeur_carte, 0) * self.echelle) // 2, (max(self.largeur_carte - self.hauteur_carte, 0) * self.echelle) // 2
-            if self.canvas_affichage.winfo_height() < self.canvas_affichage.winfo_width():
-                self.xo += self.canvas_affichage.winfo_width()//2 - self.canvas_affichage.winfo_height()//2
-            else:
-                self.yo += self.canvas_affichage.winfo_height()//2 - self.canvas_affichage.winfo_width()//2
+            self.xo, self.yo = 0, 0
+            if self.axe_echelle == "y":
+                self.xo = int((self.canvas_affichage.winfo_width() - int(self.largeur_carte * self.echelle))/2)
+            elif self.axe_echelle == "x":
+                self.yo = int((self.canvas_affichage.winfo_height() - int(self.hauteur_carte * self.echelle))/2)
 
             if len(self.grille_canvas) != self.largeur_carte * self.hauteur_carte:
                 self.canvas_affichage.delete(*self.grille_canvas)
@@ -1248,9 +1248,12 @@ class App(ctk.CTk):
         """
         self.largeur_canvas = self.canvas_affichage.winfo_width()
         self.hauteur_canvas = self.canvas_affichage.winfo_height()
-        dimension_minimum_canvas = min(self.largeur_canvas, self.hauteur_canvas)
-        dimension_maximum_carte = max(self.largeur_carte, self.hauteur_carte)
-        self.echelle = max(2, int(math.floor(dimension_minimum_canvas/dimension_maximum_carte)))
+        if self.largeur_canvas/self.largeur_carte < self.hauteur_canvas/self.hauteur_carte:
+            self.echelle = self.largeur_canvas/self.largeur_carte
+            self.axe_echelle = "x"
+        else:
+            self.echelle = self.hauteur_canvas/self.hauteur_carte
+            self.axe_echelle = "y"
 
     def filtre_correction_carte(self, event=None):
         """

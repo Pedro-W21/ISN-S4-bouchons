@@ -50,7 +50,7 @@ Aggloméramax Pro est un projet Python qui permet de créer des routes personnal
 
 ## Installation
 
-Pour installer les dépendances requises, exécutez la commande suivante :
+Pour installer les dépendances requises, exécutez la commande suivante dans le dossier `\code`
 
 ```
 pip install -r requirements.txt

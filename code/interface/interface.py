@@ -880,12 +880,12 @@ class App(ctk.CTk):
         self.label_info_temps.grid(column=0, row=0, sticky="W", padx=5)
         self.label_info_voitures = ctk.CTkLabel(self.frame_infos, text=f"Voitures visibles : {0}", anchor="w")
         self.label_info_voitures.grid(column=0, row=1, sticky="W", padx=5)
-        self.label_info_id_select = ctk.CTkLabel(self.frame_infos, text="", bg_color=DARK_BLUE, anchor="w")
-        self.label_info_vitesse_select = ctk.CTkLabel(self.frame_infos, text="", bg_color=DARK_BLUE, anchor="w")
-        self.label_info_pos_select = ctk.CTkLabel(self.frame_infos, text="", bg_color=DARK_BLUE, anchor="w")
-        self.label_info_distance_obstacles = ctk.CTkLabel(self.frame_infos, text="", bg_color=DARK_BLUE, anchor="w")
-        self.label_info_obstacles_voitures = ctk.CTkLabel(self.frame_infos, text="", bg_color=DARK_BLUE, anchor="w")
-        self.label_info_obstacles_noeuds = ctk.CTkLabel(self.frame_infos, text="", bg_color=DARK_BLUE, anchor="w")
+        self.label_info_id_select = ctk.CTkLabel(self.frame_infos, text="", anchor="w")
+        self.label_info_vitesse_select = ctk.CTkLabel(self.frame_infos, text="", anchor="w")
+        self.label_info_pos_select = ctk.CTkLabel(self.frame_infos, text="", anchor="w")
+        self.label_info_distance_obstacles = ctk.CTkLabel(self.frame_infos, text="", anchor="w")
+        self.label_info_obstacles_voitures = ctk.CTkLabel(self.frame_infos, text="", anchor="w")
+        self.label_info_obstacles_noeuds = ctk.CTkLabel(self.frame_infos, text="", anchor="w")
 
         self.voiture_select = None
         self.chemin_voiture_select = []

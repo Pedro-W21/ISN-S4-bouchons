@@ -267,26 +267,32 @@ class Carte:
             - distance : entier de nombre de cases 
         return : booléen, True si il y a un noeud, false sinon
         """
+        # les directions orthogonales à chaque direction
         cotes_par_dir = {(-1, 0) : [(0, 1), (0, -1)], (1, 0) : [(0, 1), (0, -1)], (0, 1) : [(-1, 0), (1, 0)], (0, -1) : [(-1, 0), (1, 0)]}
         trouve = False
         dirs = list(cotes_par_dir.keys())
         j = 0
         px, py = xc, yc
         branches_trouvees = {}
+        # Tant qu'on a pas trouvé une branche avant la distance minimale et qu'on a pas exploré toutes les directions
         while not trouve and j < len(dirs):
             dx, dy = dirs[j]
             i = 1
             px, py = xc + dx, yc + dy
+            # Si y'a une route adjacente dans cette direction
             route_debut = self.get_at_or_0(px, py) == 1
             if route_debut:
+                # On avance tant que y'a des routes et que c'est pas des noeuds
                 while self.get_at_or_0(px, py) == 1 and not self.est_noeud(px, py):
                     i += 1
                     px, py = xc + i * dx, yc + i * dy
                 
             else:
+                # Sinon on avance tant que y'a rien et que c'est dedans
                 while self.get_at_or_0(px, py) == 0 and self.est_dedans(px, py):
                     i += 1
                     px, py = xc + i * dx, yc + i * dy
+                # Si la fin de l'itération est dans la grille, on a trouvé une autre partie du graphe
                 if self.est_dedans(px, py):
                     branches_trouvees[(px, py)] = (dx, dy)
             trouve = self.get_at_or_0(px, py) == 1 and i < distance
@@ -294,11 +300,14 @@ class Carte:
         if not trouve:
             branches = list(branches_trouvees.keys())
             i = 0
+            # Tant que on a aucun noeud avant la distance minimale dans les directions orthogonales à la direction de cette branche
             while not trouve and i < len(branches):
                 (xc, yc) = branches[i]
+                # Pour chaque direction orthogonale à la direction de cette branche
                 for (dx, dy) in cotes_par_dir[branches_trouvees[(xc, yc)]]:
                     px, py = xc + dx, yc + dy
                     j = 1
+                    # On avance tant que y'a une route et que c'est pas un noeud
                     while j < distance and self.get_at_or_0(px, py) == 1 and not self.est_noeud(px, py):
                         j += 1
                         px, py = xc + j * dx, yc + j * dy
@@ -318,42 +327,49 @@ class Carte:
         return : Carte respectant toutes les règles de construction imposées par la simulation
         """
         carte = Carte(largeur=largeur, hauteur=hauteur)
+        # Création de la position de départ et pose d'une route dessus + initialisation des variables
         sx, sy = carte.pos_utilisable_comme_start(randint(0, largeur - 1), randint(0, hauteur - 1))
         carte.grille[sx, sy] = 1
         dirs_depuis = {(sx, sy):carte.set_dirs_depuis(sx, sy)}
         cases_avec_dirs = {(sx, sy)}
         noeuds_poses = 0
-        noeuds = [(sx, sy)]
+        # Tant que y'a des noeuds à poser et que y'a moins de noeuds posés que de nombre de noeuds maximum à poser
         while len(cases_avec_dirs) > 0 and noeuds_poses < nombre_de_noeuds:
             a_rajouter = []
             a_enlever = []
+            # On choisi un noeud avec des directions de pose
             avec_dirs = choice(list(cases_avec_dirs))
             xc, yc = avec_dirs
+
             for dx, dy in dirs_depuis[avec_dirs]:
+                # Pour chaque direction on pose des routes jusqu'à arriver à un blocage (bord ou autre route)
                 i = 1
                 while carte.position_posable_et_vide(xc + i * dx, yc + i * dy):
                     if i > distance_minimale_entre_noeuds:
                         a_rajouter.append((xc + i * dx, yc + i * dy))
                     carte.grille[xc + i * dx, yc + i * dy] = 1
                     i += 1
+            # Pour chaque case qui avait des directions de pose avant cette itération
             for (xc, yc) in cases_avec_dirs:
+                # On recalcule les directions et si y'en a pas ou si y'a un noeud avant la distance minimale dans une direction, on enlève cette case
                 ens = carte.set_dirs_depuis(xc, yc)
                 if len(ens) == 0 or carte.noeud_avant_distance(xc, yc, distance_minimale_entre_noeuds):
                     a_enlever.append((xc, yc))
                 else:
                     dirs_depuis[(xc, yc)] = ens
             for (xc, yc) in a_rajouter:
+                # Si les cases à rajouter remplissent les conditions données
                 ens = carte.set_dirs_depuis(xc, yc)
                 if len(ens) > 1 and not carte.noeud_avant_distance(xc, yc, distance_minimale_entre_noeuds):
                     cases_avec_dirs.add((xc, yc))
                     dirs_depuis[(xc, yc)] = ens
             for enlev in a_enlever:
                 cases_avec_dirs.remove(enlev)
+            # On enlève des cases avec directions aléatoirement
             nb = randint(8, 10)
             while len(cases_avec_dirs) > nb and randint(1, 10) > 1:
                 cases_avec_dirs.remove(choice(list(cases_avec_dirs)))
             noeuds_poses += 1
-        #carte.filtre_correction_carte()
         return carte
     def applique_changements(self, changements:list[tuple[int, int]]):
         """
@@ -567,5 +583,42 @@ class Carte:
                 json.dump(dico, file)
         except Exception:
             print("n'a pas réussi à sauvegarder la carte")
+    def teste_carte(self, distance_mini=1):
+        """
+        vérifie que la carte self remplit les conditions données pour la générer
+
+        input : distance_mini, la distance D minimum entre chaque noeud qui a été utilisée pour générer la carte
+        return : bool, True si le test passe, False sinon
+        """
+
+        # Une seule composante connexe
+        bon_compo_connexe = len(self.trouve_composantes_connexes()) == 1
+        # Au moins 2 entrees/sorties
+        bon_entree_sortie = self.entree_sortie_possible()
+        # La carte corrigée est la meme que la carte actuelle (pas de cul-de-sac)
+        carte_corrigee = Carte(self.largeur, self.hauteur, self.grille.copy())
+        carte_corrigee.filtre_correction_carte()
+        pas_correction = not (self.grille != carte_corrigee.grille).any()
+
+        verification_distances = True
+        noeuds = self.into_aretes_noeuds()
+        scale_x = Noeud.size.get_x()
+        scale_y = Noeud.size.get_y()
+        for noeud in noeuds:
+            if type(noeud) != EntreeSortie:
+                for arete in noeud.aretes:
+                    # Conversion des coordonnées de noeuds de simulation en grille
+                    x1, y1 = int(round(arete.position_depart.get_x() / scale_x)), int(round(arete.position_depart.get_y() / scale_y))
+                    x2, y2 = int(round(arete.position_arrivee.get_x() / scale_x)), int(round(arete.position_arrivee.get_y() / scale_y))
+                    
+                    # Les entrées/sorties n'ont pas les contraintes du reste des noeuds
+                    if not (self.sur_le_bord(x1, y1) or self.sur_le_bord(x2, y2)):
+                        # On prend le max car comme toutes les arêtes sont selon un axe horizontale ou vertical, la différence minimum de 2 arêtes est toujours 0 (les y ou les x)
+                        # La différence absolue maximum est donc la distance entre les 2 arêtes
+                        min_diff = max(abs(x2 - x1), abs(y2 - y1))
+                        if min_diff < distance_mini:
+                            verification_distances = False
+
+        return bon_compo_connexe and bon_entree_sortie and pas_correction and verification_distances
 
 

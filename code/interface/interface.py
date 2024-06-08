@@ -144,8 +144,11 @@ class App(ctk.CTk):
         self.nom_route_combox = ctk.CTkComboBox(master=self.modele, values=["Choisissez ici"], command= self.afficher_bouton_valider, width=150)
         self.nom_route_combox.grid(row=0, column=0)
 
-        self.image_sauvegarde = ctk.CTkImage(light_image=PILImage.open('../photos/sauvegarde.png'), size=(30, 30))
-        self.bouton_valider = ctk.CTkButton(master=self.modele, text="   sauvegarder la carte", image=self.image_sauvegarde, compound="left")
+        if self.image_enregistrement():
+            self.bouton_valider = ctk.CTkButton(master=self.modele, text="   sauvegarder la carte", image=self.image_sauvegarde, compound="left")
+        else:
+            self.bouton_valider = ctk.CTkButton(master=self.modele, text="   sauvegarder la carte")
+
         self.bouton_valider.grid(row=3, column=0, padx=10)
         self.bouton_valider.bind("<Button-1>", self.topLevel_sauvegarde_carte)
 
@@ -156,6 +159,20 @@ class App(ctk.CTk):
         self.bouton_supprimer.bind("<Button-1>", self.supprime_carte)
 
         self.ajout_routes()
+
+    def image_enregistrement(self):
+        """
+        vérifie que l'image de sauvegarde existe
+        return: un booleen qui dit si l'image a réussi à être chargée
+        """
+        if os.path.exists('../photos/sauvegarde.png'):
+            try:
+                self.image_sauvegarde = ctk.CTkImage(light_image=PILImage.open('../photos/sauvegarde.png'), size=(30, 30))
+                return True
+                # Continue with your code to display the image
+            except IOError:
+                return False
+
 
     def supprime_carte(self, event=None):
         """

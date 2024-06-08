@@ -169,7 +169,6 @@ class App(ctk.CTk):
             try:
                 self.image_sauvegarde = ctk.CTkImage(light_image=PILImage.open('../photos/sauvegarde.png'), size=(30, 30))
                 return True
-                # Continue with your code to display the image
             except IOError:
                 return False
 

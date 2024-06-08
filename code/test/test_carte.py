@@ -15,6 +15,7 @@ if __name__ == "__main__":
     print(f"Commencement de {nb_tests} tests de génération de cartes aléatoires")
     for i in range(nb_tests):
         distance = randint(4, 10)
+        # La génération de carte n'est testée que sur une partie de la range possible maximale de chaque paramètre, précisés dans le readme
         carte = Carte.genere_aleatoirement(randint(4, 20), randint(4,20), randint(10, 100), distance)
         if not carte.teste_carte(distance):
             print(f"Problème en test {i}")

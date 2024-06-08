@@ -32,6 +32,10 @@ Aggloméramax Pro est un projet Python qui permet de créer des routes personnal
 - "Nombre de noeuds maximum à poser" influe sur le nombre d'intersections, mais n'est pas une garantie minimum ou maximum du nombre de noeuds final
 - "Distance minimale entre les noeuds" est une garantie forte, la distance est à compter à partir du centre des intersections.
 - La génération est garantie d'obéir à toutes les règles nécessaires à l'utilisation en simulation
+- Les possibilités réelles pour chaque paramètre sont :
+    - largeur ET hauteur >= 3
+    - nombre de noeuds maximum à poser >= 1
+    - distance minimale entre les noeuds >= 1
 
 ### Simulation
 
@@ -71,6 +75,11 @@ python main.py
 ```
 
 Interagissez directement avec la fenêtre pour dessiner, générer ou importer vos routes, puis lancez la simulation avec les paramètres souhaités pour observer la circulation des voitures autonomes.
+
+### Exécution sur la machine virtuelle Linux de l'INSA
+
+Nous recommandons d'effectuer l'installation et de lancer le logiciel depuis la console plutôt que Spyder, car dans nos tests, la backend d'affichage de Spyder a des problèmes cosmétiques dans l'affichage de fenêtres customtkinter.
+Aucune fonctionnalité n'est perdue avec Spyder, et l'interface a le même agencement, mais l'aspect n'est pas celui escompté.
 
 ## Captures d'écran
 
